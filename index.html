@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>食材ストック計算</title>
+  
+  <link rel="apple-touch-icon" sizes="180x180" href="images/アイコン.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/アイコン.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/アイコン.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  
+  <meta name="theme-color" content="#007bff">
+  <meta name="background-color" content="#f5f8fa">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="食材ストック">
+
+<style>
+    :root {
+      --bg: #f5f8fa; 
+      --card: #ffffff; 
+      --main: #007bff; 
+      --main-soft: #eaf4ff; 
+      --text: #2c3e50; 
+      --muted: #5d6d7e; 
+      --line: #d6e0ea; 
+      --danger: #e74c3c;
+    }
+    * { box-sizing: border-box; }
+    body { 
+      margin: 0; 
+      font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      line-height: 1.5; 
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    header { 
+      padding: 10px 20px; 
+      background: var(--main);
+      color: #fff; 
+      position: sticky; 
+      top: 0; 
+      z-index: 10; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .title-text { font-weight: 800; letter-spacing: 0.03em; font-size: 18px; }
+    .ver-text { font-size: 11px; font-weight: 400; opacity: 0.8; margin-top: 2px; }
+
+    main { max-width: 980px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+    
+    .card { 
+      background: var(--card); 
+      border: 1px solid var(--line); 
+      border-radius: 16px; 
+      padding: 16px; 
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02); 
+    }
+    
+    .result-card { 
+      border: 2px solid var(--main); 
+      background: #ffffff; 
+      border-radius: 16px; 
+      padding: 16px; 
+      box-shadow: 0 4px 20px rgba(0,123,255,0.1); 
+    }
+
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    
+    .grid5 { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); 
+      gap: 8px; 
+      width: 100%;
+    }
+    
+    label { font-size: 11px; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px; }
+    
+    select, input[type="number"] { 
+      padding: 10px; 
+      border: 1px solid var(--line); 
+      border-radius: 10px; 
+      font-size: 14px; 
+      width: 100%; 
+      background: #fff; 
+      color: var(--text);
+      transition: border-color 0.2s;
+    }
+    select:focus, input:focus { outline: none; border-color: var(--main); }
+
+    button { 
+      padding: 10px 16px; 
+      border: 1px solid var(--line); 
+      border-radius: 10px; 
+      background: #fff; 
+      font-weight: 800; 
+      cursor: pointer; 
+      font-size: 14px; 
+      color: var(--text);
+      transition: all 0.2s;
+    }
+    button.primary { background: var(--main); color: #fff; border-color: var(--main); }
+    button.primary:active { transform: scale(0.98); }
+    button.danger { color: var(--danger); border-color: #fadbd8; background: #fff; }
+    
+    .badge { font-size: 12px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); color: var(--text); background: #f8fafc; font-weight: 700; }
+    
+    #summaryBadge {
+      background: var(--main-soft);
+      color: var(--main);
+      border: 1px solid #cce5ff;
+    }
+
+    .total-badge { background: var(--main); color: #fff; border: none; padding: 4px 16px; }
+    .divider { height: 1px; background: var(--line); margin: 16px 0; }
+
+    .tile { 
+      border: 1px solid var(--line); 
+      border-radius: 12px; 
+      padding: 6px 3px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 4px; 
+      background: #fff; 
+      align-items: center; 
+      text-align: center; 
+      min-height: 95px; 
+      justify-content: space-between;
+      min-width: 0;
+    }
+    .icon { width: 30px; height: 30px; object-fit: contain; }
+    
+    .tileName { 
+      font-size: 8px; /* 8.5pxから8pxに微調整 */
+      font-weight: 700; 
+      width: 100%; 
+      /* 以下、長い名前が枠を突き抜けないための保険 */
+      white-space: nowrap; 
+      overflow: hidden; 
+      text-overflow: clip; 
+      letter-spacing: -0.05em; /* 字間を少し詰め、横幅の余裕を確保 */
+      padding: 0 2px;
+      display: block;
+    }
+    
+    .chkLabel { display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 10px; cursor: pointer; width: 100%; font-weight: 600; }
+    .repInputRow { display: flex; align-items: center; justify-content: center; gap: 2px; width: 100%; }
+    
+    .repQty { 
+      padding: 4px 1px; 
+      font-size: 12px; 
+      text-align: center; 
+      border-radius: 8px; 
+      border: 1px solid var(--line); 
+      font-weight: 800; 
+      width: 100%; 
+      max-width: 48px; 
+      min-width: 32px;
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+  
+    .repQty::-webkit-outer-spin-button,
+    .repQty::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  
+    .recipeRow { 
+      border: 1px solid var(--line); 
+      background: #fcfdfe;
+      border-radius: 16px; 
+      padding: 16px; 
+      display: flex; 
+      gap: 12px; 
+      flex-wrap: wrap; 
+      align-items: flex-end; 
+      margin-bottom: 12px; 
+      position: relative;
+    }
+    
+    .removeBtn { 
+      position: absolute; top: -8px; right: -8px; 
+      border: 1px solid var(--line); background: #fff; color: var(--danger); 
+      font-size: 16px; 
+      width: 26px; height: 26px;
+      padding: 0;
+      border-radius: 50%; 
+      display: flex; align-items: center; justify-content: center; 
+      font-weight: bold; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      line-height: 0;
+    }
+    
+    .recipeCol-cat { width: 95px; }
+    .recipeCol-main { flex: 1; min-width: 140px; }
+    .recipeCol-meals { width: 70px; }
+
+    .preview { font-size: 12px; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; width: 100%; }
+    .preview span { display: flex; align-items: center; background: var(--main-soft); color: var(--main); padding: 3px 8px; border-radius: 8px; font-weight: 700; border: 1px solid #d0e7ff; }
+
+    @media (max-width: 480px) { 
+      /* スマホ等、より狭い画面での設定 */
+      .tileName { 
+        font-size: 7px; /* 7.2pxから7pxに下げて、9文字を確実に収める */
+        letter-spacing: -0.06em; 
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="title-text">食材ストック計算</div>
+    <div class="ver-text">ver 1.0.1</div>
+  </div>
+  <a href="javascript:void(0)" id="openNotice" style="color:#fff; font-size:12px; font-weight:700; text-decoration:underline;">ご利用上の注意</a>
+</header>
+
+<div id="noticeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:100; align-items:center; justify-content:center; padding:20px;">
+  <div class="card" style="max-width:400px; width:100%; position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+    <div style="font-weight:900; margin-bottom:12px; border-bottom:1px solid var(--line); padding-bottom:8px; color:var(--text);">ご利用上の注意</div>
+    <p style="font-size:13px; color:var(--text); line-height:1.6; margin-bottom:20px;">
+      このアプリは非公式であり、<strong>ﾈﾃﾙ.exe（@suiminloop.bsky.social）</strong>が個人で作ったものです。<br><br>
+      ご利用いただく際は自己責任でお願いします🙇
+    </p>
+    <button id="closeNotice" class="primary" style="width:100%;">閉じる</button>
+  </div>
+</div>
+
+<main>
+  <section class="card">
+    <div class="row" style="justify-content: space-between; align-items: flex-start;">
+      <div>
+        <div style="font-weight:900; font-size:15px; color:var(--text); margin-bottom: 4px;">条件設定</div>
+        <span class="badge" id="summaryBadge">合計 0食 / 21食</span>
+      </div>
+      <div class="row">
+        <button id="addRecipe" class="primary">+ 追加</button>
+        <button id="clearAll" class="danger">クリア</button>
+      </div>
+    </div>
+    <div id="recipeList" style="margin-top:10px;"></div>
+  </section>
+
+  <section class="card">
+    <div style="font-weight:900; font-size:14px; margin-bottom:12px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text);">計算から除外</div>
+    <div id="excludeGrid" class="grid5"></div>
+  </section>
+
+  <section class="card">
+    <div style="font-weight:900; font-size:14px; margin-bottom:12px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text);">1日当たりの獲得量</div>
+    <div id="replenishGrid" class="grid5"></div>
+  </section>
+
+  <section class="result-card">
+    <div class="row" style="justify-content: space-between;">
+      <div style="font-weight:900; font-size:16px; color:var(--main);">計算結果</div>
+      <span class="badge total-badge" id="totalBadge">総合計 0個</span>
+    </div>
+    <div class="divider" style="background: var(--main); opacity: 0.1;"></div>
+    <div id="resultGrid" class="grid5"></div>
+  </section>
+</main>
+
+<script>
+const MEALS_PER_DAY = 3;
+const MAX_RECIPE_ROWS = 9;
+const MAX_TOTAL_MEALS = 21;
+
+const INGREDIENTS = [
+  { id:"leek", name:"ふといながねぎ", file:"ふといながねぎ.webp" },
+  { id:"mushroom", name:"あじわいキノコ", file:"あじわいキノコ.webp" },
+  { id:"egg", name:"とくせんエッグ", file:"とくせんエッグ.webp" },
+  { id:"potato", name:"ほっこりポテト", file:"ほっこりポテト.webp" },
+  { id:"apple", name:"とくせんリンゴ", file:"とくせんリンゴ.webp" },
+  { id:"herb", name:"げきからハーブ", file:"げきからハーブ.webp" },
+  { id:"soymeat", name:"マメミート", file:"マメミート.webp" },
+  { id:"milk", name:"モーモーミルク", file:"モーモーミルク.webp" },
+  { id:"honey", name:"あまいミツ", file:"あまいミツ.webp" },
+  { id:"oil", name:"ピュアなオイル", file:"ピュアなオイル.webp" },
+  { id:"ginger", name:"あったかジンジャー", file:"あったかジンジャー.webp" },
+  { id:"tomato", name:"あんみんトマト", file:"あんみんトマト.webp" },
+  { id:"cacao", name:"リラックスカカオ", file:"リラックスカカオ.webp" },
+  { id:"tail", name:"おいしいシッポ", file:"おいしいシッポ.webp" },
+  { id:"soy", name:"ワカクサ大豆", file:"ワカクサ大豆.webp" },
+  { id:"corn", name:"ワカクサコーン", file:"ワカクサコーン.webp" },
+  { id:"coffee", name:"めざましコーヒー", file:"めざましコーヒー.webp" },
+  { id:"pumpkin", name:"ずっしりカボチャ", file:"ずっしりカボチャ.webp" },
+  { id:"avocado", name:"つやつやアボカド", file:"つやつやアボカド.webp" }
+];
+
+const RECIPES = [
+  { cat:"カレー", id:"avocado_gratin", name:"しんりょくアボカドグラタン", ingredients: { avocado:22, potato:20, milk:41, oil:32 } },
+  { cat:"カレー", id:"sukiyaki_curry", name:"いあいぎりすき焼きカレー", ingredients: { leek:27, soymeat:26, honey:26, egg:22 } },
+  { cat:"カレー", id:"awake_stew", name:"めざめるパワーシチュー", ingredients: { soy:28, tomato:25, mushroom:23, coffee:16 } },
+  { cat:"カレー", id:"pumpkaboo_stew", name:"なりきりバケッチャシチュー", ingredients: { pumpkin:10, soymeat:16, potato:18, mushroom:25 } },
+  { cat:"カレー", id:"keema_curry", name:"れんごくコーンキーマカレー", ingredients: { herb:27, soymeat:24, corn:14, ginger:12 } },
+  { cat:"カレー", id:"ninja_curry", name:"ニンジャカレー", ingredients: { soy:24, soymeat:9, leek:12, mushroom:5 } },
+  { cat:"カレー", id:"butter_curry", name:"ぜったいねむりバターカレー", ingredients: { potato:18, tomato:15, cacao:12, milk:10 } },
+  { cat:"カレー", id:"tail_curry", name:"あぶりテールカレー", ingredients: { tail:8, herb:25 } },
+  { cat:"カレー", id:"leek_curry", name:"からくちネギもりカレー", ingredients: { leek:14, ginger:10, herb:8 } },
+  { cat:"カレー", id:"punch_curry", name:"ピヨピヨパンチ辛口カレー", ingredients: { coffee:11, herb:11, honey:11 } },
+  { cat:"カレー", id:"corn_stew", name:"じゅうなんコーンシチュー", ingredients: { corn:14, milk:8, potato:8 } },
+  { cat:"カレー", id:"parent_child_curry", name:"おやこあいカレー", ingredients: { honey:12, apple:11, egg:8, potato:4 } },
+  { cat:"カレー", id:"mushroom_curry", name:"キノコのほうしカレー", ingredients: { mushroom:14, potato:9 } },
+  { cat:"カレー", id:"bulk_up_curry", name:"ビルドアップマメカレー", ingredients: { soy:12, soymeat:6, herb:4, egg:4 } },
+  { cat:"カレー", id:"white_stew", name:"ほっこりホワイトシチュー", ingredients: { milk:10, potato:8, mushroom:4 } },
+  { cat:"カレー", id:"omurice_curry", name:"とけるオムカレー", ingredients: { egg:10, tomato:6 } },
+  { cat:"カレー", id:"tomato_curry", name:"サンパワートマトカレー", ingredients: { tomato:10, herb:5 } },
+  { cat:"カレー", id:"cutlet_curry", name:"ひでりカツレツカレー", ingredients: { soymeat:10, oil:5 } },
+  { cat:"カレー", id:"cheese_hamburg_curry", name:"満腹チーズバーグカレー", ingredients: { milk:8, soymeat:8 } },
+  { cat:"サラダ", id:"guacamole_chips", name:"じならしワカモレチップス", ingredients: { avocado:28, corn:25, herb:30, soy:22 } },
+  { cat:"サラダ", id:"coffee_salad", name:"まけんきコーヒーサラダ", ingredients: { coffee:28, soymeat:28, oil:22, potato:22 } },
+  { cat:"サラダ", id:"apple_yogurt_salad", name:"りんごさんヨーグルトサラダ", ingredients: { egg:35, apple:28, tomato:23, milk:18 } },
+  { cat:"サラダ", id:"mimosa_salad", name:"はなふぶきミモザサラダ", ingredients: { egg:25, oil:17, potato:15, soymeat:12 } },
+  { cat:"サラダ", id:"ninja_salad", name:"ニンジャサラダ", ingredients: { leek:15, soy:19, mushroom:12, ginger:11 } },
+  { cat:"サラダ", id:"wakakusa_salad", name:"ワカクササラダ", ingredients: { oil:22, corn:17, tomato:14, potato:9 } },
+  { cat:"サラダ", id:"cross_chop_salad", name:"クロスチョップドサラダ", ingredients: { egg:20, soymeat:15, corn:11, tomato:10 } },
+  { cat:"サラダ", id:"tail_pepper_salad", name:"ヤドンテールのペッパーサラダ", ingredients: { tail:10, herb:10, oil:15 } },
+  { cat:"サラダ", id:"sweet_salad", name:"めいそうスイートサラダ", ingredients: { apple:21, honey:16, corn:12 } },
+  { cat:"サラダ", id:"avocado_salad", name:"くだけるアボカドサラダ", ingredients: { avocado:14, soy:18, oil:10 } },
+  { cat:"サラダ", id:"mushroom_spore_salad", name:"キノコのほうしサラダ", ingredients: { mushroom:17, tomato:8, oil:8 } },
+  { cat:"サラダ", id:"overheat_salad", name:"オーバーヒートサラダ", ingredients: { herb:17, ginger:10, tomato:8 } },
+  { cat:"サラダ", id:"gluttony_potato_salad", name:"くいしんぼうポテトサラダ", ingredients: { potato:14, egg:9, soymeat:7, apple:6 } },
+  { cat:"サラダ", id:"choco_mint_salad", name:"ムラっけチョコミントサラダ", ingredients: { cacao:14, soymeat:9 } },
+  { cat:"サラダ", id:"tofu_salad", name:"うるおいとうふサラダ", ingredients: { soy:15, tomato:9 } },
+  { cat:"サラダ", id:"wild_salad", name:"ばかぢからワイルドサラダ", ingredients: { soymeat:9, ginger:6, egg:5, potato:3 } },
+  { cat:"サラダ", id:"caprese", name:"モーモーカプレーゼ", ingredients: { milk:12, tomato:6, oil:5 } },
+  { cat:"サラダ", id:"immunity_leek_salad", name:"めんえきねぎサラダ", ingredients: { leek:10, ginger:5 } },
+  { cat:"サラダ", id:"corn_salad", name:"みだれづきコーンサラダ", ingredients: { corn:9, oil:8 } },
+  { cat:"サラダ", id:"apple_cheese_salad", name:"メロメロりんごのチーズサラダ", ingredients: { apple:15, milk:5, oil:3 } },
+  { cat:"サラダ", id:"hot_air_tofu_salad", name:"ねっぷうとうふサラダ", ingredients: { soy:10, herb:6 } },
+  { cat:"サラダ", id:"caesar_salad", name:"ゆきかきシーザーサラダ", ingredients: { milk:10, soymeat:6 } },
+  { cat:"デザート", id:"pancake", name:"ドキドキこわいかおパンケーキ", ingredients: { pumpkin:18, egg:24, honey:32, tomato:29 } },
+  { cat:"デザート", id:"eclair", name:"ドオーのエクレア", ingredients: { cacao:30, milk:26, coffee:24, honey:22 } },
+  { cat:"デザート", id:"cola", name:"スパイクスパイスコーラ", ingredients: { apple:35, ginger:20, leek:20, coffee:12 } },
+  { cat:"デザート", id:"macaron", name:"フラワーギフトマカロン", ingredients: { cacao:25, egg:25, honey:17, milk:10 } },
+  { cat:"デザート", id:"scone", name:"おちゃかいコーンスコーン", ingredients: { apple:20, ginger:20, corn:18, milk:9 } },
+  { cat:"デザート", id:"smoothie", name:"グラスミキサースムージー", ingredients: { avocado:18, tomato:16, milk:14 } },
+  { cat:"デザート", id:"pudding_ala_mode", name:"プリンのプリンアラモード", ingredients: { honey:20, egg:15, milk:10, apple:10 } },
+  { cat:"デザート", id:"tiramisu", name:"かたやぶりコーンティラミス", ingredients: { coffee:14, corn:14, milk:12 } },
+  { cat:"デザート", id:"coffee_jelly", name:"はやおきコーヒーゼリー", ingredients: { coffee:16, milk:14, honey:12 } },
+  { cat:"デザート", id:"popcorn", name:"だいばくはつポップコーン", ingredients: { corn:15, oil:14, milk:7 } },
+  { cat:"デザート", id:"donut", name:"ちからもちソイドーナッツ", ingredients: { oil:12, soy:16, cacao:7 } },
+  { cat:"デザート", id:"tea", name:"ネロリのデトックスティー", ingredients: { ginger:11, apple:15, mushroom:9 } },
+  { cat:"デザート", id:"cookie", name:"ふくつのジンジャークッキー", ingredients: { honey:14, ginger:12, cacao:5, egg:4 } },
+  { cat:"デザート", id:"fruit_ore", name:"あくまのキッスフルーツオレ", ingredients: { apple:11, milk:9, honey:7, cacao:8 } },
+  { cat:"デザート", id:"choco_cake", name:"あまいかおりチョコケーキ", ingredients: { honey:9, cacao:8, milk:7 } },
+  { cat:"デザート", id:"choco_tart", name:"はなびらのまいチョコタルト", ingredients: { cacao:11, apple:11 } },
+  { cat:"デザート", id:"protein_smoothie", name:"はりきりプロテインスムージー", ingredients: { soy:15, cacao:8 } },
+  { cat:"デザート", id:"malasada", name:"おおきいマラサダ", ingredients: { oil:10, milk:7, honey:6 } },
+  { cat:"デザート", id:"soy_cake", name:"かるわざソイケーキ", ingredients: { egg:8, soy:7 } },
+  { cat:"デザート", id:"veg_juice", name:"マイペースやさいジュース", ingredients: { tomato:9, apple:7 } },
+  { cat:"デザート", id:"ginger_tea", name:"ひのこのジンジャーティー", ingredients: { ginger:9, apple:7 } },
+  { cat:"デザート", id:"sweet_potato", name:"じゅくせいスイートポテト", ingredients: { potato:9, milk:5 } },
+  { cat:"デザート", id:"apple_pie", name:"ねがいごとアップルパイ", ingredients: { apple:12, milk:4 } }
+];
+
+
+const el = (id) => document.getElementById(id);
+let state = { recipeRows: [] };
+
+function getIng(id) { return INGREDIENTS.find(x => x.id === id); }
+function imgSrc(file) { return "images/" + encodeURIComponent(file); }
+
+function renderGrids() {
+  const ex = el("excludeGrid"), rep = el("replenishGrid");
+  ex.innerHTML = ""; rep.innerHTML = "";
+  INGREDIENTS.forEach(ing => {
+    ex.innerHTML += `
+      <div class="tile">
+        <div class="tileName" title="${ing.name}">${ing.name}</div>
+        <img class="icon" src="${imgSrc(ing.file)}" alt="">
+        <label class="chkLabel"><input type="checkbox" class="exChk" data-iid="${ing.id}">除外</label>
+      </div>`;
+    rep.innerHTML += `
+      <div class="tile">
+        <div class="tileName" title="${ing.name}">${ing.name}</div>
+        <img class="icon" src="${imgSrc(ing.file)}" alt="">
+        <div class="repInputRow">
+          <input type="number" class="repQty" data-iid="${ing.id}" placeholder="0">
+          <span class="suffix" style="font-size:10px;">個</span>
+        </div>
+      </div>`;
+  });
+
+  document.querySelectorAll(".exChk, .repQty").forEach(input => {
+    input.oninput = (e) => {
+      if (e.target.classList.contains("repQty")) {
+        if (e.target.value > 999) e.target.value = 999;
+        if (e.target.value < 0) e.target.value = 0;
+      }
+      calc();
+    };
+  });
+}
+
+function addRecipeRow(init) {
+  if (state.recipeRows.length >= MAX_RECIPE_ROWS) return;
+
+  const rowId = crypto.randomUUID();
+  const rowData = { rowId, cat: init?.cat || "カレー", recipeId: init?.recipeId || RECIPES[0].id, meals: init?.meals || 0 };
+  state.recipeRows.push(rowData);
+
+  const wrap = document.createElement("div");
+  wrap.className = "recipeRow";
+  wrap.dataset.rowId = rowId;
+  wrap.innerHTML = `
+    <button class="removeBtn" title="削除">×</button>
+    <div class="recipeCol-cat"><label>カテゴリー</label><select class="catSel"><option>カレー</option><option>サラダ</option><option>デザート</option></select></div>
+    <div class="recipeCol-main"><label>料理</label><select class="recipeSel"></select></div>
+    <div class="recipeCol-meals"><label>食数</label><select class="mealsSel"></select></div>
+    <div class="preview"></div>`;
+
+  const cSel = wrap.querySelector(".catSel"), rSel = wrap.querySelector(".recipeSel"), mSel = wrap.querySelector(".mealsSel"), pre = wrap.querySelector(".preview");
+  
+  const updateRecipeList = () => {
+    const filtered = RECIPES.filter(r => r.cat === cSel.value);
+    rSel.innerHTML = filtered.map(r => `<option value="${r.id}">${r.name}</option>`).join("");
+    if (filtered.some(r => r.id === rowData.recipeId)) {
+        rSel.value = rowData.recipeId;
+    } else {
+        rowData.recipeId = rSel.value;
+    }
+    updatePreview();
+  };
+
+  const updatePreview = () => {
+    rowData.cat = cSel.value; rowData.recipeId = rSel.value; rowData.meals = Number(mSel.value);
+    const r = RECIPES.find(x => x.id === rSel.value);
+    if (r) {
+      pre.innerHTML = Object.entries(r.ingredients).map(([id, q]) => {
+        const ing = getIng(id);
+        return `<span><img src="${imgSrc(ing.file)}" style="width:14px; height:14px; margin-right:4px; vertical-align:middle;">${q}</span>`;
+      }).join("");
+    }
+    updateAllMealDropdowns();
+    calc();
+  };
+
+  cSel.onchange = updateRecipeList;
+  rSel.onchange = updatePreview;
+  mSel.onchange = updatePreview;
+  wrap.querySelector(".removeBtn").onclick = () => {
+    state.recipeRows = state.recipeRows.filter(r => r.rowId !== rowId);
+    wrap.remove();
+    updateAllMealDropdowns();
+    checkAddButton();
+    calc();
+  };
+
+  cSel.value = rowData.cat;
+  updateRecipeList();
+  
+  el("recipeList").appendChild(wrap);
+  updateAllMealDropdowns();
+  checkAddButton();
+}
+
+function updateAllMealDropdowns() {
+  const currentTotal = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
+  state.recipeRows.forEach(row => {
+    const wrap = document.querySelector(`.recipeRow[data-row-id="${row.rowId}"]`);
+    if (!wrap) return;
+    const mSel = wrap.querySelector(".mealsSel");
+    const otherMeals = currentTotal - row.meals;
+    const maxAvailable = MAX_TOTAL_MEALS - otherMeals;
+    const prevVal = Number(mSel.value) || row.meals;
+    mSel.innerHTML = "";
+    for (let i = 0; i <= maxAvailable; i++) {
+      const opt = document.createElement("option");
+      opt.value = i; opt.textContent = i;
+      mSel.appendChild(opt);
+    }
+    mSel.value = Math.min(prevVal, maxAvailable);
+    row.meals = Number(mSel.value);
+  });
+}
+
+function checkAddButton() { el("addRecipe").disabled = state.recipeRows.length >= MAX_RECIPE_ROWS; }
+
+function calc() {
+  const exclude = new Set([...document.querySelectorAll(".exChk:checked")].map(c => c.dataset.iid));
+  const replenishMap = new Map([...document.querySelectorAll(".repQty")].map(c => [c.dataset.iid, Number(c.value) || 0]));
+
+  const totalMeals = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
+  el("summaryBadge").textContent = `合計 ${totalMeals}食 / 21食`;
+
+  const netNeed = new Map();
+  // 表示順を管理するための配列
+  const displayOrder = [];
+
+  state.recipeRows.forEach(row => {
+    if (row.meals <= 0) return;
+    const r = RECIPES.find(x => x.id === row.recipeId);
+    if (!r) return;
+    
+    const rowDays = row.meals / MEALS_PER_DAY;
+    
+    // 料理データ(RECIPES)に定義されている食材の並び順でループ
+    Object.entries(r.ingredients).forEach(([iid, qtyPerMeal]) => {
+      // まだ displayOrder に入っていない食材なら追加（これで料理ごとの並び順を保持）
+      if (!displayOrder.includes(iid)) {
+        displayOrder.push(iid);
+      }
+
+      const gross = qtyPerMeal * row.meals;
+      const rowReplenish = (replenishMap.get(iid) || 0) * rowDays;
+      const currentNet = netNeed.get(iid) || 0;
+      netNeed.set(iid, currentNet + (gross - rowReplenish));
+    });
+  });
+
+  const resultGrid = el("resultGrid");
+  resultGrid.innerHTML = "";
+  let grandTotal = 0;
+
+  // 全食材リストではなく、料理から抽出した並び順(displayOrder)で出力
+  displayOrder.forEach(iid => {
+    if (exclude.has(iid)) return;
+    const ing = getIng(iid);
+    if (!ing) return;
+
+    const finalNeed = Math.max(0, Math.ceil(netNeed.get(iid) || 0));
+    if (finalNeed > 0) {
+      grandTotal += finalNeed;
+      resultGrid.innerHTML += `
+        <div class="tile">
+          <div class="tileName" title="${ing.name}">${ing.name}</div>
+          <img class="icon" src="${imgSrc(ing.file)}" alt="">
+          <div class="resultQty" style="font-weight:900; color:var(--text); font-size: 13px;">${finalNeed}<span class="suffix">個</span></div>
+        </div>`;
+    }
+  });
+  el("totalBadge").textContent = `総合計 ${grandTotal}個`;
+}
+
+// 注意事項モーダルの制御
+const modal = el("noticeModal");
+const openBtn = el("openNotice");
+const closeBtn = el("closeNotice");
+
+openBtn.onclick = () => { modal.style.display = "flex"; };
+closeBtn.onclick = () => { modal.style.display = "none"; };
+window.onclick = (event) => {
+  if (event.target == modal) { modal.style.display = "none"; }
+};
+
+el("addRecipe").onclick = () => addRecipeRow({meals: 0});
+el("clearAll").onclick = () => { 
+  el("recipeList").innerHTML = ""; 
+  state.recipeRows = []; 
+  document.querySelectorAll(".exChk").forEach(chk => chk.checked = false);
+  document.querySelectorAll(".repQty").forEach(input => input.value = "");
+  checkAddButton();
+  addRecipeRow({ cat: "カレー", recipeId: "avocado_gratin", meals: 0 });
+  calc(); 
+};
+
+renderGrids();
+addRecipeRow({ cat: "カレー", recipeId: "avocado_gratin", meals: 0 });
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js')
+    .then(() => console.log('Service Worker Registered'));
+}
+</script>
+</body>
+</html>
