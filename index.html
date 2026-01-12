@@ -475,9 +475,10 @@ function renderYearCalendar() {
       let cls = "day";
 
       // 祝日判定（オレンジ）
-      if (HOLIDAYS_2026.includes(dateStr)) {
-        cls += " day-holiday";
-      }
+    .day-holiday {
+      color: #ff8c00 !important;
+      font-weight: bold;
+    }
 
       // GSD / NMD 判定 (背景色)
       if (isAround(dateStr, FULL_MOONS)) {
@@ -685,12 +686,15 @@ function isAround(dateStr, targetArray) {
 function renderYearCalendar() {
   const container = el("yearCalendar");
   const year = 2026;
-  const dows = ["日", "月", "火", "水", "木", "金", "土"];
+  const dows = ["月", "火", "水", "木", "金", "土", "日"];
   container.innerHTML = "";
   for (let m = 0; m < 12; m++) {
     let html = `<div class="month-card"><div class="month-name">${m + 1}月</div><div class="days-grid">`;
     dows.forEach(d => html += `<div class="dow">${d}</div>`);
-    const firstDay = new Date(year, m, 1).getDay();
+    const firstDay = new Date(year, m, 1).getDay(); // 0(日)〜6(土)
+    // 月曜始まりに変換（0:月 … 6:日）
+    const offset = (firstDay === 0) ? 6 : firstDay - 1;
+    for (let i = 0; i < offset; i++) html += `<div></div>`;
     const lastDate = new Date(year, m + 1, 0).getDate();
     for (let i = 0; i < firstDay; i++) html += `<div></div>`;
     for (let d = 1; d <= lastDate; d++) {
