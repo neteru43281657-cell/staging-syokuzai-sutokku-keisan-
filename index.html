@@ -216,6 +216,11 @@
     .day-sat { color: #007bff !important; } /* 土曜: 青 */
     .day-sun { color: #e74c3c !important; } /* 日曜: 赤 */
     .day-holiday { color: #ff8c00 !important; font-weight: 900; }
+    .day-today {
+      outline: 2px solid #ff4757; /* 太めの赤色 */
+      outline-offset: -2px;
+      border-radius: 50%;
+      background-color: rgba(255, 71, 87, 0.1); }
     @media (max-width: 480px) { .calendar-grid { grid-template-columns: repeat(2, 1fr); } }
   </style>
 </head>
@@ -626,28 +631,37 @@ function isAround(dateStr, targetArray) {
 function renderYearCalendar() {
   const container = el("yearCalendar");
   const year = 2026;
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  
   const dows = ["月", "火", "水", "木", "金", "土", "日"];
   container.innerHTML = "";
+
   for (let m = 0; m < 12; m++) {
     let html = `<div class="month-card"><div class="month-name">${m + 1}月</div><div class="days-grid">`;
     dows.forEach(d => html += `<div class="dow">${d}</div>`);
+    
     const firstDayIdx = new Date(year, m, 1).getDay(); 
     let offset = (firstDayIdx === 0) ? 6 : firstDayIdx - 1;
     const lastDate = new Date(year, m + 1, 0).getDate();
 
     for (let i = 0; i < offset; i++) html += `<div></div>`;
+
     for (let d = 1; d <= lastDate; d++) {
       const dateObj = new Date(year, m, d);
-      const dayOfWeek = dateObj.getDay(); // 0:日, 1:月...6:土
+      const dayOfWeek = dateObj.getDay();
       const dateStr = `${year}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       
       let cls = "day";
       
-      // 曜日による色分け
+      // 今日の判定
+      if (dateStr === todayStr) cls += " day-today";
+
+      // 曜日・祝日・イベント判定
       if (dayOfWeek === 6) cls += " day-sat";
       else if (dayOfWeek === 0) cls += " day-sun";
-
       if (HOLIDAYS_2026.includes(dateStr)) cls += " day-holiday";
+      
       if (isAround(dateStr, FULL_MOONS)) cls += " gsd";
       else if (isAround(dateStr, NEW_MOONS)) cls += " nmd";
       
