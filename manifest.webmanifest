@@ -1,0 +1,16 @@
+{
+  "name": "食材ストック計算",
+  "short_name": "食材ストック",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f5f8fa",
+  "theme_color": "#007bff",
+  "icons": [
+    {
+      "src": "images/アイコン.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
