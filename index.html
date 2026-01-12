@@ -452,6 +452,25 @@ let state = { recipeRows: [] };
 function getIng(id) { return INGREDIENTS.find(x => x.id === id); }
 function imgSrc(file) { return "images/" + encodeURIComponent(file); }
 
+function switchTab(tabId, el) {
+  // すべてのタブコンテンツを非表示にする
+  document.querySelectorAll('.tab-content').forEach(content => {
+    content.classList.remove('active');
+  });
+  
+  // すべてのナビアイテムのactiveを解除
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  
+  // 選択したタブを表示し、ボタンをactiveにする
+  document.getElementById(tabId).classList.add('active');
+  el.classList.add('active');
+  
+  // タブ切り替え時にページ上部へスクロール
+  window.scrollTo(0, 0);
+}
+  
 function renderGrids() {
   const ex = el("excludeGrid"), rep = el("replenishGrid");
   ex.innerHTML = ""; rep.innerHTML = "";
