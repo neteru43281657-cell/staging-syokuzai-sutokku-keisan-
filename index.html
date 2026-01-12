@@ -429,10 +429,23 @@ function addRecipeRow(init) {
   /* ② セレクトボックスの中身を正確な名称に変更 */
   wrap.innerHTML = `
     <button class="removeBtn" title="削除">×</button>
-    <div class="recipeCol-cat"><label>カテゴリー</label><select class="catSel"><option>カレー・シチュー</option><option>サラダ</option><option>デザート・ドリンク</option></select></div>
-    <div class="recipeCol-main"><label>料理</label><select class="recipeSel"></select></div>
-    <div class="recipeCol-meals"><label>食数</label><select class="mealsSel"></select></div>
-    <div class="preview"></div>`; [cite: 77]
+    <div class="recipeCol-cat">
+      <label>カテゴリー</label>
+      <select class="catSel">
+        <option value="カレー・シチュー">カレー・シチュー</option>
+        <option value="サラダ">サラダ</option>
+        <option value="デザート・ドリンク">デザート・ドリンク</option>
+      </select>
+    </div>
+    <div class="recipeCol-main">
+      <label>料理</label>
+      <select class="recipeSel"></select>
+    </div>
+    <div class="recipeCol-meals">
+      <label>食数</label>
+      <select class="mealsSel"></select>
+    </div>
+    <div class="preview"></div>`;
 
   const cSel = wrap.querySelector(".catSel"), rSel = wrap.querySelector(".recipeSel"), mSel = wrap.querySelector(".mealsSel"), pre = wrap.querySelector(".preview"); [cite: 78]
   const updateRecipeList = () => {
@@ -448,21 +461,29 @@ function addRecipeRow(init) {
 
   /* ③ 1食あたりの合計食材数を計算して表示する処理を追加 */
   const updatePreview = () => {
-    rowData.cat = cSel.value; rowData.recipeId = rSel.value; rowData.meals = Number(mSel.value); [cite: 82]
+    rowData.cat = cSel.value; 
+    rowData.recipeId = rSel.value; 
+    rowData.meals = Number(mSel.value);
+    
     const r = RECIPES.find(x => x.id === rSel.value);
     if (r) {
-      const ingredientTotal = Object.values(r.ingredients).reduce((a, b) => a + b, 0);
+      // 1食に使う食材の合計数を算出
+      const totalIngredients = Object.values(r.ingredients).reduce((sum, count) => sum + count, 0);
+  
+      // 合計数バッジ（薄い青背景に青文字）を先頭に追加
+      let html = `<span style="background:var(--main-soft); color:var(--main); border:1px solid #cce5ff;">計 ${totalIngredients}個</span>`;
       
-      let html = `<span style="background:var(--main-soft); color:var(--main); border:1px solid #d0e7ff;">計 ${ingredientTotal}個</span>`;
+      // 個別の食材アイコン表示
       html += Object.entries(r.ingredients).map(([id, q]) => {
         const ing = getIng(id);
         return `<span><img src="${imgSrc(ing.file)}" style="width:14px; height:14px; margin-right:4px; vertical-align:middle;">${q}</span>`;
       }).join("");
+      
       pre.innerHTML = html;
     }
     updateAllMealDropdowns();
     calc();
-  }; [cite: 83]
+  };
 
   cSel.onchange = updateRecipeList;
   rSel.onchange = updatePreview;
