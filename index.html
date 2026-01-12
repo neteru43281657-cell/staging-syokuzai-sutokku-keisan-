@@ -670,8 +670,8 @@ function renderYearCalendar() {
       
       if (isAround(dateStr, FULL_MOONS)) cls += " gsd";
       else if (isAround(dateStr, NEW_MOONS)) cls += " nmd";
-      
-      html += `<div class="${cls}">${d}</div>`;
+
+      html += `<div style="display: flex; justify-content: center;"><div class="${cls}">${d}</div></div>`;
     }
     html += `</div></div>`;
     container.innerHTML += html;
