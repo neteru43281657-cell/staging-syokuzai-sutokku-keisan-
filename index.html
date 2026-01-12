@@ -202,6 +202,41 @@
     .preview { font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; width: 100%; align-items: center; }
     .preview span { display: flex; align-items: center; background: var(--main-soft); color: var(--main); padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 1px solid #d0e7ff; }
 
+    /* フィールドメニュー用スタイル */
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr); /* 2列表示 */
+      gap: 12px;
+    }
+    .field-item {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      background: #fff;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .field-item:active {
+      transform: scale(0.98);
+      background: var(--main-soft);
+    }
+    .field-img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      margin-bottom: 8px;
+    }
+    .field-name {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+
     /* カレンダー用 */
     .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
     .month-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 10px; }
@@ -310,10 +345,20 @@
   </div>
 
   <div id="tab2" class="tab-content">
-    <section class="card">
-      <div style="font-weight:900; font-size:16px; color:var(--main); margin-bottom:12px;">出現ポケモン一覧</div>
-      <p style="color:var(--muted); font-size:14px;">ここにポケモンのリストが表示される予定です。</p>
-    </section>
+    <div id="fieldMenu">
+      <section class="card">
+        <div style="font-weight:900; font-size:16px; color:var(--main); margin-bottom:12px; text-align:center;">フィールド選択</div>
+        <div class="field-grid">
+          </div>
+      </section>
+    </div>
+
+    <div id="fieldDetail" style="display:none;">
+      <button onclick="backToMenu()" style="margin-bottom:10px; padding:6px 12px; background:none; border:1px solid var(--line); border-radius:8px; font-size:12px; color:var(--muted);">← 戻る</button>
+      
+      <div id="detailContent">
+        </div>
+    </div>
   </div>
 
   <div id="tab3" class="tab-content">
@@ -364,7 +409,17 @@ let state = { recipeRows: [] };
 const MEALS_PER_DAY = 3;
 const MAX_RECIPE_ROWS = 9;
 const MAX_TOTAL_MEALS = 21;
-
+const FIELDS = [
+  { id: "wakakusa", name: "ワカクサ本島", file: "ワカクサ本島.png.webp" },
+  { id: "cyan", name: "シアンの砂浜", file: "シアンの砂浜.png.webp" },
+  { id: "taupe", name: "トープ洞窟", file: "トープ洞窟.png.webp" },
+  { id: "snowfield", name: "ウノハナ雪原", file: "ウノハナ雪原.png.webp" },
+  { id: "lapis", name: "ラピスラズリ湖畔", file: "ラピスラズリ湖畔.png.webp" },
+  { id: "powerplant", name: "ゴールド旧発電所", file: "ゴールド旧発電所.png.webp" },
+  { id: "amber", name: "アンバー渓谷", file: "アンバー渓谷.png.webp" },
+  { id: "wakakusa_ex", name: "ワカクサ本島EX", file: "ワカクサ本島EX.png.webp" }
+];
+  
 const INGREDIENTS = [
   { id:"leek", name:"ふといながねぎ", file:"ふといながねぎ.webp" },
   { id:"mushroom", name:"あじわいキノコ", file:"あじわいキノコ.webp" },
@@ -453,6 +508,44 @@ const RECIPES = [
   { cat:"デザート・ドリンク", id:"sweet_potato", name:"じゅくせいスイートポテト", ingredients: { potato:9, milk:5 } },
   { cat:"デザート・ドリンク", id:"apple_pie", name:"ねがいごとアップルパイ", ingredients: { apple:12, milk:4 } }
 ];
+
+
+/* --- フィールドメニューの描画 --- */
+function renderFieldMenu() {
+  const grid = document.querySelector(".field-grid");
+  grid.innerHTML = FIELDS.map(field => `
+    <div class="field-item" onclick="showFieldDetail('${field.id}')">
+      <img src="images/${field.file}" class="field-img">
+      <div class="field-name">${field.name}</div>
+    </div>
+  `).join("");
+}
+
+/* --- 詳細画面へ移動 --- */
+function showFieldDetail(fieldId) {
+  const field = FIELDS.find(f => f.id === fieldId);
+  el("fieldMenu").style.display = "none";
+  el("fieldDetail").style.display = "block";
+  
+  // 次のステップで、ここに睡眠タイプ別のポケモン画像を表示する処理を書きます
+  el("detailContent").innerHTML = `
+    <div class="card" style="text-align:center;">
+      <img src="images/${field.file}" style="width:80px;">
+      <div style="font-weight:900; margin-top:10px;">${field.name}</div>
+      <p style="font-size:12px; color:var(--muted); margin-top:20px;">ここに睡眠タイプごとのリストが表示されます</p>
+    </div>
+  `;
+}
+
+/* --- メニューに戻る --- */
+function backToMenu() {
+  el("fieldMenu").style.display = "block";
+  el("fieldDetail").style.display = "none";
+}
+
+/* window.onload 内に以下を追加 */
+renderFieldMenu();
+
 
 const HOLIDAYS_2026 = [
   "2026-01-01", "2026-01-12", "2026-02-11", "2026-02-23", "2026-03-20",
