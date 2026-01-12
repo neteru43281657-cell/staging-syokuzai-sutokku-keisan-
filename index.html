@@ -573,18 +573,17 @@ function addRecipeRow(init) {
   };
 
   const updatePreview = () => {
-      rowData.cat = cSel.value; 
-      rowData.recipeId = rSel.value; 
-      rowData.meals = Number(mSel.value);
-      
-      const r = RECIPES.find(x => x.id === rSel.value);
-      if (r) {
-        const totalIngredients = Object.values(r.ingredients).reduce((sum, count) => sum + count, 0);
+    rowData.cat = cSel.value; 
+    rowData.recipeId = rSel.value; 
+    rowData.meals = Number(mSel.value);
     
-        let html = Object.entries(r.ingredients).map(([id, q]) => {
-          const ing = getIng(id);
-          return `<span><img src="${imgSrc(ing.file)}" style="width:14px; height:14px; margin-right:4px; vertical-align:middle;">${q}</span>`;
-        }).join("");
+    const r = RECIPES.find(x => x.id === rSel.value);
+    if (r) {
+      const totalIngredients = Object.values(r.ingredients).reduce((sum, count) => sum + count, 0);
+      let html = Object.entries(r.ingredients).map(([id, q]) => {
+        const ing = getIng(id);
+        return `<span><img src="${imgSrc(ing.file)}" style="width:14px; height:14px; margin-right:4px; vertical-align:middle;">${q}</span>`;
+      }).join("");
         html += `<span class="badge" style="background:var(--main-soft); color:var(--main); border:1px solid #cce5ff; margin-left: auto; padding: 2px 10px; font-size: 11px;">${totalIngredients}個</span>`;
         
         pre.innerHTML = html;
