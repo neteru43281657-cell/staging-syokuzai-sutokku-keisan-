@@ -217,10 +217,16 @@
     .day-sun { color: #e74c3c !important; } /* 日曜: 赤 */
     .day-holiday { color: #ff8c00 !important; font-weight: 900; }
     .day-today {
-      outline: 2px solid #ff4757; /* 太めの赤色 */
+      outline: 2px solid #ff4757; 
       outline-offset: -2px;
       border-radius: 50%;
-      background-color: rgba(255, 71, 87, 0.1); }
+      background-color: rgba(255, 71, 87, 0.1); 
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;  
+      height: 22px; 
+      margin: 0 auto; }
     @media (max-width: 480px) { .calendar-grid { grid-template-columns: repeat(2, 1fr); } }
   </style>
 </head>
