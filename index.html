@@ -193,7 +193,7 @@
     /* カレンダー用 */
     .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
     .month-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 10px; }
-    .month-name { font-weight: 900; text-align: center; border-bottom: 1px solid var(--line); margin-bottom: 5px; color: var(--main); }
+    .month-name { font-weight: 900; text-align: center; border-bottom: 1px solid var(--line); margin-bottom: 5px; color: var(--text); }
     .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; text-align: center; }
     .day { padding: 2px 0; border-radius: 2px; }
     .gsd { background-color: #add8e6; color: #000; font-weight: bold; }
@@ -393,12 +393,29 @@ function getIng(id) { return INGREDIENTS.find(x => x.id === id); }
 function imgSrc(file) { return "images/" + encodeURIComponent(file); }
 
 /* --- アプリの基本機能 --- */
+/* switchTab 関数を修正 */
 function switchTab(tabId, el) {
+  // コンテンツの切り替え
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
-  el.classList.add('active');
+  
+  // 引数の el が null でない場合（クリック時）のみ active クラスを付与
+  if (el) {
+    el.classList.add('active');
+  } else {
+    // el がない場合（リロード復元時）はナビゲーション側も更新
+    document.querySelectorAll('.nav-item').forEach(nav => {
+      if (nav.getAttribute('onclick').includes(tabId)) {
+        nav.classList.add('active');
+      }
+    });
+  }
 
+  // 現在のタブIDを保存
+  localStorage.setItem('activeTab', tabId);
+
+  // ヘッダー情報の書き換え
   const headerTitle = document.getElementById('headerTitle');
   const headerVer = document.getElementById('headerVer');
 
@@ -412,7 +429,22 @@ function switchTab(tabId, el) {
     headerTitle.textContent = '2026年 月齢カレンダー';
     headerVer.textContent = 'ver1.0.1';
   }
+
   window.scrollTo(0, 0);
+}
+
+/* スクリプト末尾の初期化処理を修正 */
+// 初期化
+renderYearCalendar();
+renderGrids();
+
+// 保存されたタブがあれば復元、なければ tab1 を表示
+const savedTab = localStorage.getItem('activeTab') || 'tab1';
+switchTab(savedTab, null);
+
+// 初期レシピ行の追加（タブ復元後に実行）
+if (state.recipeRows.length === 0) {
+  addRecipeRow({meals: 0});
 }
 
 function renderGrids() {
