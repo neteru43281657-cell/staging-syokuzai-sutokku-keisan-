@@ -206,25 +206,35 @@
     .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
     .month-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 10px; }
     .month-name { font-weight: 900; text-align: center; border-bottom: 1px solid var(--line); margin-bottom: 5px; color: var(--text); }
+    
     .days-grid { 
       display: grid; 
       grid-template-columns: repeat(7, 1fr); 
-      gap: 0px; 
+      gap: 2px;           /* マス同士に 2px の隙間を作る */
       align-items: center;
-    }
+      justify-items: center; }
+    
     .day {
-      width: 100%;       /* マスの幅いっぱいに使う */
-      aspect-ratio: 1/1; /* 正方形を維持 */
+      width: 100%;
+      aspect-ratio: 1/1;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
       font-size: 10px;
-      position: relative; /* 丸を重ねる基準 */
-      border-radius: 4px; /* GSDなどの背景用 */
-    }
-    .gsd { background-color: #add8e6; color: #000; }
-    .nmd { background-color: #000080; color: #fff; }
+      position: relative;
+      border-radius: 50%; 
+      transition: background 0.2s; }
+    
+    .gsd { 
+      background-color: #add8e6; 
+      color: #000; 
+      transform: scale(0.9); }
+    .nmd { 
+      background-color: #000080; 
+      color: #fff; 
+      transform: scale(0.9); }
+    
     .dow { 
       font-size: 8px; 
       margin-bottom: 1px; }
@@ -233,19 +243,20 @@
     .day-sat { color: #007bff !important; } /* 土曜: 青 */
     .day-sun { color: #e74c3c !important; } /* 日曜: 赤 */
     .day-holiday { color: #ff8c00 !important; font-weight: 900; }
+    
     .day-today::after {
       content: "";
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 22px;        /* 丸のサイズ（はみ出るならここを18pxなどに下げる） */
-      height: 22px;
-      border: 2px solid #ff4757;
+      width: 18px;        /* 22pxから18pxに縮小 */
+      height: 18px;
+      border: 1.5px solid #ff4757; /* 枠も少し細くして繊細に */
       border-radius: 50%;
       background-color: rgba(255, 71, 87, 0.1);
-      pointer-events: none; /* クリックを邪魔しない */
-    }
+      pointer-events: none;
+      z-index: 2; }
     @media (max-width: 480px) { .calendar-grid { grid-template-columns: repeat(2, 1fr); } }
   </style>
 </head>
