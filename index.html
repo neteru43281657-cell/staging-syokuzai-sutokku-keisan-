@@ -36,7 +36,42 @@
       line-height: 1.5; 
       -webkit-font-smoothing: antialiased;
     }
+
+    /* タブコンテンツの初期表示設定 */
+    .tab-content { display: none; padding-bottom: 80px; /* ナビバーと被らないよう余白 */ }
+    .tab-content.active { display: block; }
     
+    /* 下部ナビゲーションバー */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 65px;
+      background: #fff;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 100;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      flex: 1;
+    }
+
+.nav-item.active { color: var(--main); }
+
+.nav-icon { font-size: 20px; }
     header { 
       padding: 10px 20px; 
       background: var(--main);
@@ -251,6 +286,39 @@
 </div>
 
 <main>
+  <div id="tab1" class="tab-content active">
+    </div>
+
+  <div id="tab2" class="tab-content">
+    <section class="card">
+      <div style="font-weight:900; font-size:16px; color:var(--main); margin-bottom:12px;">出現ポケモン一覧</div>
+      <p style="color:var(--muted); font-size:14px;">ここにポケモンのリストが表示される予定です（ダミーテキスト）。</p>
+    </section>
+  </div>
+
+  <div id="tab3" class="tab-content">
+    <section class="card">
+      <div style="font-weight:900; font-size:16px; color:var(--main); margin-bottom:12px;">カレンダー</div>
+      <p style="color:var(--muted); font-size:14px;">ここにイベントや記録のカレンダーが表示される予定です（ダミーテキスト）。</p>
+    </section>
+  </div>
+</main>
+
+<nav class="bottom-nav">
+  <div class="nav-item active" onclick="switchTab('tab1', this)">
+    <span class="nav-icon">🍳</span>
+    <span>食材計算</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('tab2', this)">
+    <span class="nav-icon">🐾</span>
+    <span>出現ポケモン</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('tab3', this)">
+    <span class="nav-icon">📅</span>
+    <span>カレンダー</span>
+  </div>
+</nav>
+  
   <section class="card">
     <div class="row" style="justify-content: space-between; align-items: flex-start;">
       <div>
