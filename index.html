@@ -194,9 +194,64 @@
     .preview { font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; width: 100%; }
     .preview span { display: flex; align-items: center; background: var(--main-soft); color: var(--main); padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 1px solid #d0e7ff; }
 
-    @media (max-width: 480px) { 
-      .tileName { font-size: 7px; }
-      header { padding: 8px 16px; }
+    /* カレンダー全体のグリッド（3×4） */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .month-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 10px;
+    }
+    
+    .month-name {
+      font-weight: 900;
+      text-align: center;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 5px;
+      color: var(--main);
+    }
+    
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 1px;
+      text-align: center;
+    }
+    
+    .day {
+      padding: 2px 0;
+      border-radius: 2px;
+    }
+    
+    /* 満月（Good Sleep Day）: 水色 */
+    .gsd {
+      background-color: #add8e6; /* LightBlue */
+      color: #000;
+      font-weight: bold;
+    }
+    
+    /* 新月（New Moon Day）: 群青色 */
+    .nmd {
+      background-color: #000080; /* Navy */
+      color: #fff;
+      font-weight: bold;
+    }
+    
+    /* 曜日ヘッダー */
+    .dow {
+      color: var(--muted);
+      font-size: 8px;
+      margin-bottom: 2px;
+    }
+    @media (max-width: 480px) {
+      .calendar-grid { grid-template-columns: repeat(2, 1fr); } /* スマホでは2列の方が見やすい場合 */
     }
   </style>
 </head>
@@ -255,8 +310,12 @@
 
   <div id="tab3" class="tab-content">
     <section class="card">
-      <div style="font-weight:900; font-size:16px; color:var(--main); margin-bottom:12px;">カレンダー</div>
-      <p style="color:var(--muted); font-size:14px;">ここにカレンダーが表示される予定です。</p>
+      <div style="font-weight:900; font-size:16px; color:var(--main); margin-bottom:4px;">2026年 月齢カレンダー</div>
+      <div style="display: flex; gap: 10px; margin-bottom: 10px; font-size: 11px;">
+        <span style="display:flex; align-items:center; gap:4px;"><span style="width:12px; height:12px; background:#add8e6; display:inline-block;"></span>Good Sleep</span>
+        <span style="display:flex; align-items:center; gap:4px;"><span style="width:12px; height:12px; background:#000080; display:inline-block;"></span>New Moon</span>
+      </div>
+      <div id="yearCalendar" class="calendar-grid"></div>
     </section>
   </div>
 </main>
@@ -287,6 +346,54 @@
 </div>
 
 <script>
+const FULL_MOONS = [
+  "2026-01-03", "2026-02-02", "2026-03-03", "2026-04-02", "2026-05-02", "2026-05-31",
+  "2026-06-30", "2026-07-29", "2026-08-28", "2026-09-27", "2026-10-26", "2026-11-24", "2026-12-24"
+];
+const NEW_MOONS = [
+  "2026-01-19", "2026-02-17", "2026-03-19", "2026-04-17", "2026-05-17", "2026-06-15",
+  "2026-07-14", "2026-08-13", "2026-09-11", "2026-10-11", "2026-11-09", "2026-12-09"
+];
+
+function isAround(dateStr, targetArray) {
+  const date = new Date(dateStr);
+  return targetArray.some(target => {
+    const tDate = new Date(target);
+    const diff = Math.abs(date - tDate) / (1000 * 60 * 60 * 24);
+    return diff <= 1; // 前後1日（当日含む）
+  });
+}
+
+function renderYearCalendar() {
+  const container = el("yearCalendar");
+  const year = 2026;
+  const dows = ["日", "月", "火", "水", "木", "金", "土"];
+
+  for (let m = 0; m < 12; m++) {
+    let html = `<div class="month-card"><div class="month-name">${m + 1}月</div><div class="days-grid">`;
+    dows.forEach(d => html += `<div class="dow">${d}</div>`);
+
+    const firstDay = new Date(year, m, 1).getDay();
+    const lastDate = new Date(year, m + 1, 0).getDate();
+
+    for (let i = 0; i < firstDay; i++) html += `<div></div>`; // 空白埋め
+
+    for (let d = 1; d <= lastDate; d++) {
+      const dateStr = `${year}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      let cls = "day";
+      if (isAround(dateStr, FULL_MOONS)) cls += " gsd";
+      else if (isAround(dateStr, NEW_MOONS)) cls += " nmd";
+      
+      html += `<div class="${cls}">${d}</div>`;
+    }
+    html += `</div></div>`;
+    container.innerHTML += html;
+  }
+}
+
+// 初期化時に実行
+renderYearCalendar();
+
 /* --- 変更なし: INGREDIENTS と RECIPES の定義 --- */
 const MEALS_PER_DAY = 3;
 const MAX_RECIPE_ROWS = 9;
