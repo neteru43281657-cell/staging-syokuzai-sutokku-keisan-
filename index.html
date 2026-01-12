@@ -478,7 +478,7 @@ function addRecipeRow(init) {
           const ing = getIng(id);
           return `<span><img src="${imgSrc(ing.file)}" style="width:14px; height:14px; margin-right:4px; vertical-align:middle;">${q}</span>`;
         }).join("");
-        html += `<span class="badge" style="background:var(--main-soft); color:var(--main); border:1px solid #cce5ff; margin-left: auto; padding: 2px 10px; font-size: 11px;">合計 ${totalIngredients}個</span>`;
+        html += `<span class="badge" style="background:var(--main-soft); color:var(--main); border:1px solid #cce5ff; margin-left: auto; padding: 2px 10px; font-size: 11px;">${totalIngredients}個</span>`;
         
         pre.innerHTML = html;
       }
