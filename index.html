@@ -216,16 +216,18 @@
     
     .day {
       width: 100%;
-      aspect-ratio: 1/1;
+      aspect-ratio: 1 / 1;
       display: flex;
-      align-items: center;
-      justify-content: center;
+      align-items: center;      /* 垂直中央 */
+      justify-content: center;   /* 水平中央 */
       font-weight: bold;
       font-size: 10px;
       position: relative;
-      border-radius: 75%; 
-      transition: background 0.2s; }
-    
+      border-radius: 50%;
+      transition: background 0.2s;
+      line-height: 1;
+      padding-top: 1px; }
+      
     .gsd { background-color: #add8e6; color: #000; }
     .nmd { background-color: #000080; color: #fff; }
     
