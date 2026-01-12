@@ -218,17 +218,25 @@
       width: 100%;
       aspect-ratio: 1 / 1;
       display: flex;
-      align-items: center;      /* 垂直中央 */
-      justify-content: center;   /* 水平中央 */
+      align-items: center;
+      justify-content: center;
       font-weight: bold;
       font-size: 10px;
       position: relative;
-      border-radius: 50%;
+      border-radius: 4px;    
       transition: background 0.2s;
       line-height: 1;
-      
-    .gsd { background-color: #add8e6; color: #000; }
-    .nmd { background-color: #000080; color: #fff; }
+      padding-top: 1px; }
+    
+    .gsd { 
+      background-color: #add8e6; 
+      color: #000; 
+      border-radius: 4px; }
+
+    .nmd { 
+      background-color: #000080; 
+      color: #fff; 
+      border-radius: 4px; }
     
     .dow { 
       font-size: 8px; 
@@ -242,7 +250,7 @@
     .day-today::after {
       content: "";
       position: absolute;
-      top: 48%;
+      top: 49%;
       left: 50%;
       transform: translate(-50%, -50%);
       width: 14px;
