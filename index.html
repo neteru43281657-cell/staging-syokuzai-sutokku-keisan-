@@ -209,17 +209,8 @@
     <div id="headerTitle" class="title-text">食材ストック計算</div>
     <div id="headerVer" class="ver-text">ver1.0.2</div>
   </div>
+  <button id="openNotice" style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer;">ⓘ</button>
 </header>
-
-<div id="tab3" class="tab-content">
-  <section class="card">
-    <div style="display: flex; gap: 10px; margin-bottom: 10px; font-size: 11px;">
-      <span style="display:flex; align-items:center; gap:4px;"><span style="width:12px; height:12px; background:#add8e6; display:inline-block;"></span>Good Sleep</span>
-      <span style="display:flex; align-items:center; gap:4px;"><span style="width:12px; height:12px; background:#000080; display:inline-block;"></span>New Moon</span>
-    </div>
-    <div id="yearCalendar" class="calendar-grid"></div>
-  </section>
-</div>
 
 <main>
   <div id="tab1" class="tab-content active">
@@ -266,7 +257,10 @@
 
   <div id="tab3" class="tab-content">
     <section class="card">
-      <div style="font-weight:900; font-size:16px; color:var(--main); margin-bottom:4px;">2026年 月齢カレンダー</div>
+      <div style="display: flex; gap: 10px; margin-bottom: 10px; font-size: 11px;">
+        <span style="display:flex; align-items:center; gap:4px;"><span style="width:12px; height:12px; background:#add8e6; display:inline-block;"></span>Good Sleep</span>
+        <span style="display:flex; align-items:center; gap:4px;"><span style="width:12px; height:12px; background:#000080; display:inline-block;"></span>New Moon</span>
+      </div>
       <div id="yearCalendar" class="calendar-grid"></div>
     </section>
   </div>
@@ -301,7 +295,7 @@
 const el = (id) => document.getElementById(id);
 let state = { recipeRows: [] };
 
-/* --- データの定義 (省略なし) --- */
+/* --- データの定義 --- */
 const MEALS_PER_DAY = 3;
 const MAX_RECIPE_ROWS = 9;
 const MAX_TOTAL_MEALS = 21;
@@ -400,13 +394,11 @@ function imgSrc(file) { return "images/" + encodeURIComponent(file); }
 
 /* --- アプリの基本機能 --- */
 function switchTab(tabId, el) {
-  // コンテンツの切り替え
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
   el.classList.add('active');
 
-  // ヘッダー情報の書き換え
   const headerTitle = document.getElementById('headerTitle');
   const headerVer = document.getElementById('headerVer');
 
@@ -420,7 +412,6 @@ function switchTab(tabId, el) {
     headerTitle.textContent = '2026年 月齢カレンダー';
     headerVer.textContent = 'ver1.0.1';
   }
-
   window.scrollTo(0, 0);
 }
 
@@ -507,9 +498,8 @@ function addRecipeRow(init) {
         return `<span><img src="${imgSrc(ing.file)}" style="width:14px; height:14px; margin-right:4px; vertical-align:middle;">${q}</span>`;
       }).join("");
 
-      // 修正ポイント：上部の「合計 0食 / 21食」と同じbadgeクラスを適用
-      html += `<span class="badge" id="summaryBadge" style="margin-left: auto; padding: 2px 10px; font-size: 11px;">${totalIngredients}個</span>`;
-      
+      // 右寄せの合計バッジ（「計」なし）
+      html += `<span class="badge" style="margin-left: auto; background:var(--main-soft); color:var(--main); border:1px solid #cce5ff; padding: 2px 10px; font-size: 11px;">${totalIngredients}個</span>`;
       pre.innerHTML = html;
     }
     updateAllMealDropdowns();
