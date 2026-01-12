@@ -220,7 +220,7 @@
       outline: 2px solid #ff4757; 
       outline-offset: -2px;
       border-radius: 50%;
-      background-color: rgba(255, 71, 87, 0.1); 
+      background-color: rgba(255, 71, 87, 0.1); }
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -671,7 +671,7 @@ function renderYearCalendar() {
       if (isAround(dateStr, FULL_MOONS)) cls += " gsd";
       else if (isAround(dateStr, NEW_MOONS)) cls += " nmd";
 
-      html += `<div style="display: flex; justify-content: center;"><div class="${cls}">${d}</div></div>`;
+      html += `<div class="${cls}">${d}</div>`;
     }
     html += `</div></div>`;
     container.innerHTML += html;
