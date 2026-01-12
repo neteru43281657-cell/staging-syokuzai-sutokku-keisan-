@@ -186,18 +186,17 @@
       border: 1px solid var(--line);
       background: #fff;
       color: var(--danger);
-      /* サイズを固定し、aspect-ratioで正円を維持 */
       width: 26px;
       height: 26px;
-      padding: 0;           /* 余計なパディングをリセット */
-      line-height: 24px;    /* 文字を中央に配置(border分を考慮) */
+      padding: 0;
+      line-height: 24px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      cursor: pointer;      /* クリックしやすく */
+      cursor: pointer;
     }
 
     .preview { font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; width: 100%; align-items: center; }
@@ -208,13 +207,13 @@
     .month-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 10px; }
     .month-name { font-weight: 900; text-align: center; border-bottom: 1px solid var(--line); margin-bottom: 5px; color: var(--text); }
     .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; text-align: center; }
-    .day { padding: 2px 0; border-radius: 2px; }
-    .gsd { background-color: #add8e6; color: #000; font-weight: bold; }
-    .nmd { background-color: #000080; color: #fff; font-weight: bold; }
+    .day { padding: 2px 0; border-radius: 2px; font-weight: bold; }
+    .gsd { background-color: #add8e6; color: #000; }
+    .nmd { background-color: #000080; color: #fff; }
     .dow { color: var(--muted); font-size: 8px; margin-bottom: 2px; }
     .dow:nth-child(6) { color: #007bff !important; } /* 土曜: 青 */
     .dow:nth-child(7) { color: #e74c3c !important; } /* 日曜: 赤 */
-    .day-holiday { color: #ff8c00 !important; font-weight: bold; }
+    .day-holiday { color: #ff8c00 !important; font-weight: 900; }
     @media (max-width: 480px) { .calendar-grid { grid-template-columns: repeat(2, 1fr); } }
   </style>
 </head>
@@ -405,35 +404,35 @@ const RECIPES = [
   { cat:"デザート・ドリンク", id:"apple_pie", name:"ねがいごとアップルパイ", ingredients: { apple:12, milk:4 } }
 ];
 
+const HOLIDAYS_2026 = [
+  "2026-01-01", "2026-01-12", "2026-02-11", "2026-02-23", "2026-03-20",
+  "2026-04-29", "2026-05-03", "2026-05-04", "2026-05-05", "2026-05-06",
+  "2026-07-20", "2026-08-11", "2026-09-21", "2026-09-22", "2026-09-23",
+  "2026-10-12", "2026-11-03", "2026-11-23"
+];
+
+const FULL_MOONS = ["2026-01-03", "2026-02-02", "2026-03-03", "2026-04-02", "2026-05-02", "2026-05-31", "2026-06-30", "2026-07-29", "2026-08-28", "2026-09-27", "2026-10-26", "2026-11-24", "2026-12-24"];
+const NEW_MOONS = ["2026-01-19", "2026-02-17", "2026-03-19", "2026-04-17", "2026-05-17", "2026-06-15", "2026-07-14", "2026-08-13", "2026-09-11", "2026-10-11", "2026-11-09", "2026-12-09"];
+
+/* --- 基本関数 --- */
 function getIng(id) { return INGREDIENTS.find(x => x.id === id); }
 function imgSrc(file) { return "images/" + encodeURIComponent(file); }
 
-/* --- アプリの基本機能 --- */
-/* switchTab 関数を修正 */
-function switchTab(tabId, el) {
-  // コンテンツの切り替え
+function switchTab(tabId, clickedEl) {
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
-  
-  // 引数の el が null でない場合（クリック時）のみ active クラスを付与
-  if (el) {
-    el.classList.add('active');
+
+  if (clickedEl) {
+    clickedEl.classList.add('active');
   } else {
-    // el がない場合（リロード復元時）はナビゲーション側も更新
-    document.querySelectorAll('.nav-item').forEach(nav => {
-      if (nav.getAttribute('onclick').includes(tabId)) {
-        nav.classList.add('active');
-      }
-    });
+    const targetNav = Array.from(document.querySelectorAll('.nav-item')).find(n => n.getAttribute('onclick').includes(tabId));
+    if (targetNav) targetNav.classList.add('active');
   }
 
-  // 現在のタブIDを保存
   localStorage.setItem('activeTab', tabId);
-
-  // ヘッダー情報の書き換え
-  const headerTitle = document.getElementById('headerTitle');
-  const headerVer = document.getElementById('headerVer');
+  const headerTitle = el('headerTitle');
+  const headerVer = el('headerVer');
 
   if (tabId === 'tab1') {
     headerTitle.textContent = '食材ストック計算';
@@ -445,76 +444,7 @@ function switchTab(tabId, el) {
     headerTitle.textContent = '2026年 月齢カレンダー';
     headerVer.textContent = 'ver1.0.1';
   }
-
   window.scrollTo(0, 0);
-}
-
-// 初期化
-/* --- 2026年 祝日データ --- */
-const HOLIDAYS_2026 = [
-  "2026-01-01", "2026-01-12", "2026-02-11", "2026-02-23", "2026-03-20",
-  "2026-04-29", "2026-05-03", "2026-05-04", "2026-05-05", "2026-05-06",
-  "2026-07-20", "2026-08-11", "2026-09-21", "2026-09-22", "2026-09-23",
-  "2026-10-12", "2026-11-03", "2026-11-23"
-];
-
-function renderYearCalendar() {
-  const container = el("yearCalendar");
-  const year = 2026;
-  // 月曜始まりの配列
-  const dows = ["月", "火", "水", "木", "金", "土", "日"];
-  container.innerHTML = "";
-
-  for (let m = 0; m < 12; m++) {
-    let html = `<div class="month-card"><div class="month-name">${m + 1}月</div><div class="days-grid">`;
-    dows.forEach(d => html += `<div class="dow">${d}</div>`);
-
-    const firstDayDate = new Date(year, m, 1);
-    let firstDayIdx = firstDayDate.getDay(); // 0(日)-6(土)
-    
-    // 月曜始まりのためのオフセット計算 (月:0, 火:1...日:6)
-    let offset = (firstDayIdx === 0) ? 6 : firstDayIdx - 1;
-
-    const lastDate = new Date(year, m + 1, 0).getDate();
-
-    // 1日までの空白
-    for (let i = 0; i < offset; i++) {
-      html += `<div></div>`;
-    }
-
-    // 日付の描画
-    for (let d = 1; d <= lastDate; d++) {
-      const dateStr = `${year}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      let cls = "day";
-
-      // 祝日判定（オレンジ）
-    .day-holiday {
-      color: #ff8c00 !important;
-      font-weight: bold;
-    }
-
-      // GSD / NMD 判定 (背景色)
-      if (isAround(dateStr, FULL_MOONS)) {
-        cls += " gsd";
-      } else if (isAround(dateStr, NEW_MOONS)) {
-        cls += " nmd";
-      }
-
-      html += `<div class="${cls}">${d}</div>`;
-    }
-    html += `</div></div>`;
-    container.innerHTML += html;
-  }
-}
-renderGrids();
-
-// 保存されたタブがあれば復元、なければ tab1 を表示
-const savedTab = localStorage.getItem('activeTab') || 'tab1';
-switchTab(savedTab, null);
-
-// 初期レシピ行の追加（タブ復元後に実行）
-if (state.recipeRows.length === 0) {
-  addRecipeRow({meals: 0});
 }
 
 function renderGrids() {
@@ -599,8 +529,6 @@ function addRecipeRow(init) {
         const ing = getIng(id);
         return `<span><img src="${imgSrc(ing.file)}" style="width:14px; height:14px; margin-right:4px; vertical-align:middle;">${q}</span>`;
       }).join("");
-
-      // 右寄せの合計バッジ（「計」なし）
       html += `<span class="badge" style="margin-left: auto; background:var(--main-soft); color:var(--main); border:1px solid #cce5ff; padding: 2px 10px; font-size: 11px;">${totalIngredients}個</span>`;
       pre.innerHTML = html;
     }
@@ -684,9 +612,6 @@ function calc() {
 }
 
 /* --- カレンダー機能 --- */
-const FULL_MOONS = ["2026-01-03", "2026-02-02", "2026-03-03", "2026-04-02", "2026-05-02", "2026-05-31", "2026-06-30", "2026-07-29", "2026-08-28", "2026-09-27", "2026-10-26", "2026-11-24", "2026-12-24"];
-const NEW_MOONS = ["2026-01-19", "2026-02-17", "2026-03-19", "2026-04-17", "2026-05-17", "2026-06-15", "2026-07-14", "2026-08-13", "2026-09-11", "2026-10-11", "2026-11-09", "2026-12-09"];
-
 function isAround(dateStr, targetArray) {
   const date = new Date(dateStr);
   return targetArray.some(target => {
@@ -704,15 +629,15 @@ function renderYearCalendar() {
   for (let m = 0; m < 12; m++) {
     let html = `<div class="month-card"><div class="month-name">${m + 1}月</div><div class="days-grid">`;
     dows.forEach(d => html += `<div class="dow">${d}</div>`);
-    const firstDay = new Date(year, m, 1).getDay(); // 0(日)〜6(土)
-    // 月曜始まりに変換（0:月 … 6:日）
-    const offset = (firstDay === 0) ? 6 : firstDay - 1;
-    for (let i = 0; i < offset; i++) html += `<div></div>`;
+    const firstDayIdx = new Date(year, m, 1).getDay(); 
+    let offset = (firstDayIdx === 0) ? 6 : firstDayIdx - 1;
     const lastDate = new Date(year, m + 1, 0).getDate();
-    for (let i = 0; i < firstDay; i++) html += `<div></div>`;
+
+    for (let i = 0; i < offset; i++) html += `<div></div>`;
     for (let d = 1; d <= lastDate; d++) {
       const dateStr = `${year}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       let cls = "day";
+      if (HOLIDAYS_2026.includes(dateStr)) cls += " day-holiday";
       if (isAround(dateStr, FULL_MOONS)) cls += " gsd";
       else if (isAround(dateStr, NEW_MOONS)) cls += " nmd";
       html += `<div class="${cls}">${d}</div>`;
@@ -722,23 +647,33 @@ function renderYearCalendar() {
   }
 }
 
-// 初期化
-renderYearCalendar();
-renderGrids();
-addRecipeRow({meals: 0});
+/* --- 初期化処理 --- */
+window.onload = () => {
+  renderGrids();
+  renderYearCalendar();
+  
+  // 保存されたタブがあれば復元
+  const savedTab = localStorage.getItem('activeTab') || 'tab1';
+  switchTab(savedTab, null);
 
-// モーダル管理
-const modal = el("noticeModal");
-el("openNotice").onclick = () => modal.style.display = "flex";
-el("closeNotice").onclick = () => modal.style.display = "none";
-window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; };
+  // 初期レシピ行（なければ1つ追加）
+  if (state.recipeRows.length === 0) {
+    addRecipeRow({meals: 0});
+  }
 
-el("addRecipe").onclick = () => addRecipeRow({meals: 0});
-el("clearAll").onclick = () => { 
-  el("recipeList").innerHTML = ""; state.recipeRows = [];
-  document.querySelectorAll(".exChk").forEach(c => c.checked = false);
-  document.querySelectorAll(".repQty").forEach(i => i.value = "");
-  addRecipeRow({meals: 0}); calc();
+  // モーダル管理
+  const modal = el("noticeModal");
+  el("openNotice").onclick = () => modal.style.display = "flex";
+  el("closeNotice").onclick = () => modal.style.display = "none";
+  window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; };
+
+  el("addRecipe").onclick = () => addRecipeRow({meals: 0});
+  el("clearAll").onclick = () => { 
+    el("recipeList").innerHTML = ""; state.recipeRows = [];
+    document.querySelectorAll(".exChk").forEach(c => c.checked = false);
+    document.querySelectorAll(".repQty").forEach(i => i.value = "");
+    addRecipeRow({meals: 0}); calc();
+  };
 };
 </script>
 </body>
