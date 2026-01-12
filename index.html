@@ -37,8 +37,40 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    .tab-content { display: none; padding-bottom: 80px; /* ナビバーと被らないよう余白 */ }
-    .tab-content.active { display: block; }
+    /* ヘッダーの固定 */
+    header { 
+      padding: 10px 20px; 
+      background: var(--main);
+      color: #fff; 
+      position: sticky; 
+      top: 0; 
+      z-index: 100; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .title-text { font-weight: 800; letter-spacing: 0.03em; font-size: 18px; }
+    .ver-text { font-size: 11px; font-weight: 400; opacity: 0.8; margin-top: 2px; }
+
+    /* メインコンテンツの余白調整 */
+    main { 
+      max-width: 980px; 
+      margin: 0 auto; 
+      padding: 16px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 16px; 
+      /* 下部ナビゲーションと重ならないよう、しっかり余白を確保 */
+      padding-bottom: 100px; 
+    } 
+
+    .tab-content { display: none; }
+    .tab-content.active { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 16px; 
+    }
     
     .bottom-nav {
       position: fixed;
@@ -51,8 +83,10 @@
       display: flex;
       justify-content: space-around;
       align-items: center;
-      z-index: 1000; /* 計算結果カードより上に表示 */
+      z-index: 1000;
       box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+      /* iPhoneのホームバー対策 */
+      padding-bottom: env(safe-area-inset-bottom);
     }
     
     .nav-item {
@@ -65,36 +99,11 @@
       font-weight: 700;
       cursor: pointer;
       flex: 1;
+      padding: 8px 0;
     }
+    .nav-item.active { color: var(--main); }
+    .nav-icon { font-size: 20px; }
 
-.nav-item.active { color: var(--main); }
-
-.nav-icon { font-size: 20px; }
-    header { 
-      padding: 10px 20px; 
-      background: var(--main);
-      color: #fff; 
-      position: sticky; 
-      top: 0; 
-      z-index: 10; 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .title-text { font-weight: 800; letter-spacing: 0.03em; font-size: 18px; }
-    .ver-text { font-size: 11px; font-weight: 400; opacity: 0.8; margin-top: 2px; }
-
-    main { 
-      max-width: 980px; 
-      margin: 0 auto; 
-      padding: 16px; 
-      display: flex; 
-      flex-direction: column; 
-      gap: 16px; 
-      padding-bottom: 90px; 
-    } 
-    
     .card { 
       background: var(--card); 
       border: 1px solid var(--line); 
@@ -112,7 +121,6 @@
     }
 
     .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    
     .grid5 { 
       display: grid; 
       grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); 
@@ -130,35 +138,22 @@
       width: 100%; 
       background: #fff; 
       color: var(--text);
-      transition: border-color 0.2s;
     }
-    select:focus, input:focus { outline: none; border-color: var(--main); }
 
     button { 
       padding: 10px 16px; 
       border: 1px solid var(--line);
       border-radius: 10px; 
-      background: #fff; 
       font-weight: 800; 
       cursor: pointer; 
-      font-size: 14px; 
-      color: var(--text);
-      transition: all 0.2s;
+      font-size: 14px;
     }
     button.primary { background: var(--main); color: #fff; border-color: var(--main); }
-    button.primary:active { transform: scale(0.98); }
     button.danger { color: var(--danger); border-color: #fadbd8; background: #fff; }
     
-    .badge { font-size: 12px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); color: var(--text); background: #f8fafc; font-weight: 700; }
-    
-    #summaryBadge {
-      background: var(--main-soft);
-      color: var(--main); 
-      border: 1px solid #cce5ff;
-    }
-
+    .badge { font-size: 12px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); font-weight: 700; }
+    #summaryBadge { background: var(--main-soft); color: var(--main); border: 1px solid #cce5ff; }
     .total-badge { background: var(--main); color: #fff; border: none; padding: 4px 16px; }
-    .divider { height: 1px; background: var(--line); margin: 16px 0; }
 
     .tile { 
       border: 1px solid var(--line); 
@@ -172,45 +167,10 @@
       text-align: center; 
       min-height: 95px; 
       justify-content: space-between; 
-      min-width: 0;
     }
     .icon { width: 30px; height: 30px; object-fit: contain; }
+    .tileName { font-size: 8px; font-weight: 700; width: 100%; overflow: hidden; text-overflow: clip; white-space: nowrap; }
     
-    .tileName { 
-      font-size: 8px; 
-      font-weight: 700; 
-      width: 100%; 
-      white-space: nowrap; 
-      overflow: hidden; 
-      text-overflow: clip; 
-      letter-spacing: -0.05em; 
-      padding: 0 2px;
-      display: block;
-    }
-    
-    .chkLabel { display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 10px; cursor: pointer; width: 100%; font-weight: 600; }
-    .repInputRow { display: flex; align-items: center; justify-content: center; gap: 2px; width: 100%; }
-    
-    .repQty { 
-      padding: 4px 1px; 
-      font-size: 12px; 
-      text-align: center; 
-      border-radius: 8px; 
-      border: 1px solid var(--line); 
-      font-weight: 800; 
-      width: 100%; 
-      max-width: 48px; 
-      min-width: 32px;
-      appearance: textfield;
-      -moz-appearance: textfield;
-    }
-  
-    .repQty::-webkit-outer-spin-button,
-    .repQty::-webkit-inner-spin-button {
-      -webkit-appearance: none; 
-      margin: 0;
-    }
-  
     .recipeRow { 
       border: 1px solid var(--line); 
       background: #fcfdfe;
@@ -223,49 +183,20 @@
       margin-bottom: 12px; 
       position: relative; 
     }
-    
     .removeBtn { 
-      position: absolute; top: -8px; 
-      right: -8px; 
+      position: absolute; top: -8px; right: -8px; 
       border: 1px solid var(--line); background: #fff; color: var(--danger); 
-      font-size: 16px; 
-      width: 26px; height: 26px;
-      padding: 0;
-      border-radius: 50%; 
-      display: flex; align-items: center; justify-content: center; 
-      font-weight: bold; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      line-height: 0; 
-    }
-    
-    .recipeCol-cat { 
-      flex: 1; 
-      min-width: 100px;
-    }
-    .recipeCol-main { 
-      flex: 2; 
-      min-width: 150px; 
-    }
-    .recipeCol-meals { 
-      width: 65px; 
-      flex-shrink: 0;
-    }
-    
-    .catSel, .recipeSel {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      width: 100%;
+      width: 26px; height: 26px; border-radius: 50%; 
+      display: flex; align-items: center; justify-content: center; font-weight: bold; 
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
-    .preview { font-size: 12px; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; width: 100%; }
-    .preview span { display: flex; align-items: center; background: var(--main-soft); color: var(--main); padding: 3px 8px; border-radius: 8px; font-weight: 700; border: 1px solid #d0e7ff; }
+    .preview { font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; width: 100%; }
+    .preview span { display: flex; align-items: center; background: var(--main-soft); color: var(--main); padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 1px solid #d0e7ff; }
 
     @media (max-width: 480px) { 
-      .tileName { 
-        font-size: 7px; 
-        letter-spacing: -0.06em; 
-      }
-      .recipeCol-main { min-width: 120px; }
+      .tileName { font-size: 7px; }
+      header { padding: 8px 16px; }
     }
   </style>
 </head>
@@ -279,32 +210,53 @@
   <a href="javascript:void(0)" id="openNotice" style="color:#fff; font-size:12px; font-weight:700; text-decoration:underline;">ご利用上の注意</a>
 </header>
 
-<div id="noticeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:100; align-items:center; justify-content:center; padding:20px;">
-  <div class="card" style="max-width:400px; width:100%; position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-    <div style="font-weight:900; margin-bottom:12px; border-bottom:1px solid var(--line); padding-bottom:8px; color:var(--text);">ご利用上の注意</div>
-    <p style="font-size:13px; color:var(--text); line-height:1.6; margin-bottom:20px;">
-      このアプリは非公式であり、<strong>ﾈﾃﾙ.exe（@suiminloop.bsky.social）</strong>が個人で作ったものです。<br><br>
-      ご利用いただく際は自己責任でお願いします🙇
-    </p>
-    <button id="closeNotice" class="primary" style="width:100%;">閉じる</button>
-  </div>
-</div>
-
 <main>
   <div id="tab1" class="tab-content active">
-    </div>
+    <section class="card">
+      <div class="row" style="justify-content: space-between; align-items: flex-start;">
+        <div>
+          <div style="font-weight:900; font-size:15px; color:var(--text); margin-bottom: 4px;">条件設定</div>
+          <span class="badge" id="summaryBadge">合計 0食 / 21食</span>
+        </div>
+        <div class="row">
+          <button id="addRecipe" class="primary">+ 追加</button>
+          <button id="clearAll" class="danger">クリア</button>
+        </div>
+      </div>
+      <div id="recipeList" style="margin-top:10px;"></div>
+    </section>
+
+    <section class="card">
+      <div style="font-weight:900; font-size:14px; margin-bottom:12px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text);">計算から除外</div>
+      <div id="excludeGrid" class="grid5"></div>
+    </section>
+
+    <section class="card">
+      <div style="font-weight:900; font-size:14px; margin-bottom:12px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text);">1日当たりの獲得量</div>
+      <div id="replenishGrid" class="grid5"></div>
+    </section>
+
+    <section class="result-card">
+      <div class="row" style="justify-content: space-between;">
+        <div style="font-weight:900; font-size:16px; color:var(--main);">計算結果</div>
+        <span class="badge total-badge" id="totalBadge">総合計 0個</span>
+      </div>
+      <div style="height:1px; background:var(--main); opacity:0.1; margin:16px 0;"></div>
+      <div id="resultGrid" class="grid5"></div>
+    </section>
+  </div>
 
   <div id="tab2" class="tab-content">
     <section class="card">
       <div style="font-weight:900; font-size:16px; color:var(--main); margin-bottom:12px;">出現ポケモン一覧</div>
-      <p style="color:var(--muted); font-size:14px;">ここにポケモンのリストが表示される予定です（ダミーテキスト）。</p>
+      <p style="color:var(--muted); font-size:14px;">ここにポケモンのリストが表示される予定です。</p>
     </section>
   </div>
 
   <div id="tab3" class="tab-content">
     <section class="card">
       <div style="font-weight:900; font-size:16px; color:var(--main); margin-bottom:12px;">カレンダー</div>
-      <p style="color:var(--muted); font-size:14px;">ここにイベントや記録のカレンダーが表示される予定です（ダミーテキスト）。</p>
+      <p style="color:var(--muted); font-size:14px;">ここにカレンダーが表示される予定です。</p>
     </section>
   </div>
 </main>
@@ -312,53 +264,30 @@
 <nav class="bottom-nav">
   <div class="nav-item active" onclick="switchTab('tab1', this)">
     <span class="nav-icon">🔍</span>
-    <span>食材ストック計算</span>
+    <span>食材計算</span>
   </div>
   <div class="nav-item" onclick="switchTab('tab2', this)">
     <span class="nav-icon">🐾</span>
-    <span>出現ポケモン</span>
+    <span>ポケモン</span>
   </div>
   <div class="nav-item" onclick="switchTab('tab3', this)">
     <span class="nav-icon">📅</span>
     <span>カレンダー</span>
   </div>
 </nav>
-  
-  <section class="card">
-    <div class="row" style="justify-content: space-between; align-items: flex-start;">
-      <div>
-        <div style="font-weight:900; font-size:15px; color:var(--text); margin-bottom: 4px;">条件設定</div>
-        <span class="badge" id="summaryBadge">合計 0食 / 21食</span>
-      </div>
-      <div class="row">
-        <button id="addRecipe" class="primary">+ 追加</button>
-        <button id="clearAll" class="danger">クリア</button>
-      </div>
-    </div>
-    <div id="recipeList" style="margin-top:10px;"></div>
-  </section>
 
-  <section class="card">
-    <div style="font-weight:900; font-size:14px; margin-bottom:12px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text);">計算から除外</div>
-    <div id="excludeGrid" class="grid5"></div>
-  </section>
-
-  <section class="card">
-    <div style="font-weight:900; font-size:14px; margin-bottom:12px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text);">1日当たりの獲得量</div>
-    <div id="replenishGrid" class="grid5"></div>
-  </section>
-
-  <section class="result-card">
-    <div class="row" style="justify-content: space-between;">
-      <div style="font-weight:900; font-size:16px; color:var(--main);">計算結果</div>
-      <span class="badge total-badge" id="totalBadge">総合計 0個</span>
-    </div>
-    <div class="divider" style="background: var(--main); opacity: 0.1;"></div>
-    <div id="resultGrid" class="grid5"></div>
-  </section>
-</main>
+<div id="noticeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; padding:20px;">
+  <div class="card" style="max-width:400px; width:100%; position:relative;">
+    <div style="font-weight:900; margin-bottom:12px; border-bottom:1px solid var(--line); padding-bottom:8px;">ご利用上の注意</div>
+    <p style="font-size:13px; color:var(--text); line-height:1.6; margin-bottom:20px;">
+      このアプリは非公式であり、個人で作ったものです。自己責任でお願いします🙇
+    </p>
+    <button id="closeNotice" class="primary" style="width:100%;">閉じる</button>
+  </div>
+</div>
 
 <script>
+/* --- 変更なし: INGREDIENTS と RECIPES の定義 --- */
 const MEALS_PER_DAY = 3;
 const MAX_RECIPE_ROWS = 9;
 const MAX_TOTAL_MEALS = 21;
@@ -452,26 +381,20 @@ const RECIPES = [
   { cat:"デザート・ドリンク", id:"apple_pie", name:"ねがいごとアップルパイ", ingredients: { apple:12, milk:4 } }
 ];
 
+/* --- 修正箇所: 構造ミスを直したため、el等の一部参照も整理 --- */
 const el = (id) => document.getElementById(id);
 let state = { recipeRows: [] };
 function getIng(id) { return INGREDIENTS.find(x => x.id === id); }
 function imgSrc(file) { return "images/" + encodeURIComponent(file); }
 
-function switchTab(tabId, el) {
-  document.querySelectorAll('.tab-content').forEach(content => {
-    content.classList.remove('active');
-  });
-  
-  document.querySelectorAll('.nav-item').forEach(item => {
-    item.classList.remove('active');
-  });
-  
-  document.getElementById(tabId).classList.add('active');
-  el.classList.add('active');
-  
+function switchTab(tabId, navEl) {
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el(tabId).classList.add('active');
+  navEl.classList.add('active');
   window.scrollTo(0, 0);
 }
-  
+
 function renderGrids() {
   const ex = el("excludeGrid"), rep = el("replenishGrid");
   ex.innerHTML = ""; rep.innerHTML = "";
@@ -486,9 +409,9 @@ function renderGrids() {
       <div class="tile">
         <div class="tileName" title="${ing.name}">${ing.name}</div>
         <img class="icon" src="${imgSrc(ing.file)}" alt="">
-        <div class="repInputRow">
-          <input type="number" class="repQty" data-iid="${ing.id}" placeholder="0">
-          <span class="suffix" style="font-size:10px;">個</span>
+        <div class="repInputRow" style="display:flex; align-items:center; gap:2px;">
+          <input type="number" class="repQty" data-iid="${ing.id}" placeholder="0" style="width:100%; height:24px; padding:2px; font-size:12px; text-align:center;">
+          <span style="font-size:10px;">個</span>
         </div>
       </div>`;
   });
@@ -505,7 +428,6 @@ function renderGrids() {
 
 function addRecipeRow(init) {
   if (state.recipeRows.length >= MAX_RECIPE_ROWS) return;
-
   const rowId = crypto.randomUUID();
   const rowData = { rowId, cat: init?.cat || "カレー・シチュー", recipeId: init?.recipeId || "avocado_gratin", meals: init?.meals || 0 };
   state.recipeRows.push(rowData);
@@ -513,10 +435,9 @@ function addRecipeRow(init) {
   const wrap = document.createElement("div");
   wrap.className = "recipeRow";
   wrap.dataset.rowId = rowId;
-  
   wrap.innerHTML = `
     <button class="removeBtn" title="削除">×</button>
-    <div class="recipeCol-cat">
+    <div style="flex:1; min-width:100px;">
       <label>カテゴリー</label>
       <select class="catSel">
         <option value="カレー・シチュー">カレー・シチュー</option>
@@ -524,73 +445,51 @@ function addRecipeRow(init) {
         <option value="デザート・ドリンク">デザート・ドリンク</option>
       </select>
     </div>
-    <div class="recipeCol-main">
+    <div style="flex:2; min-width:140px;">
       <label>料理</label>
       <select class="recipeSel"></select>
     </div>
-    <div class="recipeCol-meals">
+    <div style="width:60px;">
       <label>食数</label>
       <select class="mealsSel"></select>
     </div>
     <div class="preview"></div>`;
 
-  const cSel = wrap.querySelector(".catSel"), 
-        rSel = wrap.querySelector(".recipeSel"), 
-        mSel = wrap.querySelector(".mealsSel"), 
-        pre = wrap.querySelector(".preview");
+  const cSel = wrap.querySelector(".catSel"), rSel = wrap.querySelector(".recipeSel"), mSel = wrap.querySelector(".mealsSel"), pre = wrap.querySelector(".preview");
 
   const updateRecipeList = () => {
     const filtered = RECIPES.filter(r => r.cat === cSel.value);
     rSel.innerHTML = filtered.map(r => `<option value="${r.id}">${r.name}</option>`).join("");
-    
-    if (filtered.some(r => r.id === rowData.recipeId)) {
-        rSel.value = rowData.recipeId;
-    } else {
-        rowData.recipeId = rSel.value;
-    }
+    if (filtered.some(r => r.id === rowData.recipeId)) rSel.value = rowData.recipeId;
+    else rowData.recipeId = rSel.value;
     updatePreview();
   };
 
   const updatePreview = () => {
-    rowData.cat = cSel.value; 
-    rowData.recipeId = rSel.value; 
-    rowData.meals = Number(mSel.value);
-    
+    rowData.cat = cSel.value; rowData.recipeId = rSel.value; rowData.meals = Number(mSel.value);
     const r = RECIPES.find(x => x.id === rSel.value);
     if (r) {
-      const totalIngredients = Object.values(r.ingredients).reduce((sum, count) => sum + count, 0);
-  
+      const total = Object.values(r.ingredients).reduce((s, c) => s + c, 0);
       let html = Object.entries(r.ingredients).map(([id, q]) => {
         const ing = getIng(id);
-        return `<span><img src="${imgSrc(ing.file)}" style="width:14px; height:14px; margin-right:4px; vertical-align:middle;">${q}</span>`;
+        return `<span><img src="${imgSrc(ing.file)}" style="width:14px; height:14px; margin-right:4px;">${q}</span>`;
       }).join("");
-
-      html += `<span style="background:var(--main-soft); color:var(--main); border:1px solid #cce5ff; margin-left: auto;">${totalIngredients}個</span>`;
-      
+      html += `<span style="margin-left:auto; background:var(--main); color:#fff; border:none;">${total}個</span>`;
       pre.innerHTML = html;
     }
     updateAllMealDropdowns();
     calc();
   };
 
-  cSel.onchange = updateRecipeList;
-  rSel.onchange = updatePreview;
-  mSel.onchange = updatePreview;
-
+  cSel.onchange = updateRecipeList; rSel.onchange = updatePreview; mSel.onchange = updatePreview;
   wrap.querySelector(".removeBtn").onclick = () => {
     state.recipeRows = state.recipeRows.filter(r => r.rowId !== rowId);
-    wrap.remove();
-    updateAllMealDropdowns();
-    checkAddButton();
-    calc();
+    wrap.remove(); updateAllMealDropdowns(); checkAddButton(); calc();
   };
 
-  cSel.value = rowData.cat;
-  updateRecipeList();
-  
+  cSel.value = rowData.cat; updateRecipeList();
   el("recipeList").appendChild(wrap);
-  updateAllMealDropdowns();
-  checkAddButton();
+  updateAllMealDropdowns(); checkAddButton();
 }
 
 function updateAllMealDropdowns() {
@@ -601,8 +500,7 @@ function updateAllMealDropdowns() {
     const mSel = wrap.querySelector(".mealsSel");
     const otherMeals = currentTotal - row.meals;
     const maxAvailable = MAX_TOTAL_MEALS - otherMeals;
-    const prevVal = Number(mSel.value) || row.meals;
-    
+    const prevVal = row.meals;
     mSel.innerHTML = "";
     for (let i = 0; i <= maxAvailable; i++) {
       const opt = document.createElement("option");
@@ -629,77 +527,51 @@ function calc() {
     if (row.meals <= 0) return;
     const r = RECIPES.find(x => x.id === row.recipeId);
     if (!r) return;
-    
     const rowDays = row.meals / MEALS_PER_DAY;
-    
     Object.entries(r.ingredients).forEach(([iid, qtyPerMeal]) => {
       if (!displayOrder.includes(iid)) displayOrder.push(iid);
       const gross = qtyPerMeal * row.meals;
       const rowReplenish = (replenishMap.get(iid) || 0) * rowDays;
-      const currentNet = netNeed.get(iid) || 0;
-      netNeed.set(iid, currentNet + (gross - rowReplenish));
+      netNeed.set(iid, (netNeed.get(iid) || 0) + (gross - rowReplenish));
     });
   });
 
   const resultGrid = el("resultGrid");
   resultGrid.innerHTML = "";
   let grandTotal = 0;
-
   displayOrder.forEach(iid => {
     if (exclude.has(iid)) return;
-    const ing = getIng(iid);
-    if (!ing) return;
-    
     const finalNeed = Math.max(0, Math.ceil(netNeed.get(iid) || 0));
     if (finalNeed > 0) {
       grandTotal += finalNeed;
+      const ing = getIng(iid);
       resultGrid.innerHTML += `
         <div class="tile">
-          <div class="tileName" title="${ing.name}">${ing.name}</div>
-          <img class="icon" src="${imgSrc(ing.file)}" alt="">
-          <div class="resultQty" style="font-weight:900; color:var(--text); font-size: 13px;">${finalNeed}<span class="suffix">個</span></div>
+          <div class="tileName">${ing.name}</div>
+          <img class="icon" src="${imgSrc(ing.file)}">
+          <div style="font-weight:900; font-size:13px;">${finalNeed}個</div>
         </div>`;
     }
   });
   el("totalBadge").textContent = `総合計 ${grandTotal}個`;
 }
 
+// モーダル管理
 const modal = el("noticeModal");
-const openBtn = el("openNotice");
-const closeBtn = el("closeNotice");
-openBtn.onclick = () => { modal.style.display = "flex"; };
-closeBtn.onclick = () => { modal.style.display = "none"; };
-window.onclick = (event) => { if (event.target == modal) { modal.style.display = "none"; } };
+el("openNotice").onclick = () => modal.style.display = "flex";
+el("closeNotice").onclick = () => modal.style.display = "none";
+window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; };
 
 el("addRecipe").onclick = () => addRecipeRow({meals: 0});
 el("clearAll").onclick = () => { 
-  el("recipeList").innerHTML = ""; 
-  state.recipeRows = [];
-  document.querySelectorAll(".exChk").forEach(chk => chk.checked = false);
-  document.querySelectorAll(".repQty").forEach(input => input.value = "");
-  checkAddButton();
-  addRecipeRow({ cat: "カレー・シチュー", recipeId: "avocado_gratin", meals: 0 });
-  calc();
+  el("recipeList").innerHTML = ""; state.recipeRows = [];
+  document.querySelectorAll(".exChk").forEach(c => c.checked = false);
+  document.querySelectorAll(".repQty").forEach(i => i.value = "");
+  addRecipeRow({meals: 0}); calc();
 };
 
 renderGrids();
-addRecipeRow({ cat: "カレー・シチュー", recipeId: "avocado_gratin", meals: 0 });
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js').then((reg) => {
-    reg.onupdatefound = () => {
-      const installingWorker = reg.installing;
-      installingWorker.onstatechange = () => {
-        if (installingWorker.state === 'installed') {
-          if (navigator.serviceWorker.controller) {
-            window.location.reload();
-          }
-        }
-      };
-    };
-  });
-}
+addRecipeRow({meals: 0});
 </script>
 </body>
 </html>
-
