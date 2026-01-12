@@ -213,6 +213,8 @@
     .dow { color: var(--muted); font-size: 8px; margin-bottom: 2px; }
     .dow:nth-child(6) { color: #007bff !important; } /* 土曜: 青 */
     .dow:nth-child(7) { color: #e74c3c !important; } /* 日曜: 赤 */
+    .day-sat { color: #007bff !important; } /* 土曜: 青 */
+    .day-sun { color: #e74c3c !important; } /* 日曜: 赤 */
     .day-holiday { color: #ff8c00 !important; font-weight: 900; }
     @media (max-width: 480px) { .calendar-grid { grid-template-columns: repeat(2, 1fr); } }
   </style>
@@ -635,11 +637,20 @@ function renderYearCalendar() {
 
     for (let i = 0; i < offset; i++) html += `<div></div>`;
     for (let d = 1; d <= lastDate; d++) {
+      const dateObj = new Date(year, m, d);
+      const dayOfWeek = dateObj.getDay(); // 0:日, 1:月...6:土
       const dateStr = `${year}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      
       let cls = "day";
+      
+      // 曜日による色分け
+      if (dayOfWeek === 6) cls += " day-sat";
+      else if (dayOfWeek === 0) cls += " day-sun";
+
       if (HOLIDAYS_2026.includes(dateStr)) cls += " day-holiday";
       if (isAround(dateStr, FULL_MOONS)) cls += " gsd";
       else if (isAround(dateStr, NEW_MOONS)) cls += " nmd";
+      
       html += `<div class="${cls}">${d}</div>`;
     }
     html += `</div></div>`;
