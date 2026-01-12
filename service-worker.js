@@ -3,7 +3,7 @@ const ASSETS = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
-  "./images/アイコン.png"
+  "./images/ステージング.png"
 ];
 
 // インストール時にファイルをキャッシュ
