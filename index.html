@@ -51,7 +51,7 @@
       display: flex;
       justify-content: space-around;
       align-items: center;
-      z-index: 100;
+      z-index: 1000; /* 計算結果カードより上に表示 */
       box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
     }
     
@@ -85,7 +85,15 @@
     .title-text { font-weight: 800; letter-spacing: 0.03em; font-size: 18px; }
     .ver-text { font-size: 11px; font-weight: 400; opacity: 0.8; margin-top: 2px; }
 
-    main { max-width: 980px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+    main { 
+      max-width: 980px; 
+      margin: 0 auto; 
+      padding: 16px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 16px; 
+      padding-bottom: 90px; 
+    } 
     
     .card { 
       background: var(--card); 
@@ -303,8 +311,8 @@
 
 <nav class="bottom-nav">
   <div class="nav-item active" onclick="switchTab('tab1', this)">
-    <span class="nav-icon">🍳</span>
-    <span>食材計算</span>
+    <span class="nav-icon">🔍</span>
+    <span>食材ストック計算</span>
   </div>
   <div class="nav-item" onclick="switchTab('tab2', this)">
     <span class="nav-icon">🐾</span>
