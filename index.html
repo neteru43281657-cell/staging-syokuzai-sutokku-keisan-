@@ -196,16 +196,26 @@
       line-height: 0; [cite: 45]
     }
     
-    /* ①・②の修正箇所: カテゴリーを伸ばし、食数を2桁サイズに固定 */
-    .recipeCol-cat { flex: 1; min-width: 100px; } 
-    .recipeCol-main { flex: 2; min-width: 140px; }
-    .recipeCol-meals { width: 58px; }
-
-    /* ② 4文字を超える部分を見切れるように設定 */
-    .catSel {
+    /* CSS部分の修正 */
+    .recipeCol-cat { 
+      flex: 1; 
+      min-width: 0; /* flex-1で縮小を許可 */
+    }
+    .recipeCol-main { 
+      flex: 1.5; 
+      min-width: 0; 
+    }
+    .recipeCol-meals { 
+      width: 58px; /* 2桁にぴったりのサイズ */
+      flex-shrink: 0;
+    }
+    
+    /* カテゴリーと料理名の見切れ設定 */
+    .catSel, .recipeSel {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      width: 100%;
     }
 
     .preview { font-size: 12px; display: flex; [cite: 47] flex-wrap: wrap; gap: 6px; margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; width: 100%; [cite: 48] }
