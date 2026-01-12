@@ -199,10 +199,10 @@
     .gsd { background-color: #add8e6; color: #000; font-weight: bold; }
     .nmd { background-color: #000080; color: #fff; font-weight: bold; }
     .dow { color: var(--muted); font-size: 8px; margin-bottom: 2px; }
-    .dow:nth-child(6) { color: #007bff; } 
-    .dow:nth-child(7) { color: #e74c3c; } 
-    .day-sat { color: #007bff; }
-    .day-sun { color: #e74c3c; }
+    .dow:nth-child(6) { color: #007bff; } /* 土曜: 青 */
+    .dow:nth-child(7) { color: #e74c3c; } /* 日曜: 赤 */
+    .day-sat { color: #007bff; } /* 土曜: 青 */
+    .day-sun { color: #e74c3c; } /* 日曜: 赤 */
     @media (max-width: 480px) { .calendar-grid { grid-template-columns: repeat(2, 1fr); } }
   </style>
 </head>
@@ -437,13 +437,10 @@ function switchTab(tabId, el) {
   window.scrollTo(0, 0);
 }
 
-/* スクリプト末尾の初期化処理を修正 */
 // 初期化
-/* renderYearCalendar 関数を修正 */
 function renderYearCalendar() {
   const container = el("yearCalendar");
   const year = 2026;
-  // 曜日配列を月曜開始に変更
   const dows = ["月", "火", "水", "木", "金", "土", "日"];
   container.innerHTML = "";
 
@@ -452,24 +449,30 @@ function renderYearCalendar() {
     dows.forEach(d => html += `<div class="dow">${d}</div>`);
 
     const firstDayDate = new Date(year, m, 1);
-    // getDay()は日0〜土6なので、月曜開始(月0〜日6)に変換
-    let firstDay = firstDayDate.getDay(); 
-    firstDay = (firstDay === 0) ? 6 : firstDay - 1; 
+    // JSのgetDay(): 0(日), 1(月), 2(火), 3(水), 4(木), 5(金), 6(土)
+    // 月曜開始にするためのオフセット計算
+    let firstDayIdx = firstDayDate.getDay(); 
+    let offset = (firstDayIdx === 0) ? 6 : firstDayIdx - 1; 
 
     const lastDate = new Date(year, m + 1, 0).getDate();
 
-    // 空白埋め
-    for (let i = 0; i < firstDay; i++) html += `<div></div>`;
+    // 1日が始まるまでの空白
+    for (let i = 0; i < offset; i++) {
+      html += `<div></div>`;
+    }
 
-    // 日付描画
+    // 日付の描画
     for (let d = 1; d <= lastDate; d++) {
       const curDate = new Date(year, m, d);
-      const dayOfWeek = curDate.getDay(); // 0:日, 6:土
+      const dayOfWeek = curDate.getDay(); // 0(日)〜6(土)
       const dateStr = `${year}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       
       let cls = "day";
-      if (dayOfWeek === 0) cls += " day-sun";
-      if (dayOfWeek === 6) cls += " day-sat";
+      // クラス付与の判定を修正
+      if (dayOfWeek === 0) cls += " day-sun"; // 日曜なら赤
+      if (dayOfWeek === 6) cls += " day-sat"; // 土曜なら青
+      
+      // 特殊イベント（満月・新月）の背景色。文字色が見えるよう順番に注意
       if (isAround(dateStr, FULL_MOONS)) cls += " gsd";
       else if (isAround(dateStr, NEW_MOONS)) cls += " nmd";
       
