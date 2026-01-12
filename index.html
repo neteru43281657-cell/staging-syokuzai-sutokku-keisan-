@@ -206,20 +206,23 @@
     .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
     .month-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 10px; }
     .month-name { font-weight: 900; text-align: center; border-bottom: 1px solid var(--line); margin-bottom: 5px; color: var(--text); }
-    .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; text-align: center; }
+    .days-grid { 
+      display: grid; 
+      grid-template-columns: repeat(7, 1fr); 
+      gap: 0px; 
+      align-items: center;
+    }
     .day {
-      width: 20px;       /* 24pxから少し小さく調整 */
-      height: 20px;
-      line-height: 1;    /* 行の高さをリセット */
-      text-align: center;
-      margin: 2px auto;  /* 上下に少し隙間を作る */
-      font-weight: bold;
-      border-radius: 4px;
+      width: 100%;       /* マスの幅いっぱいに使う */
+      aspect-ratio: 1/1; /* 正方形を維持 */
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 10px;   /* 文字サイズを微調整 */
-      position: relative; /* 今日の丸を重ねる基準 */ }
+      font-weight: bold;
+      font-size: 10px;
+      position: relative; /* 丸を重ねる基準 */
+      border-radius: 4px; /* GSDなどの背景用 */
+    }
     .gsd { background-color: #add8e6; color: #000; }
     .nmd { background-color: #000080; color: #fff; }
     .dow { 
@@ -230,12 +233,19 @@
     .day-sat { color: #007bff !important; } /* 土曜: 青 */
     .day-sun { color: #e74c3c !important; } /* 日曜: 赤 */
     .day-holiday { color: #ff8c00 !important; font-weight: 900; }
-    .day-today {
-      outline: 2px solid #ff4757 !important;
-      outline-offset: -1px;
-      border-radius: 50% !important;
+    .day-today::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 22px;        /* 丸のサイズ（はみ出るならここを18pxなどに下げる） */
+      height: 22px;
+      border: 2px solid #ff4757;
+      border-radius: 50%;
       background-color: rgba(255, 71, 87, 0.1);
-      z-index: 1; }
+      pointer-events: none; /* クリックを邪魔しない */
+    }
     @media (max-width: 480px) { .calendar-grid { grid-template-columns: repeat(2, 1fr); } }
   </style>
 </head>
@@ -678,7 +688,6 @@ function renderYearCalendar() {
           if (isAround(dateStr, FULL_MOONS)) cls += " gsd";
           else if (isAround(dateStr, NEW_MOONS)) cls += " nmd";
           
-          // シンプルな1つのdivとして出力
           html += `<div class="${cls}">${d}</div>`;
         }
     html += `</div></div>`;
