@@ -471,12 +471,13 @@ function addRecipeRow(init) {
     const r = RECIPES.find(x => x.id === rSel.value);
     if (r) {
       const totalIngredients = Object.values(r.ingredients).reduce((sum, count) => sum + count, 0);
-      let html = `<span style="background:var(--main-soft); color:var(--main); border:1px solid #cce5ff;">計 ${totalIngredients}個</span>`;
-      
-      html += Object.entries(r.ingredients).map(([id, q]) => {
+  
+      let html = Object.entries(r.ingredients).map(([id, q]) => {
         const ing = getIng(id);
         return `<span><img src="${imgSrc(ing.file)}" style="width:14px; height:14px; margin-right:4px; vertical-align:middle;">${q}</span>`;
       }).join("");
+
+      html += `<span style="background:var(--main-soft); color:var(--main); border:1px solid #cce5ff; margin-left: auto;">${totalIngredients}個</span>`;
       
       pre.innerHTML = html;
     }
