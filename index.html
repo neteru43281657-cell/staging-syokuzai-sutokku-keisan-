@@ -206,11 +206,20 @@
 
 <header>
   <div>
-    <div class="title-text">食材ストック計算</div>
-    <div class="ver-text">ver 1.0.2</div>
+    <div id="headerTitle" class="title-text">食材ストック計算</div>
+    <div id="headerVer" class="ver-text">ver1.0.2</div>
   </div>
-  <a href="javascript:void(0)" id="openNotice" style="color:#fff; font-size:12px; font-weight:700; text-decoration:underline;">ご利用上の注意</a>
 </header>
+
+<div id="tab3" class="tab-content">
+  <section class="card">
+    <div style="display: flex; gap: 10px; margin-bottom: 10px; font-size: 11px;">
+      <span style="display:flex; align-items:center; gap:4px;"><span style="width:12px; height:12px; background:#add8e6; display:inline-block;"></span>Good Sleep</span>
+      <span style="display:flex; align-items:center; gap:4px;"><span style="width:12px; height:12px; background:#000080; display:inline-block;"></span>New Moon</span>
+    </div>
+    <div id="yearCalendar" class="calendar-grid"></div>
+  </section>
+</div>
 
 <main>
   <div id="tab1" class="tab-content active">
@@ -266,11 +275,11 @@
 <nav class="bottom-nav">
   <div class="nav-item active" onclick="switchTab('tab1', this)">
     <span class="nav-icon">🔍</span>
-    <span>食材計算</span>
+    <span>食材ストック計算</span>
   </div>
   <div class="nav-item" onclick="switchTab('tab2', this)">
     <span class="nav-icon">🐾</span>
-    <span>ポケモン</span>
+    <span>出現ポケモン一覧</span>
   </div>
   <div class="nav-item" onclick="switchTab('tab3', this)">
     <span class="nav-icon">📅</span>
@@ -390,11 +399,28 @@ function getIng(id) { return INGREDIENTS.find(x => x.id === id); }
 function imgSrc(file) { return "images/" + encodeURIComponent(file); }
 
 /* --- アプリの基本機能 --- */
-function switchTab(tabId, navEl) {
+function switchTab(tabId, el) {
+  // コンテンツの切り替え
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  el(tabId).classList.add('active');
-  navEl.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  el.classList.add('active');
+
+  // ヘッダー情報の書き換え
+  const headerTitle = document.getElementById('headerTitle');
+  const headerVer = document.getElementById('headerVer');
+
+  if (tabId === 'tab1') {
+    headerTitle.textContent = '食材ストック計算';
+    headerVer.textContent = 'ver1.0.2';
+  } else if (tabId === 'tab2') {
+    headerTitle.textContent = '出現ポケモン一覧';
+    headerVer.textContent = 'ver1.0.1';
+  } else if (tabId === 'tab3') {
+    headerTitle.textContent = '2026年 月齢カレンダー';
+    headerVer.textContent = 'ver1.0.1';
+  }
+
   window.scrollTo(0, 0);
 }
 
