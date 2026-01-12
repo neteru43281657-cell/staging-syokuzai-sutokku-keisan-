@@ -179,12 +179,25 @@
       margin-bottom: 12px; 
       position: relative; 
     }
-    .removeBtn { 
-      position: absolute; top: -8px; right: -8px; 
-      border: 1px solid var(--line); background: #fff; color: var(--danger); 
-      width: 26px; height: 26px; border-radius: 50%; 
-      display: flex; align-items: center; justify-content: center; font-weight: bold; 
+    .removeBtn {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--danger);
+      /* サイズを固定し、aspect-ratioで正円を維持 */
+      width: 26px;
+      height: 26px;
+      padding: 0;           /* 余計なパディングをリセット */
+      line-height: 24px;    /* 文字を中央に配置(border分を考慮) */
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      cursor: pointer;      /* クリックしやすく */
     }
 
     .preview { font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; width: 100%; align-items: center; }
