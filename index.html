@@ -16,29 +16,29 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="食材ストック">
 
-<style>
+  <style>
     :root {
-      --bg: #f5f8fa; [cite: 1]
-      --card: #ffffff; [cite: 2]
+      --bg: #f5f8fa; 
+      --card: #ffffff; 
       --main: #007bff; 
       --main-soft: #eaf4ff; 
       --text: #2c3e50; 
       --muted: #5d6d7e; 
       --line: #d6e0ea; 
       --danger: #e74c3c;
-    } [cite: 3]
+    }
     * { box-sizing: border-box; }
     body { 
-      margin: 0; [cite: 4]
+      margin: 0; 
       font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; 
       background: var(--bg); 
       color: var(--text); 
       line-height: 1.5; 
       -webkit-font-smoothing: antialiased;
-    } [cite: 5]
+    }
     
     header { 
-      padding: 10px 20px; [cite: 6]
+      padding: 10px 20px; 
       background: var(--main);
       color: #fff; 
       position: sticky; 
@@ -47,54 +47,54 @@
       display: flex; 
       justify-content: space-between; 
       align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1); [cite: 7]
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    .title-text { font-weight: 800; letter-spacing: 0.03em; font-size: 18px; [cite: 8] }
-    .ver-text { font-size: 11px; font-weight: 400; opacity: 0.8; margin-top: 2px; [cite: 9] }
+    .title-text { font-weight: 800; letter-spacing: 0.03em; font-size: 18px; }
+    .ver-text { font-size: 11px; font-weight: 400; opacity: 0.8; margin-top: 2px; }
 
-    main { max-width: 980px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; [cite: 10] }
+    main { max-width: 980px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
     
     .card { 
-      background: var(--card); [cite: 11]
+      background: var(--card); 
       border: 1px solid var(--line); 
       border-radius: 16px; 
       padding: 16px; 
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02); [cite: 12]
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
     
     .result-card { 
-      border: 2px solid var(--main); [cite: 13]
+      border: 2px solid var(--main); 
       background: #ffffff; 
       border-radius: 16px; 
       padding: 16px; 
       box-shadow: 0 4px 20px rgba(0,123,255,0.1); 
     }
 
-    .row { display: flex; [cite: 14] gap: 10px; align-items: center; flex-wrap: wrap; }
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
     
     .grid5 { 
-      display: grid; [cite: 15]
+      display: grid; 
       grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); 
       gap: 8px; 
       width: 100%;
     }
     
-    label { font-size: 11px; [cite: 16] font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px; }
+    label { font-size: 11px; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px; }
     
     select, input[type="number"] { 
-      padding: 10px; [cite: 17]
+      padding: 10px; 
       border: 1px solid var(--line); 
       border-radius: 10px; 
       font-size: 14px; 
       width: 100%; 
       background: #fff; 
       color: var(--text);
-      transition: border-color 0.2s; [cite: 18]
+      transition: border-color 0.2s;
     }
-    select:focus, input:focus { outline: none; border-color: var(--main); [cite: 19] }
+    select:focus, input:focus { outline: none; border-color: var(--main); }
 
     button { 
-      padding: 10px 16px; [cite: 20]
+      padding: 10px 16px; 
       border: 1px solid var(--line);
       border-radius: 10px; 
       background: #fff; 
@@ -102,26 +102,26 @@
       cursor: pointer; 
       font-size: 14px; 
       color: var(--text);
-      transition: all 0.2s; [cite: 21]
+      transition: all 0.2s;
     }
     button.primary { background: var(--main); color: #fff; border-color: var(--main); }
-    button.primary:active { transform: scale(0.98); [cite: 22] }
-    button.danger { color: var(--danger); border-color: #fadbd8; background: #fff; [cite: 23] }
+    button.primary:active { transform: scale(0.98); }
+    button.danger { color: var(--danger); border-color: #fadbd8; background: #fff; }
     
-    .badge { font-size: 12px; padding: 4px 12px; border-radius: 999px; [cite: 24] border: 1px solid var(--line); color: var(--text); background: #f8fafc; font-weight: 700; [cite: 25] }
+    .badge { font-size: 12px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); color: var(--text); background: #f8fafc; font-weight: 700; }
     
     #summaryBadge {
       background: var(--main-soft);
-      color: var(--main); [cite: 26]
+      color: var(--main); 
       border: 1px solid #cce5ff;
     }
 
-    .total-badge { background: var(--main); color: #fff; border: none; padding: 4px 16px; [cite: 27] }
-    .divider { height: 1px; background: var(--line); margin: 16px 0; [cite: 28] }
+    .total-badge { background: var(--main); color: #fff; border: none; padding: 4px 16px; }
+    .divider { height: 1px; background: var(--line); margin: 16px 0; }
 
     .tile { 
       border: 1px solid var(--line); 
-      border-radius: 12px; [cite: 29]
+      border-radius: 12px; 
       padding: 6px 3px; 
       display: flex; 
       flex-direction: column; 
@@ -130,28 +130,28 @@
       align-items: center; 
       text-align: center; 
       min-height: 95px; 
-      justify-content: space-between; [cite: 30]
+      justify-content: space-between; 
       min-width: 0;
     }
-    .icon { width: 30px; height: 30px; object-fit: contain; [cite: 31] }
+    .icon { width: 30px; height: 30px; object-fit: contain; }
     
     .tileName { 
-      font-size: 8px; [cite: 32]
+      font-size: 8px; 
       font-weight: 700; 
-      width: 100%; [cite: 33]
+      width: 100%; 
       white-space: nowrap; 
       overflow: hidden; 
       text-overflow: clip; 
       letter-spacing: -0.05em; 
       padding: 0 2px;
-      display: block; [cite: 35]
+      display: block;
     }
     
-    .chkLabel { display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 10px; [cite: 36] cursor: pointer; width: 100%; font-weight: 600; }
-    .repInputRow { display: flex; align-items: center; justify-content: center; gap: 2px; [cite: 37] width: 100%; }
+    .chkLabel { display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 10px; cursor: pointer; width: 100%; font-weight: 600; }
+    .repInputRow { display: flex; align-items: center; justify-content: center; gap: 2px; width: 100%; }
     
     .repQty { 
-      padding: 4px 1px; [cite: 38]
+      padding: 4px 1px; 
       font-size: 12px; 
       text-align: center; 
       border-radius: 8px; 
@@ -160,18 +160,18 @@
       width: 100%; 
       max-width: 48px; 
       min-width: 32px;
-      appearance: textfield; [cite: 39]
+      appearance: textfield;
       -moz-appearance: textfield;
     }
   
     .repQty::-webkit-outer-spin-button,
     .repQty::-webkit-inner-spin-button {
-      -webkit-appearance: none; [cite: 40]
+      -webkit-appearance: none; 
       margin: 0;
     }
   
     .recipeRow { 
-      border: 1px solid var(--line); [cite: 41]
+      border: 1px solid var(--line); 
       background: #fcfdfe;
       border-radius: 16px; 
       padding: 16px; 
@@ -180,37 +180,36 @@
       flex-wrap: wrap; 
       align-items: flex-end; 
       margin-bottom: 12px; 
-      position: relative; [cite: 42]
+      position: relative; 
     }
     
     .removeBtn { 
-      position: absolute; top: -8px; [cite: 43]
+      position: absolute; top: -8px; 
       right: -8px; 
       border: 1px solid var(--line); background: #fff; color: var(--danger); 
       font-size: 16px; 
       width: 26px; height: 26px;
       padding: 0;
-      border-radius: 50%; [cite: 44]
+      border-radius: 50%; 
       display: flex; align-items: center; justify-content: center; 
       font-weight: bold; z-index: 2; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      line-height: 0; [cite: 45]
+      line-height: 0; 
     }
     
-    /* CSS部分の修正 */
+    /* レイアウト崩れ防止のCSS */
     .recipeCol-cat { 
       flex: 1; 
-      min-width: 0; /* flex-1で縮小を許可 */
+      min-width: 100px;
     }
     .recipeCol-main { 
-      flex: 1.5; 
-      min-width: 0; 
+      flex: 2; 
+      min-width: 150px; 
     }
     .recipeCol-meals { 
-      width: 58px; /* 2桁にぴったりのサイズ */
+      width: 65px; 
       flex-shrink: 0;
     }
     
-    /* カテゴリーと料理名の見切れ設定 */
     .catSel, .recipeSel {
       white-space: nowrap;
       overflow: hidden;
@@ -218,14 +217,15 @@
       width: 100%;
     }
 
-    .preview { font-size: 12px; display: flex; [cite: 47] flex-wrap: wrap; gap: 6px; margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; width: 100%; [cite: 48] }
-    .preview span { display: flex; align-items: center; background: var(--main-soft); color: var(--main); padding: 3px 8px; border-radius: 8px; [cite: 49] font-weight: 700; border: 1px solid #d0e7ff; }
+    .preview { font-size: 12px; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; width: 100%; }
+    .preview span { display: flex; align-items: center; background: var(--main-soft); color: var(--main); padding: 3px 8px; border-radius: 8px; font-weight: 700; border: 1px solid #d0e7ff; }
 
     @media (max-width: 480px) { 
       .tileName { 
-        font-size: 7px; [cite: 50]
-        letter-spacing: -0.06em; [cite: 51]
+        font-size: 7px; 
+        letter-spacing: -0.06em; 
       }
+      .recipeCol-main { min-width: 120px; }
     }
   </style>
 </head>
@@ -252,9 +252,9 @@
 
 <main>
   <section class="card">
-    <div class="row" style="justify-content: space-between; align-items: flex-start;"> [cite: 52]
+    <div class="row" style="justify-content: space-between; align-items: flex-start;">
       <div>
-        <div style="font-weight:900; [cite: 53] font-size:15px; color:var(--text); margin-bottom: 4px;">条件設定</div>
+        <div style="font-weight:900; font-size:15px; color:var(--text); margin-bottom: 4px;">条件設定</div>
         <span class="badge" id="summaryBadge">合計 0食 / 21食</span>
       </div>
       <div class="row">
@@ -266,21 +266,21 @@
   </section>
 
   <section class="card">
-    <div style="font-weight:900; [cite: 54] font-size:14px; margin-bottom:12px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text);">計算から除外</div>
+    <div style="font-weight:900; font-size:14px; margin-bottom:12px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text);">計算から除外</div>
     <div id="excludeGrid" class="grid5"></div>
   </section>
 
   <section class="card">
-    <div style="font-weight:900; [cite: 55] font-size:14px; margin-bottom:12px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text);">1日当たりの獲得量</div>
+    <div style="font-weight:900; font-size:14px; margin-bottom:12px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text);">1日当たりの獲得量</div>
     <div id="replenishGrid" class="grid5"></div>
   </section>
 
   <section class="result-card">
     <div class="row" style="justify-content: space-between;">
-      <div style="font-weight:900; [cite: 56] font-size:16px; color:var(--main);">計算結果</div>
+      <div style="font-weight:900; font-size:16px; color:var(--main);">計算結果</div>
       <span class="badge total-badge" id="totalBadge">総合計 0個</span>
     </div>
-    <div class="divider" style="background: var(--main); [cite: 57] opacity: 0.1;"></div>
+    <div class="divider" style="background: var(--main); opacity: 0.1;"></div>
     <div id="resultGrid" class="grid5"></div>
   </section>
 </main>
@@ -304,15 +304,14 @@ const INGREDIENTS = [
   { id:"ginger", name:"あったかジンジャー", file:"あったかジンジャー.webp" },
   { id:"tomato", name:"あんみんトマト", file:"あんみんトマト.webp" },
   { id:"cacao", name:"リラックスカカオ", file:"リラックスカカオ.webp" },
-  { id:"tail", name:"おいしいシッポ", file:"おいしいシッポ.webp" }, [cite: 58]
+  { id:"tail", name:"おいしいシッポ", file:"おいしいシッポ.webp" },
   { id:"soy", name:"ワカクサ大豆", file:"ワカクサ大豆.webp" },
   { id:"corn", name:"ワカクサコーン", file:"ワカクサコーン.webp" },
   { id:"coffee", name:"めざましコーヒー", file:"めざましコーヒー.webp" },
   { id:"pumpkin", name:"ずっしりカボチャ", file:"ずっしりカボチャ.webp" },
   { id:"avocado", name:"つやつやアボカド", file:"つやつやアボカド.webp" }
-]; [cite: 59]
+];
 
-/* ② 正確な名称に変更 */
 const RECIPES = [
   { cat:"カレー・シチュー", id:"avocado_gratin", name:"しんりょくアボカドグラタン", ingredients: { avocado:22, potato:20, milk:41, oil:32 } },
   { cat:"カレー・シチュー", id:"sukiyaki_curry", name:"いあいぎりすき焼きカレー", ingredients: { leek:27, soymeat:26, honey:26, egg:22 } },
@@ -321,7 +320,7 @@ const RECIPES = [
   { cat:"カレー・シチュー", id:"keema_curry", name:"れんごくコーンキーマカレー", ingredients: { herb:27, soymeat:24, corn:14, ginger:12 } },
   { cat:"カレー・シチュー", id:"ninja_curry", name:"ニンジャカレー", ingredients: { soy:24, soymeat:9, leek:12, mushroom:5 } },
   { cat:"カレー・シチュー", id:"butter_curry", name:"ぜったいねむりバターカレー", ingredients: { potato:18, tomato:15, cacao:12, milk:10 } },
-  { cat:"カレー・シチュー", id:"tail_curry", name:"あぶりテールカレー", [cite: 60] ingredients: { tail:8, herb:25 } },
+  { cat:"カレー・シチュー", id:"tail_curry", name:"あぶりテールカレー", ingredients: { tail:8, herb:25 } },
   { cat:"カレー・シチュー", id:"leek_curry", name:"からくちネギもりカレー", ingredients: { leek:14, ginger:10, herb:8 } },
   { cat:"カレー・シチュー", id:"punch_curry", name:"ピヨピヨパンチ辛口カレー", ingredients: { coffee:11, herb:11, honey:11 } },
   { cat:"カレー・シチュー", id:"corn_stew", name:"じゅうなんコーンシチュー", ingredients: { corn:14, milk:8, potato:8 } },
@@ -329,7 +328,7 @@ const RECIPES = [
   { cat:"カレー・シチュー", id:"mushroom_curry", name:"キノコのほうしカレー", ingredients: { mushroom:14, potato:9 } },
   { cat:"カレー・シチュー", id:"bulk_up_curry", name:"ビルドアップマメカレー", ingredients: { soy:12, soymeat:6, herb:4, egg:4 } },
   { cat:"カレー・シチュー", id:"white_stew", name:"ほっこりホワイトシチュー", ingredients: { milk:10, potato:8, mushroom:4 } },
-  { cat:"カレー・シチュー", id:"omurice_curry", name:"とけるオムカレー", ingredients: { egg:10, tomato:6 [cite: 61] } },
+  { cat:"カレー・シチュー", id:"omurice_curry", name:"とけるオムカレー", ingredients: { egg:10, tomato:6 } },
   { cat:"カレー・シチュー", id:"tomato_curry", name:"サンパワートマトカレー", ingredients: { tomato:10, herb:5 } },
   { cat:"カレー・シチュー", id:"cutlet_curry", name:"ひでりカツレツカレー", ingredients: { soymeat:10, oil:5 } },
   { cat:"カレー・シチュー", id:"cheese_hamburg_curry", name:"満腹チーズバーグカレー", ingredients: { milk:8, soymeat:8 } },
@@ -337,7 +336,7 @@ const RECIPES = [
   { cat:"サラダ", id:"coffee_salad", name:"まけんきコーヒーサラダ", ingredients: { coffee:28, soymeat:28, oil:22, potato:22 } },
   { cat:"サラダ", id:"apple_yogurt_salad", name:"りんごさんヨーグルトサラダ", ingredients: { egg:35, apple:28, tomato:23, milk:18 } },
   { cat:"サラダ", id:"mimosa_salad", name:"はなふぶきミモザサラダ", ingredients: { egg:25, oil:17, potato:15, soymeat:12 } },
-  { cat:"サラダ", id:"ninja_salad", name:"ニンジャサラダ", ingredients: { leek:15, soy:19, mushroom:12, ginger:11 } }, [cite: 62]
+  { cat:"サラダ", id:"ninja_salad", name:"ニンジャサラダ", ingredients: { leek:15, soy:19, mushroom:12, ginger:11 } },
   { cat:"サラダ", id:"wakakusa_salad", name:"ワカクササラダ", ingredients: { oil:22, corn:17, tomato:14, potato:9 } },
   { cat:"サラダ", id:"cross_chop_salad", name:"クロスチョップドサラダ", ingredients: { egg:20, soymeat:15, corn:11, tomato:10 } },
   { cat:"サラダ", id:"tail_pepper_salad", name:"ヤドンテールのペッパーサラダ", ingredients: { tail:10, herb:10, oil:15 } },
@@ -345,7 +344,7 @@ const RECIPES = [
   { cat:"サラダ", id:"avocado_salad", name:"くだけるアボカドサラダ", ingredients: { avocado:14, soy:18, oil:10 } },
   { cat:"サラダ", id:"mushroom_spore_salad", name:"キノコのほうしサラダ", ingredients: { mushroom:17, tomato:8, oil:8 } },
   { cat:"サラダ", id:"overheat_salad", name:"オーバーヒートサラダ", ingredients: { herb:17, ginger:10, tomato:8 } },
-  { cat:"サラダ", id:"gluttony_potato_salad", name:"くいしんぼうポテトサラダ", ingredients: { potato:14, egg:9, soymeat:7, apple:6 } }, [cite: 63]
+  { cat:"サラダ", id:"gluttony_potato_salad", name:"くいしんぼうポテトサラダ", ingredients: { potato:14, egg:9, soymeat:7, apple:6 } },
   { cat:"サラダ", id:"choco_mint_salad", name:"ムラっけチョコミントサラダ", ingredients: { cacao:14, soymeat:9 } },
   { cat:"サラダ", id:"tofu_salad", name:"うるおいとうふサラダ", ingredients: { soy:15, tomato:9 } },
   { cat:"サラダ", id:"wild_salad", name:"ばかぢからワイルドサラダ", ingredients: { soymeat:9, ginger:6, egg:5, potato:3 } },
@@ -354,7 +353,7 @@ const RECIPES = [
   { cat:"サラダ", id:"corn_salad", name:"みだれづきコーンサラダ", ingredients: { corn:9, oil:8 } },
   { cat:"サラダ", id:"apple_cheese_salad", name:"メロメロりんごのチーズサラダ", ingredients: { apple:15, milk:5, oil:3 } },
   { cat:"サラダ", id:"hot_air_tofu_salad", name:"ねっぷうとうふサラダ", ingredients: { soy:10, herb:6 } },
-  { cat:"サラダ", id:"caesar_salad", name:"ゆきかきシーザーサラダ", ingredients: { milk:10, soymeat:6 [cite: 64] } },
+  { cat:"サラダ", id:"caesar_salad", name:"ゆきかきシーザーサラダ", ingredients: { milk:10, soymeat:6 } },
   { cat:"デザート・ドリンク", id:"pancake", name:"ドキドキこわいかおパンケーキ", ingredients: { pumpkin:18, egg:24, honey:32, tomato:29 } },
   { cat:"デザート・ドリンク", id:"eclair", name:"ドオーのエクレア", ingredients: { cacao:30, milk:26, coffee:24, honey:22 } },
   { cat:"デザート・ドリンク", id:"cola", name:"スパイクスパイスコーラ", ingredients: { apple:35, ginger:20, leek:20, coffee:12 } },
@@ -362,7 +361,7 @@ const RECIPES = [
   { cat:"デザート・ドリンク", id:"scone", name:"おちゃかいコーンスコーン", ingredients: { apple:20, ginger:20, corn:18, milk:9 } },
   { cat:"デザート・ドリンク", id:"smoothie", name:"グラスミキサースムージー", ingredients: { avocado:18, tomato:16, milk:14 } },
   { cat:"デザート・ドリンク", id:"pudding_ala_mode", name:"プリンのプリンアラモード", ingredients: { honey:20, egg:15, milk:10, apple:10 } },
-  { cat:"デザート・ドリンク", id:"tiramisu", name:"かたやぶりコーンティラミス", ingredients: { coffee:14, [cite: 65] corn:14, milk:12 } },
+  { cat:"デザート・ドリンク", id:"tiramisu", name:"かたやぶりコーンティラミス", ingredients: { coffee:14, corn:14, milk:12 } },
   { cat:"デザート・ドリンク", id:"coffee_jelly", name:"はやおきコーヒーゼリー", ingredients: { coffee:16, milk:14, honey:12 } },
   { cat:"デザート・ドリンク", id:"popcorn", name:"だいばくはつポップコーン", ingredients: { corn:15, oil:14, milk:7 } },
   { cat:"デザート・ドリンク", id:"donut", name:"ちからもちソイドーナッツ", ingredients: { oil:12, soy:16, cacao:7 } },
@@ -370,7 +369,7 @@ const RECIPES = [
   { cat:"デザート・ドリンク", id:"cookie", name:"ふくつのジンジャークッキー", ingredients: { honey:14, ginger:12, cacao:5, egg:4 } },
   { cat:"デザート・ドリンク", id:"fruit_ore", name:"あくまのキッスフルーツオレ", ingredients: { apple:11, milk:9, honey:7, cacao:8 } },
   { cat:"デザート・ドリンク", id:"choco_cake", name:"あまいかおりチョコケーキ", ingredients: { honey:9, cacao:8, milk:7 } },
-  { cat:"デザート・ドリンク", id:"choco_tart", name:"はなびらのまいチョコタルト", ingredients: { cacao:11, apple:11 } [cite: 66] },
+  { cat:"デザート・ドリンク", id:"choco_tart", name:"はなびらのまいチョコタルト", ingredients: { cacao:11, apple:11 } },
   { cat:"デザート・ドリンク", id:"protein_smoothie", name:"はりきりプロテインスムージー", ingredients: { soy:15, cacao:8 } },
   { cat:"デザート・ドリンク", id:"malasada", name:"おおきいマラサダ", ingredients: { oil:10, milk:7, honey:6 } },
   { cat:"デザート・ドリンク", id:"soy_cake", name:"かるわざソイケーキ", ingredients: { egg:8, soy:7 } },
@@ -378,16 +377,16 @@ const RECIPES = [
   { cat:"デザート・ドリンク", id:"ginger_tea", name:"ひのこのジンジャーティー", ingredients: { ginger:9, apple:7 } },
   { cat:"デザート・ドリンク", id:"sweet_potato", name:"じゅくせいスイートポテト", ingredients: { potato:9, milk:5 } },
   { cat:"デザート・ドリンク", id:"apple_pie", name:"ねがいごとアップルパイ", ingredients: { apple:12, milk:4 } }
-]; [cite: 67]
+];
 
 const el = (id) => document.getElementById(id);
 let state = { recipeRows: [] };
 function getIng(id) { return INGREDIENTS.find(x => x.id === id); }
-function imgSrc(file) { return "images/" + encodeURIComponent(file); [cite: 68, 69] }
+function imgSrc(file) { return "images/" + encodeURIComponent(file); }
 
 function renderGrids() {
   const ex = el("excludeGrid"), rep = el("replenishGrid");
-  ex.innerHTML = ""; rep.innerHTML = ""; [cite: 70]
+  ex.innerHTML = ""; rep.innerHTML = "";
   INGREDIENTS.forEach(ing => {
     ex.innerHTML += `
       <div class="tile">
@@ -399,12 +398,12 @@ function renderGrids() {
       <div class="tile">
         <div class="tileName" title="${ing.name}">${ing.name}</div>
         <img class="icon" src="${imgSrc(ing.file)}" alt="">
-        <div class="repInputRow"> [cite: 71]
+        <div class="repInputRow">
           <input type="number" class="repQty" data-iid="${ing.id}" placeholder="0">
           <span class="suffix" style="font-size:10px;">個</span>
         </div>
       </div>`;
-  }); [cite: 72]
+  });
   document.querySelectorAll(".exChk, .repQty").forEach(input => {
     input.oninput = (e) => {
       if (e.target.classList.contains("repQty")) {
@@ -413,20 +412,20 @@ function renderGrids() {
       }
       calc();
     };
-  }); [cite: 73]
+  });
 }
 
 function addRecipeRow(init) {
   if (state.recipeRows.length >= MAX_RECIPE_ROWS) return;
 
-  const rowId = crypto.randomUUID(); [cite: 74]
-  const rowData = { rowId, cat: init?.cat || "カレー・シチュー", recipeId: init?.recipeId || RECIPES[0].id, meals: init?.meals || 0 };
-  state.recipeRows.push(rowData); [cite: 75]
+  const rowId = crypto.randomUUID();
+  const rowData = { rowId, cat: init?.cat || "カレー・シチュー", recipeId: init?.recipeId || "avocado_gratin", meals: init?.meals || 0 };
+  state.recipeRows.push(rowData);
+
   const wrap = document.createElement("div");
   wrap.className = "recipeRow";
-  wrap.dataset.rowId = rowId; [cite: 76]
+  wrap.dataset.rowId = rowId;
   
-  /* ② セレクトボックスの中身を正確な名称に変更 */
   wrap.innerHTML = `
     <button class="removeBtn" title="削除">×</button>
     <div class="recipeCol-cat">
@@ -447,19 +446,23 @@ function addRecipeRow(init) {
     </div>
     <div class="preview"></div>`;
 
-  const cSel = wrap.querySelector(".catSel"), rSel = wrap.querySelector(".recipeSel"), mSel = wrap.querySelector(".mealsSel"), pre = wrap.querySelector(".preview"); [cite: 78]
+  const cSel = wrap.querySelector(".catSel"), 
+        rSel = wrap.querySelector(".recipeSel"), 
+        mSel = wrap.querySelector(".mealsSel"), 
+        pre = wrap.querySelector(".preview");
+
   const updateRecipeList = () => {
-    const filtered = RECIPES.filter(r => r.cat === cSel.value); [cite: 79]
+    const filtered = RECIPES.filter(r => r.cat === cSel.value);
     rSel.innerHTML = filtered.map(r => `<option value="${r.id}">${r.name}</option>`).join("");
+    
     if (filtered.some(r => r.id === rowData.recipeId)) {
-        rSel.value = rowData.recipeId; [cite: 80]
+        rSel.value = rowData.recipeId;
     } else {
         rowData.recipeId = rSel.value;
     }
     updatePreview();
-  }; [cite: 81]
+  };
 
-  /* ③ 1食あたりの合計食材数を計算して表示する処理を追加 */
   const updatePreview = () => {
     rowData.cat = cSel.value; 
     rowData.recipeId = rSel.value; 
@@ -467,13 +470,9 @@ function addRecipeRow(init) {
     
     const r = RECIPES.find(x => x.id === rSel.value);
     if (r) {
-      // 1食に使う食材の合計数を算出
       const totalIngredients = Object.values(r.ingredients).reduce((sum, count) => sum + count, 0);
-  
-      // 合計数バッジ（薄い青背景に青文字）を先頭に追加
       let html = `<span style="background:var(--main-soft); color:var(--main); border:1px solid #cce5ff;">計 ${totalIngredients}個</span>`;
       
-      // 個別の食材アイコン表示
       html += Object.entries(r.ingredients).map(([id, q]) => {
         const ing = getIng(id);
         return `<span><img src="${imgSrc(ing.file)}" style="width:14px; height:14px; margin-right:4px; vertical-align:middle;">${q}</span>`;
@@ -487,14 +486,16 @@ function addRecipeRow(init) {
 
   cSel.onchange = updateRecipeList;
   rSel.onchange = updatePreview;
-  mSel.onchange = updatePreview; [cite: 84]
+  mSel.onchange = updatePreview;
+
   wrap.querySelector(".removeBtn").onclick = () => {
     state.recipeRows = state.recipeRows.filter(r => r.rowId !== rowId);
     wrap.remove();
     updateAllMealDropdowns();
     checkAddButton();
     calc();
-  }; [cite: 85]
+  };
+
   cSel.value = rowData.cat;
   updateRecipeList();
   
@@ -504,7 +505,7 @@ function addRecipeRow(init) {
 }
 
 function updateAllMealDropdowns() {
-  const currentTotal = state.recipeRows.reduce((sum, r) => sum + r.meals, 0); [cite: 86]
+  const currentTotal = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
   state.recipeRows.forEach(row => {
     const wrap = document.querySelector(`.recipeRow[data-row-id="${row.rowId}"]`);
     if (!wrap) return;
@@ -512,86 +513,91 @@ function updateAllMealDropdowns() {
     const otherMeals = currentTotal - row.meals;
     const maxAvailable = MAX_TOTAL_MEALS - otherMeals;
     const prevVal = Number(mSel.value) || row.meals;
+    
     mSel.innerHTML = "";
     for (let i = 0; i <= maxAvailable; i++) {
       const opt = document.createElement("option");
       opt.value = i; opt.textContent = i;
       mSel.appendChild(opt);
-    } [cite: 87]
+    }
     mSel.value = Math.min(prevVal, maxAvailable);
     row.meals = Number(mSel.value);
-  }); [cite: 88]
+  });
 }
 
 function checkAddButton() { el("addRecipe").disabled = state.recipeRows.length >= MAX_RECIPE_ROWS; }
 
 function calc() {
-  const exclude = new Set([...document.querySelectorAll(".exChk:checked")].map(c => c.dataset.iid)); [cite: 89]
+  const exclude = new Set([...document.querySelectorAll(".exChk:checked")].map(c => c.dataset.iid));
   const replenishMap = new Map([...document.querySelectorAll(".repQty")].map(c => [c.dataset.iid, Number(c.value) || 0]));
-  const totalMeals = state.recipeRows.reduce((sum, r) => sum + r.meals, 0); [cite: 90]
+  const totalMeals = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
   el("summaryBadge").textContent = `合計 ${totalMeals}食 / 21食`;
+  
   const netNeed = new Map();
-  const displayOrder = []; [cite: 91]
+  const displayOrder = [];
+  
   state.recipeRows.forEach(row => {
     if (row.meals <= 0) return;
     const r = RECIPES.find(x => x.id === row.recipeId);
     if (!r) return;
+    
     const rowDays = row.meals / MEALS_PER_DAY;
+    
     Object.entries(r.ingredients).forEach(([iid, qtyPerMeal]) => {
-      if (!displayOrder.includes(iid)) {
-        displayOrder.push(iid);
-      }
-      const gross = qtyPerMeal * row.meals; [cite: 92]
+      if (!displayOrder.includes(iid)) displayOrder.push(iid);
+      const gross = qtyPerMeal * row.meals;
       const rowReplenish = (replenishMap.get(iid) || 0) * rowDays;
       const currentNet = netNeed.get(iid) || 0;
       netNeed.set(iid, currentNet + (gross - rowReplenish));
     });
-  }); [cite: 93]
+  });
+
   const resultGrid = el("resultGrid");
   resultGrid.innerHTML = "";
-  let grandTotal = 0; [cite: 94]
+  let grandTotal = 0;
+
   displayOrder.forEach(iid => {
     if (exclude.has(iid)) return;
     const ing = getIng(iid);
     if (!ing) return;
+    
     const finalNeed = Math.max(0, Math.ceil(netNeed.get(iid) || 0));
     if (finalNeed > 0) {
       grandTotal += finalNeed;
       resultGrid.innerHTML += `
         <div class="tile">
           <div class="tileName" title="${ing.name}">${ing.name}</div>
-          <img class="icon" src="${imgSrc(ing.file)}" alt=""> [cite: 95]
+          <img class="icon" src="${imgSrc(ing.file)}" alt="">
           <div class="resultQty" style="font-weight:900; color:var(--text); font-size: 13px;">${finalNeed}<span class="suffix">個</span></div>
         </div>`;
     }
-  }); [cite: 96]
+  });
   el("totalBadge").textContent = `総合計 ${grandTotal}個`;
 }
 
 const modal = el("noticeModal");
 const openBtn = el("openNotice");
-const closeBtn = el("closeNotice"); [cite: 97]
+const closeBtn = el("closeNotice");
 openBtn.onclick = () => { modal.style.display = "flex"; };
-closeBtn.onclick = () => { modal.style.display = "none"; }; [cite: 98]
-window.onclick = (event) => {
-  if (event.target == modal) { modal.style.display = "none"; }
-}; [cite: 99]
+closeBtn.onclick = () => { modal.style.display = "none"; };
+window.onclick = (event) => { if (event.target == modal) { modal.style.display = "none"; } };
+
 el("addRecipe").onclick = () => addRecipeRow({meals: 0});
 el("clearAll").onclick = () => { 
   el("recipeList").innerHTML = ""; 
-  state.recipeRows = []; [cite: 100]
+  state.recipeRows = [];
   document.querySelectorAll(".exChk").forEach(chk => chk.checked = false);
   document.querySelectorAll(".repQty").forEach(input => input.value = "");
   checkAddButton();
   addRecipeRow({ cat: "カレー・シチュー", recipeId: "avocado_gratin", meals: 0 });
-  calc(); [cite: 101]
+  calc();
 };
 
 renderGrids();
-addRecipeRow({ cat: "カレー・シチュー", recipeId: "avocado_gratin", meals: 0 }); [cite: 102]
+addRecipeRow({ cat: "カレー・シチュー", recipeId: "avocado_gratin", meals: 0 });
+
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js')
-    .then(() => console.log('Service Worker Registered'));
+  navigator.serviceWorker.register('./service-worker.js').then(() => console.log('Service Worker Registered'));
 }
 </script>
 </body>
