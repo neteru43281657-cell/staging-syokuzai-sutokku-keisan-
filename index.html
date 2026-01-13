@@ -586,37 +586,23 @@ function switchTab(tabId, tabEl) {
   window.scrollTo(0, 0);
 }
 
+let isRendering = false;
+
 function renderGrids() {
-  const ex = el("excludeGrid"), rep = el("replenishGrid");
-  ex.innerHTML = ""; rep.innerHTML = "";
-  INGREDIENTS.forEach(ing => {
-    ex.innerHTML += `
-      <div class="tile">
-        <div class="tileName" title="${ing.name}">${ing.name}</div>
-        <img class="icon" src="${imgSrc(ing.file)}" alt="">
-        <div class="exInputRow" style="width:100%; display:flex; justify-content:center; align-items:center;">
-          <label class="chkLabel"><input type="checkbox" class="exChk" data-iid="${ing.id}">除外</label>
-        </div>
-      </div>`;
-    rep.innerHTML += `
-      <div class="tile">
-          <div class="tileName" title="${ing.name}">${ing.name}</div>
-          <img class="icon" src="${imgSrc(ing.file)}" alt="">
-          <div class="repInputRow" style="padding: 0 8px;"> 
-            <input type="number" class="repQty" data-iid="${ing.id}" placeholder="0">
-            <span style="font-size:9px; font-weight:700; margin-left:1px;">個</span>
-          </div>
-        </div>`;
-  });
-  document.querySelectorAll(".exChk, .repQty").forEach(input => {
-    input.oninput = (e) => {
-      if (e.target.classList.contains("repQty")) {
-        if (e.target.value > 999) e.target.value = 999;
-        if (e.target.value < 0) e.target.value = 0;
-      }
-      calc();
-    };
-  });
+  if (isRendering) return; // すでに実行中なら何もしない
+  isRendering = true;
+
+  const container = el("gridsContainer");
+  if (!container) {
+    isRendering = false;
+    return;
+  }
+
+  let html = "";
+
+  container.innerHTML = html;
+
+  isRendering = false; // 終了後にフラグを戻す
 }
 
 function addRecipeRow(init) {
