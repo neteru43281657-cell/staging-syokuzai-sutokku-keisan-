@@ -588,17 +588,18 @@ const FIELDS = [
 const FIELD_DATA = {
   wakakusa: {
     name: "ワカクサ本島",
-    energyTable: [
+    img: "images/ワカクサ本島.png", // ← 画像パスを追加
+    energyTable: [ // ← エナジー表を追加
       { count: 4, energy: "9,653" },
       { count: 5, energy: "20,737" },
       { count: 6, energy: "46,264" },
       { count: 7, energy: "83,315" },
       { count: 8, energy: "195,636" }
     ],
-    pokemon: {
-      utouto: [1, 10, 23], // 図鑑番号（例: フシギダネ, キャタピー, アーボ）
-      suyasuya: [4, 25, 39], // 例: ヒトカゲ, ピカチュウ, プリン
-      gussuri: [7, 74, 174]  // 例: ゼニガメ, イシツブテ, ププリン
+    pokemon: { // ← 出現ポケモンを追加
+      utouto: [1, 10, 23, 69], // 仮の図鑑番号
+      suyasuya: [4, 25, 39, 133],
+      gussuri: [7, 74, 158, 172]
     }
   }
 };
@@ -804,10 +805,11 @@ function calc() {
 
 function renderFieldMenu() {
   const menu = el('field-list');
+  if (!menu) return; // エラー防止
   menu.innerHTML = Object.keys(FIELD_DATA).map(key => {
     const field = FIELD_DATA[key];
     return `
-      <div class="field-card" onclick="showFieldDetail('${key}')" style="position:relative; overflow:hidden; border-radius:12px; margin-bottom:12px; height:100px; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+      <div onclick="showFieldDetail('${key}')" style="position:relative; overflow:hidden; border-radius:12px; margin-bottom:12px; height:100px; display:flex; align-items:center; justify-content:center; cursor:pointer;">
         <img src="${field.img}" style="width:100%; height:100%; object-fit:cover; filter:brightness(0.7); position:absolute;">
         <span style="position:relative; color:#fff; font-weight:bold; font-size:1.2rem; text-shadow:0 2px 4px rgba(0,0,0,0.5);">${field.name}</span>
       </div>
@@ -817,45 +819,50 @@ function renderFieldMenu() {
 
 function showFieldDetail(fieldKey) {
   const field = FIELD_DATA[fieldKey];
+  if (!field) return;
+
   const container = el('detail-content');
+  let html = `<h2 style="margin-top:0;">${field.name}</h2>`;
   
-  let html = `<h2>${field.name}</h2>`;
-  
-  // ポケモン数とエナジーの表
+  // エナジーテーブルの生成
   html += `
-    <table style="width:100%; border-collapse:collapse; margin:10px 0; font-size:0.85rem; border:1px solid var(--line);">
-      <thead><tr style="background:var(--main-soft);">
-        <th style="border:1px solid var(--line); padding:6px;">出現数</th>
-        <th style="border:1px solid var(--line); padding:6px;">必要エナジー</th>
-      </tr></thead>
+    <table style="width:100%; border-collapse:collapse; margin-bottom:20px; font-size:0.9rem; border:1px solid #ddd;">
+      <thead style="background:#f0f0f0;">
+        <tr><th style="border:1px solid #ddd; padding:8px;">ポケモン数</th><th style="border:1px solid #ddd; padding:8px;">必要エナジー</th></tr>
+      </thead>
       <tbody>
-        ${field.energyTable.map(row => `<tr>
-          <td style="border:1px solid var(--line); padding:6px; text-align:center;">${row.count}</td>
-          <td style="border:1px solid var(--line); padding:6px; text-align:center;">${row.energy}</td>
-        </tr>`).join('')}
+        ${field.energyTable.map(row => `
+          <tr>
+            <td style="border:1px solid #ddd; padding:8px; text-align:center;">${row.count}</td>
+            <td style="border:1px solid #ddd; padding:8px; text-align:center;">${row.energy}</td>
+          </tr>`).join('')}
       </tbody>
     </table>`;
 
+  // 睡眠タイプ別のアイコン定義
   const types = [
     { key: 'utouto', name: 'うとうと', icon: '超うとうと.png' },
     { key: 'suyasuya', name: 'すやすや', icon: '超すやすや.png' },
     { key: 'gussuri', name: 'ぐっすり', icon: '超ぐっすり.png' }
   ];
 
+  // 睡眠タイプごとのポケモン画像を表示
   types.forEach(type => {
     html += `
-      <div style="display:flex; align-items:center; margin-top:15px; font-weight:bold; font-size:0.9rem;">
-        <img src="images/${type.icon}" style="width:20px; height:20px; margin-right:6px;">
+      <div style="display:flex; align-items:center; margin-top:15px; font-weight:bold;">
+        <img src="images/${type.icon}" style="width:22px; height:22px; margin-right:8px;">
         <span>${type.name}</span>
       </div>
-      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(65px, 1fr)); gap:8px; margin-top:8px; background:#fdfdfd; padding:10px; border:1px solid #eee; border-radius:8px;">
+      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(60px, 1fr)); gap:10px; margin:10px 0; background:#f9f9f9; padding:10px; border-radius:8px;">
         ${field.pokemon[type.key].map(id => `
-          <img src="images/${id}.webp" style="width:100%; aspect-ratio:1/1; object-fit:contain;" alt="No.${id}">
+          <img src="images/${id}.webp" style="width:100%; aspect-ratio:1/1; object-fit:contain;" alt="${id}">
         `).join('')}
       </div>`;
   });
 
   container.innerHTML = html;
+  
+  // 画面の切り替え
   el('field-menu').style.display = 'none';
   el('field-detail').style.display = 'block';
 }
