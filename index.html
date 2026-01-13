@@ -812,10 +812,68 @@ function calc() {
   el("totalBadge").textContent = `総合計 ${totalAll}個`;
 }
 
-// 初期化実行
-renderGrids();
-addRecipeRow({meals: 0});
-// 必要に応じて他の初期化関数（renderYearCalendarなど）もここに記述
+// 共通ヘルパー
+function isAround(dateStr, targetDates) {
+  const d = new Date(dateStr);
+  const prev = new Date(d); prev.setDate(d.getDate() - 1);
+  const next = new Date(d); next.setDate(d.getDate() + 1);
+  const fmt = (date) => date.toISOString().split('T')[0];
+  return targetDates.includes(dateStr) || targetDates.includes(fmt(prev)) || targetDates.includes(fmt(next));
+}
+
+// カレンダー描画
+function renderYearCalendar() {
+  const container = el("yearCalendar");
+  if (!container) return;
+  container.innerHTML = "";
+  const year = 2026;
+  const todayStr = new Date().toISOString().split('T')[0];
+  const monthNames = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
+  for (let m = 0; m < 12; m++) {
+    let html = `<div class="month-card"><div class="month-name">${monthNames[m]}</div><div class="days-grid">`;
+    const lastDay = new Date(year, m + 1, 0).getDate();
+    for (let d = 1; d <= lastDay; d++) {
+      const dateStr = `${year}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const dateObj = new Date(year, m, d);
+      const dayOfWeek = dateObj.getDay();
+      let cls = "day";
+      if (dateStr === todayStr) cls += " day-today";
+      if (dayOfWeek === 6) cls += " day-sat";
+      else if (dayOfWeek === 0) cls += " day-sun";
+      if (HOLIDAYS_2026.includes(dateStr)) cls += " day-holiday";
+      if (isAround(dateStr, FULL_MOONS)) cls += " gsd";
+      else if (isAround(dateStr, NEW_MOONS)) cls += " nmd";
+      html += `<div class="${cls}">${d}</div>`;
+    }
+    html += `</div></div>`;
+    container.innerHTML += html;
+  }
+}
+
+// フィールドメニュー（空の定義を補完）
+function renderFieldMenu() {
+  const grid = document.querySelector('.field-grid');
+  if (!grid) return;
+  grid.innerHTML = FIELDS.map(f => `
+    <div class="field-item" onclick="alert('${f.name}の詳細は準備中です')">
+      <img src="${imgSrc(f.file)}" class="field-img">
+      <div class="field-name">${f.name}</div>
+    </div>
+  `).join('');
+}
+
+window.onload = () => {
+  renderGrids();
+  renderYearCalendar();
+  renderFieldMenu();
+  const savedTab = localStorage.getItem('activeTab') || 'tab1';
+  switchTab(savedTab, null);
+  if (state.recipeRows.length === 0) { addRecipeRow({meals: 0}); }
+  const modal = el("noticeModal");
+  el("openNotice").onclick = () => modal.style.display = "flex";
+  el("closeNotice").onclick = () => modal.style.display = "none";
+  window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; };
+};
 </script>
 </body>
 </html>
