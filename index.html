@@ -63,11 +63,7 @@
     } 
 
     .tab-content { display: none; }
-    .tab-content.active { 
-      display: flex; 
-      flex-direction: column; 
-      gap: 16px; 
-    }
+    .tab-content.active { display: block !important; }
     
     .bottom-nav {
       position: fixed;
@@ -557,7 +553,11 @@ const FIELDS = [
 function getIng(id) { return INGREDIENTS.find(x => x.id === id); }
 function imgSrc(file) { return "images/" + encodeURIComponent(file); }
 
-function switchTab(tabId, clickedEl) {
+function switchTab(tabId, tabEl) {
+  // 追加：別のタブへ行くときに詳細画面を閉じてメニューに戻しておく
+  if (tabId !== 'tab2') {
+    backToMenu();
+  }
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
@@ -814,56 +814,49 @@ function calc() {
   };
   
 // フィールド詳細を表示する関数
-function showFieldDetail(fieldName) {
-  const menu = el("fieldMenu");
-  const detail = el("fieldDetail");
-  menu.style.display = "none";
-  detail.style.display = "block";
+function showFieldDetail(name) {
+  // 1. メニューを隠し、詳細エリアを表示
+  el("fieldMenu").style.display = "none";
+  el("fieldDetail").style.display = "block";
+  el("detailTitle").innerText = name;
 
-  // タイトル設定
-  el("detailTitle").innerText = fieldName;
-
-  // エナジーテーブルの生成
-  const energyData = FIELD_ENERGY_DATA[fieldName] || [];
-  let tableHtml = `
-    <table style="width:100%; border-collapse: collapse; font-size:12px; text-align:center;">
-      <thead>
-        <tr style="background:var(--main-soft); border-bottom:2px solid var(--main);">
-          <th style="padding:8px;">ポケモン数</th><th style="padding:8px;">必要エナジー</th>
-        </tr>
-      </thead>
-      <tbody>`;
-  energyData.forEach(d => {
-    tableHtml += `<tr style="border-bottom:1px solid var(--line);"><td style="padding:8px;">${d.q}</td><td>${d.e}</td></tr>`;
+  // 2. エナジーテーブルの生成
+  const ed = FIELD_ENERGY_DATA[name] || [];
+  let table = `<table style="width:100%; border-collapse:collapse; text-align:center; font-size:12px; margin-top:10px;">
+    <tr style="background:var(--main-soft); border-bottom:1px solid var(--line);"><th style="padding:8px;">ポケモン数</th><th style="padding:8px;">必要エナジー</th></tr>`;
+  ed.forEach(row => {
+    table += `<tr style="border-bottom:1px solid var(--line);"><td style="padding:8px;">${row.q}</td><td>${row.e}</td></tr>`;
   });
-  tableHtml += `</tbody></table>`;
-  el("energyTableContainer").innerHTML = tableHtml;
+  table += `</table>`;
+  el("energyTableContainer").innerHTML = table;
 
-  // ポケモン画像の生成
+  // 3. 睡眠タイプごとのポケモン画像一覧を生成
   const types = ["うとうと", "すやすや", "ぐっすり"];
   let pokemonHtml = "";
-  const list = FIELD_POKEMON_LISTS[fieldName] || {};
-
+  
   types.forEach(type => {
-    if (list[type] && list[type].length > 0) {
-      pokemonHtml += `<div style="margin-top:20px;">
-        <div style="font-weight:900; font-size:14px; color:var(--main); margin-bottom:10px; border-left:4px solid var(--main); padding-left:8px;">${type}</div>
-        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px;">`;
-      list[type].forEach(name => {
-        const imgSrc = POKEMON_MAP[name] ? `images/${POKEMON_MAP[name]}` : 'images/stage.png';
+    const list = FIELD_POKEMON_LISTS[name] ? FIELD_POKEMON_LISTS[name][type] : [];
+    if (list && list.length > 0) {
+      pokemonHtml += `
+        <div style="margin-top:20px;">
+          <div style="font-weight:bold; color:var(--main); margin-bottom:10px; border-left:4px solid var(--main); padding-left:8px;">● ${type}</div>
+          <div class="pokemon-grid">`;
+      
+      list.forEach(pName => {
+        const file = POKEMON_MAP[pName] || "stage.png";
         pokemonHtml += `
-          <div style="text-align:center;">
-            <div style="background:#f8f9fa; border-radius:8px; padding:4px;">
-                <img src="${imgSrc}" style="width:100%; aspect-ratio:1/1; object-fit:contain;" onerror="this.src='images/stage.png'">
-            </div>
-            <div style="font-size:9px; margin-top:4px; line-height:1.2; height:2.4em; overflow:hidden;">${name}</div>
+          <div class="pokemon-cell">
+            <div class="pokemon-img-box"><img src="images/${file}" onerror="this.src='images/stage.png'"></div>
+            <div class="pokemon-label">${pName}</div>
           </div>`;
       });
+      
       pokemonHtml += `</div></div>`;
     }
   });
+  
   el("pokemonImageContainer").innerHTML = pokemonHtml;
-  window.scrollTo(0, 0); // 遷移時に上部へスクロール
+  window.scrollTo(0, 0); // 上部へスクロール
 }
 
 // 戻るボタンの処理
