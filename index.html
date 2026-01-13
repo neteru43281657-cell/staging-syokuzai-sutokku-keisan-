@@ -795,29 +795,27 @@ function calc() {
 
   const resultGrid = el("resultGrid");
   resultGrid.innerHTML = "";
-  let grandTotal = 0;
-  displayOrder.forEach(iid => {
-    if (exclude.has(iid)) return;
-    const finalNeed = Math.max(0, Math.ceil(netNeed.get(iid) || 0));
-    if (finalNeed > 0) {
-      grandTotal += finalNeed;
-      const ing = getIng(iid);
-      resultGrid.innerHTML += `
-        <div class="tile">
-          <div class="tileName">${ing.name}</div>
-          <img class="icon" src="${imgSrc(ing.file)}">
-          <div style="font-weight:900; font-size:13px;">${finalNeed}個</div>
-        </div>`;
-    }
+  let totalAll = 0;
+
+  INGREDIENTS.forEach(ing => {
+    if (exclude.has(ing.id)) return;
+    const need = Math.ceil(netNeed.get(ing.id) || 0);
+    if (need <= 0) return;
+    totalAll += need;
+    resultGrid.innerHTML += `
+      <div class="tile" style="border-color:var(--main); background:var(--main-soft);">
+        <div class="tileName" style="color:var(--main);">${ing.name}</div>
+        <img class="icon" src="${imgSrc(ing.file)}">
+        <div style="font-size:14px; font-weight:800; color:var(--main);">${need}<span style="font-size:9px; margin-left:1px;">個</span></div>
+      </div>`;
   });
-  el("totalBadge").textContent = `総合計 ${grandTotal}個`;
+  el("totalBadge").textContent = `総合計 ${totalAll}個`;
 }
 
-// 初期化処理の追加
-window.onload = () => {
-  renderGrids();
-  addRecipeRow(); 
-};
+// 初期化実行
+renderGrids();
+addRecipeRow({meals: 0});
+// 必要に応じて他の初期化関数（renderYearCalendarなど）もここに記述
 </script>
 </body>
 </html>
