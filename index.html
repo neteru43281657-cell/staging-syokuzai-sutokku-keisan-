@@ -990,10 +990,10 @@ function renderYearCalendar() {
       else if (isAround(dateStr, NEW_MOONS)) cls += " nmd";
       html += `<div class="${cls}">${d}</div>`;
     }
-    html += `</div></div>`;
-    container.innerHTML += html;
+      html += `</div></div>`;
+      container.innerHTML += html;
+    }
   }
-}
 
 window.onload = () => {
   renderGrids();
