@@ -176,7 +176,7 @@
       justify-content: center; 
       gap: 2px; 
       width: 100%; 
-      margin: 0;
+      margin: -4px 0 0 0; /* margin-topをマイナスにして上に持ち上げ */
     }
     .exChk { margin: 0; cursor: pointer; }
 
@@ -190,12 +190,12 @@
     }
     .repQty { 
       width: 100% !important; 
-      height: 28px !important; 
-      padding: 2px !important; 
-      font-size: 14px !important; 
+      height: 24px !important;    /* 28pxから24pxへ縮小 */
+      padding: 0 2px !important; 
+      font-size: 14px !important;  /* フォントサイズ調整 */
       font-weight: 800 !important; 
       text-align: center; 
-      border-radius: 8px !important;
+      border-radius: 6px !important; /* 角丸も少しシャープに */
     }
 
     .recipeRow { 
@@ -580,13 +580,13 @@ function renderGrids() {
       </div>`;
     rep.innerHTML += `
       <div class="tile">
-        <div class="tileName" title="${ing.name}">${ing.name}</div>
-        <img class="icon" src="${imgSrc(ing.file)}" alt="">
-        <div class="repInputRow">
-          <input type="number" class="repQty" data-iid="${ing.id}" placeholder="0">
-          <span style="font-size:10px; font-weight:700;">個</span>
-        </div>
-      </div>`;
+          <div class="tileName" title="${ing.name}">${ing.name}</div>
+          <img class="icon" src="${imgSrc(ing.file)}" alt="">
+          <div class="repInputRow" style="padding: 0 8px;"> 
+            <input type="number" class="repQty" data-iid="${ing.id}" placeholder="0">
+            <span style="font-size:9px; font-weight:700; margin-left:1px;">個</span>
+          </div>
+        </div>`;
   });
   document.querySelectorAll(".exChk, .repQty").forEach(input => {
     input.oninput = (e) => {
