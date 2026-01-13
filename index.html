@@ -28,6 +28,45 @@
       --danger: #e74c3c;
     }
     * { box-sizing: border-box; }
+
+    /* ポケモンリストのグリッド */
+    .pokemon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .pokemon-grid img {
+      width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .sleep-type-header {
+      display: flex;
+      align-items: center;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    .sleep-type-icon {
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+    }
+    .energy-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .energy-table th, .energy-table td {
+      border: 1px solid var(--line);
+      padding: 8px;
+      text-align: center;
+    }
+
+    
     body { 
       margin: 0; 
       font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; 
@@ -376,15 +415,16 @@
   </div>
 
   <div id="tab2" class="tab-content">
-    <div id="fieldMenu">
-      <section class="card">
-        <div style="font-weight:900; font-size:16px; color:var(--main); margin-bottom:12px; text-align:center;">フィールド選択</div>
-        <div class="field-grid"></div>
-      </section>
-    </div>
-    <div id="fieldDetail" style="display:none;">
-      <button onclick="backToMenu()" style="margin-bottom:10px; padding:6px 12px; background:none; border:1px solid var(--line); border-radius:8px; font-size:12px; color:var(--muted);">← 戻る</button>
-      <div id="detailContent"></div>
+    <div id="field-menu">
+      <div class="card clickable" onclick="showFieldDetail('wakakusa')">
+        <h3>ワカクサ本島</h3>
+        <p>タップして詳細を表示</p>
+      </div>
+      </div>
+  
+    <div id="field-detail" style="display: none;">
+      <button onclick="backToMenu()" style="margin-bottom: 15px;">← フィールド選択に戻る</button>
+      <div id="detail-content"></div>
     </div>
   </div>
 
@@ -425,6 +465,69 @@
 </div>
 
 <script>
+const FIELD_DATA = {
+  wakakusa: {
+    name: "ワカクサ本島",
+    energyTable: [
+      { count: 4, energy: "9,653" },
+      { count: 5, energy: "20,737" },
+      { count: 6, energy: "46,264" },
+      { count: 7, energy: "83,315" },
+      { count: 8, energy: "195,636" }
+    ],
+    pokemon: {
+      utouto: [1, 10, 23], // 図鑑番号（例: フシギダネ, キャタピー, アーボ）
+      suyasuya: [4, 25, 39], // 例: ヒトカゲ, ピカチュウ, プリン
+      gussuri: [7, 74, 174]  // 例: ゼニガメ, イシツブテ, ププリン
+    }
+  }
+};
+
+function showFieldDetail(fieldKey) {
+  const field = FIELD_DATA[fieldKey];
+  const container = document.getElementById('detail-content');
+  
+  let html = `<h2>${field.name}</h2>`;
+  
+  // エナジー表の作成
+  html += `
+    <table class="energy-table">
+      <thead><tr><th>出現数</th><th>必要エナジー</th></tr></thead>
+      <tbody>
+        ${field.energyTable.map(row => `<tr><td>${row.count}</td><td>${row.energy}</td></tr>`).join('')}
+      </tbody>
+    </table>`;
+
+  // 睡眠タイプ別の表示
+  const types = [
+    { key: 'utouto', name: 'うとうと', icon: '超うとうと.png' },
+    { key: 'suyasuya', name: 'すやすや', icon: '超すやすや.png' },
+    { key: 'gussuri', name: 'ぐっすり', icon: '超ぐっすり.png' }
+  ];
+
+  types.forEach(type => {
+    html += `
+      <div class="sleep-type-header">
+        <img src="images/${type.icon}" class="sleep-type-icon">
+        <span>${type.name}</span>
+      </div>
+      <div class="pokemon-grid">
+        ${field.pokemon[type.key].map(id => `
+          <img src="images/${id}.webp" alt="pokemon-${id}" title="No.${id}">
+        `).join('')}
+      </div>`;
+  });
+
+  container.innerHTML = html;
+  document.getElementById('field-menu').style.display = 'none';
+  document.getElementById('field-detail').style.display = 'block';
+}
+
+function backToMenu() {
+  document.getElementById('field-menu').style.display = 'block';
+  document.getElementById('field-detail').style.display = 'none';
+}
+  
 const el = (id) => document.getElementById(id);
 let state = { recipeRows: [] };
 
