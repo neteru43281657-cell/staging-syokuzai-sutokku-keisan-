@@ -562,8 +562,8 @@ function switchTab(tabId, tabEl) {
   document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
 
-  if (clickedEl) {
-    clickedEl.classList.add('active');
+  if (tabEl) {
+    tabEl.classList.add('active');
   } else {
     const targetNav = Array.from(document.querySelectorAll('.nav-item')).find(n => n.getAttribute('onclick').includes(tabId));
     if (targetNav) targetNav.classList.add('active');
