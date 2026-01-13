@@ -174,11 +174,18 @@
       display: flex; 
       align-items: center; 
       justify-content: center; 
-      gap: 2px; 
+      gap: 3px; 
       width: 100%; 
-      margin: -6px 0 0 0; /* margin-topをマイナスにして上に持ち上げ */
+      height: 24px;      /* 獲得量ペーンの入力欄と同じ高さに固定 */
+      margin: 0;         /* 余計なマージンを排除 */
+      padding: 0 4px;    /* 左右の余白を獲得量ペーンに合わせる */
     }
-    .exChk { margin: 0; cursor: pointer; }
+    .exChk {
+      margin: 0;
+      cursor: pointer;
+      width: 13px;
+      height: 13px;
+    }
 
     .repInputRow { 
       display: flex; 
@@ -576,7 +583,9 @@ function renderGrids() {
       <div class="tile">
         <div class="tileName" title="${ing.name}">${ing.name}</div>
         <img class="icon" src="${imgSrc(ing.file)}" alt="">
-        <label class="chkLabel"><input type="checkbox" class="exChk" data-iid="${ing.id}">除外</label>
+        <div class="exInputRow" style="width:100%; display:flex; justify-content:center; align-items:center;">
+          <label class="chkLabel"><input type="checkbox" class="exChk" data-iid="${ing.id}">除外</label>
+        </div>
       </div>`;
     rep.innerHTML += `
       <div class="tile">
