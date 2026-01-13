@@ -151,6 +151,7 @@
     #summaryBadge { background: var(--main-soft); color: var(--main); border: 1px solid #cce5ff; }
     .total-badge { background: var(--main); color: #fff; border: none; padding: 4px 16px; }
 
+    /* タイルと入力欄の修正 */
     .tile { 
       border: 1px solid var(--line); 
       border-radius: 12px; 
@@ -167,6 +168,36 @@
     .icon { width: 30px; height: 30px; object-fit: contain; }
     .tileName { font-size: 8px; font-weight: 700; width: 100%; overflow: hidden; text-overflow: clip; white-space: nowrap; }
     
+    .chkLabel { 
+      font-size: 10px; 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 2px; 
+      width: 100%; 
+      margin: 0;
+    }
+    .exChk { margin: 0; cursor: pointer; }
+
+    .repInputRow { 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 2px; 
+      width: 100%; 
+      padding: 0 4px;
+    }
+    .repQty { 
+      width: 100% !important; 
+      height: 28px !important; 
+      padding: 2px !important; 
+      font-size: 14px !important; 
+      font-weight: 800 !important; 
+      text-align: center; 
+      border-radius: 8px !important;
+    }
+
     .recipeRow { 
       border: 1px solid var(--line); 
       background: #fcfdfe;
@@ -202,10 +233,64 @@
     .preview { font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; width: 100%; align-items: center; }
     .preview span { display: flex; align-items: center; background: var(--main-soft); color: var(--main); padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 1px solid #d0e7ff; }
 
+    /* カレンダー用 */
+    .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+    .month-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 10px; }
+    .month-name { font-weight: 900; text-align: center; border-bottom: 1px solid var(--line); margin-bottom: 5px; color: var(--text); }
+    
+    .days-grid { 
+      display: grid; 
+      grid-template-columns: repeat(7, 1fr); 
+      gap: 2px;           
+      align-items: center;
+      justify-items: center; }
+    
+    .day {
+      width: 100%;
+      aspect-ratio: 1/1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 10px;
+      position: relative;
+      border-radius: 4px; 
+      transition: background 0.2s;
+      line-height: 1;
+      padding-top: 1px;
+    }
+    
+    .gsd { background-color: #add8e6; color: #000; border-radius: 4px; }
+    .nmd { background-color: #000080; color: #fff; border-radius: 4px; }
+    
+    .dow { 
+      font-size: 8px; 
+      margin-bottom: 1px; }
+    .dow:nth-child(6) { color: #007bff !important; } 
+    .dow:nth-child(7) { color: #e74c3c !important; } 
+    .day-sat { color: #007bff !important; } 
+    .day-sun { color: #e74c3c !important; } 
+    .day-holiday { color: #ff8c00 !important; font-weight: 900; }
+    
+    .day-today::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid #ff4757;
+      border-radius: 4px;
+      background-color: rgba(255, 71, 87, 0.1);
+      pointer-events: none;
+      z-index: 2; }
+    @media (max-width: 480px) { .calendar-grid { grid-template-columns: repeat(2, 1fr); } }
+
     /* フィールドメニュー用スタイル */
     .field-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr); /* 2列表示 */
+      grid-template-columns: repeat(2, 1fr); 
       gap: 12px;
     }
     .field-item {
@@ -235,67 +320,6 @@
       font-weight: 800;
       color: var(--text);
     }
-
-
-    /* カレンダー用 */
-    .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
-    .month-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 10px; }
-    .month-name { font-weight: 900; text-align: center; border-bottom: 1px solid var(--line); margin-bottom: 5px; color: var(--text); }
-    
-    .days-grid { 
-      display: grid; 
-      grid-template-columns: repeat(7, 1fr); 
-      gap: 2px;           
-      align-items: center;
-      justify-items: center; }
-    
-    .day {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 10px;
-      position: relative;
-      border-radius: 4px;    
-      transition: background 0.2s;
-      line-height: 1;
-      padding-top: 1px; }
-    
-    .gsd { 
-      background-color: #add8e6; 
-      color: #000; 
-      border-radius: 4px; }
-
-    .nmd { 
-      background-color: #000080; 
-      color: #fff; 
-      border-radius: 4px; }
-    
-    .dow { 
-      font-size: 8px; 
-      margin-bottom: 1px; }
-    .dow:nth-child(6) { color: #007bff !important; } /* 土曜: 青 */
-    .dow:nth-child(7) { color: #e74c3c !important; } /* 日曜: 赤 */
-    .day-sat { color: #007bff !important; } /* 土曜: 青 */
-    .day-sun { color: #e74c3c !important; } /* 日曜: 赤 */
-    .day-holiday { color: #ff8c00 !important; font-weight: 900; }
-    
-    .day-today::after {
-      content: "";
-      position: absolute;
-      top: 49%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 14px;
-      height: 14px;
-      border: 1.5px solid #ff4757;
-      border-radius: 50%;
-      background-color: rgba(255, 71, 87, 0.1);
-      pointer-events: none;
-      z-index: 2; }
-    @media (max-width: 480px) { .calendar-grid { grid-template-columns: repeat(2, 1fr); } }
   </style>
 </head>
 <body>
@@ -347,28 +371,21 @@
   <div id="tab2" class="tab-content">
     <div id="fieldMenu">
       <section class="card">
-        <div class="field-grid">
-          </div>
+        <div style="font-weight:900; font-size:16px; color:var(--main); margin-bottom:12px; text-align:center;">フィールド選択</div>
+        <div class="field-grid"></div>
       </section>
     </div>
-
     <div id="fieldDetail" style="display:none;">
       <button onclick="backToMenu()" style="margin-bottom:10px; padding:6px 12px; background:none; border:1px solid var(--line); border-radius:8px; font-size:12px; color:var(--muted);">← 戻る</button>
-      
-      <div id="detailContent">
-        </div>
+      <div id="detailContent"></div>
     </div>
   </div>
 
   <div id="tab3" class="tab-content">
     <section class="card">
       <div style="display: flex; gap: 10px; margin-bottom: 10px; font-size: 11px;">
-        <span style="display:flex; align-items:center; gap:4px;">
-          <span style="width:12px; height:12px; background:#add8e6; display:inline-block; border-radius:2px;"></span>Good Sleep Day
-        </span>
-        <span style="display:flex; align-items:center; gap:4px;">
-          <span style="width:12px; height:12px; background:#000080; display:inline-block; border-radius:2px;"></span>New Moon Day
-        </span>
+        <span style="display:flex; align-items:center; gap:4px;"><span style="width:12px; height:12px; background:#add8e6; display:inline-block; border-radius:2px;"></span>Good Sleep Day</span>
+        <span style="display:flex; align-items:center; gap:4px;"><span style="width:12px; height:12px; background:#000080; display:inline-block; border-radius:2px;"></span>New Moon Day</span>
       </div>
       <div id="yearCalendar" class="calendar-grid"></div>
     </section>
@@ -404,21 +421,10 @@
 const el = (id) => document.getElementById(id);
 let state = { recipeRows: [] };
 
-/* --- データの定義 --- */
 const MEALS_PER_DAY = 3;
 const MAX_RECIPE_ROWS = 9;
 const MAX_TOTAL_MEALS = 21;
-const FIELDS = [
-  { id: "wakakusa", name: "ワカクサ本島", file: "ワカクサ本島.png.webp" },
-  { id: "cyan", name: "シアンの砂浜", file: "シアンの砂浜.png.webp" },
-  { id: "taupe", name: "トープ洞窟", file: "トープ洞窟.png.webp" },
-  { id: "snowfield", name: "ウノハナ雪原", file: "ウノハナ雪原.png.webp" },
-  { id: "lapis", name: "ラピスラズリ湖畔", file: "ラピスラズリ湖畔.png.webp" },
-  { id: "powerplant", name: "ゴールド旧発電所", file: "ゴールド旧発電所.png.webp" },
-  { id: "amber", name: "アンバー渓谷", file: "アンバー渓谷.png.webp" },
-  { id: "wakakusa_ex", name: "ワカクサ本島EX", file: "ワカクサ本島EX.png.webp" }
-];
-  
+
 const INGREDIENTS = [
   { id:"leek", name:"ふといながねぎ", file:"ふといながねぎ.webp" },
   { id:"mushroom", name:"あじわいキノコ", file:"あじわいキノコ.webp" },
@@ -507,45 +513,7 @@ const RECIPES = [
   { cat:"デザート・ドリンク", id:"sweet_potato", name:"じゅくせいスイートポテト", ingredients: { potato:9, milk:5 } },
   { cat:"デザート・ドリンク", id:"apple_pie", name:"ねがいごとアップルパイ", ingredients: { apple:12, milk:4 } }
 ];
-
-
-/* --- フィールドメニューの描画 --- */
-function renderFieldMenu() {
-  const grid = document.querySelector(".field-grid");
-  grid.innerHTML = FIELDS.map(field => `
-    <div class="field-item" onclick="showFieldDetail('${field.id}')">
-      <img src="images/${field.file}" class="field-img">
-      <div class="field-name">${field.name}</div>
-    </div>
-  `).join("");
-}
-
-/* --- 詳細画面へ移動 --- */
-function showFieldDetail(fieldId) {
-  const field = FIELDS.find(f => f.id === fieldId);
-  el("fieldMenu").style.display = "none";
-  el("fieldDetail").style.display = "block";
   
-  // 次のステップで、ここに睡眠タイプ別のポケモン画像を表示する処理を書きます
-  el("detailContent").innerHTML = `
-    <div class="card" style="text-align:center;">
-      <img src="images/${field.file}" style="width:80px;">
-      <div style="font-weight:900; margin-top:10px;">${field.name}</div>
-      <p style="font-size:12px; color:var(--muted); margin-top:20px;">ここに睡眠タイプごとのリストが表示されます</p>
-    </div>
-  `;
-}
-
-/* --- メニューに戻る --- */
-function backToMenu() {
-  el("fieldMenu").style.display = "block";
-  el("fieldDetail").style.display = "none";
-}
-
-/* window.onload 内に以下を追加 */
-renderFieldMenu();
-
-
 const HOLIDAYS_2026 = [
   "2026-01-01", "2026-01-12", "2026-02-11", "2026-02-23", "2026-03-20",
   "2026-04-29", "2026-05-03", "2026-05-04", "2026-05-05", "2026-05-06",
@@ -555,6 +523,17 @@ const HOLIDAYS_2026 = [
 
 const FULL_MOONS = ["2026-01-03", "2026-02-02", "2026-03-03", "2026-04-02", "2026-05-02", "2026-05-31", "2026-06-30", "2026-07-29", "2026-08-28", "2026-09-27", "2026-10-26", "2026-11-24", "2026-12-24"];
 const NEW_MOONS = ["2026-01-19", "2026-02-17", "2026-03-19", "2026-04-17", "2026-05-17", "2026-06-15", "2026-07-14", "2026-08-13", "2026-09-11", "2026-10-11", "2026-11-09", "2026-12-09"];
+
+const FIELDS = [
+  { id: "wakakusa", name: "ワカクサ本島", file: "ワカクサ本島.png.webp" },
+  { id: "cyan", name: "シアンの砂浜", file: "シアンの砂浜.png.webp" },
+  { id: "taupe", name: "トープ洞窟", file: "トープ洞窟.png.webp" },
+  { id: "snowfield", name: "ウノハナ雪原", file: "ウノハナ雪原.png.webp" },
+  { id: "lapis", name: "ラピスラズリ湖畔", file: "ラピスラズリ湖畔.png.webp" },
+  { id: "powerplant", name: "ゴールド旧発電所", file: "ゴールド旧発電所.png.webp" },
+  { id: "amber", name: "アンバー渓谷", file: "アンバー渓谷.png.webp" },
+  { id: "wakakusa_ex", name: "ワカクサ本島EX", file: "ワカクサ本島EX.png.webp" }
+];
 
 /* --- 基本関数 --- */
 function getIng(id) { return INGREDIENTS.find(x => x.id === id); }
@@ -603,9 +582,9 @@ function renderGrids() {
       <div class="tile">
         <div class="tileName" title="${ing.name}">${ing.name}</div>
         <img class="icon" src="${imgSrc(ing.file)}" alt="">
-        <div class="repInputRow" style="display:flex; align-items:center; gap:2px;">
-          <input type="number" class="repQty" data-iid="${ing.id}" placeholder="0" style="width:100%; height:24px; padding:2px; font-size:12px; text-align:center;">
-          <span style="font-size:10px;">個</span>
+        <div class="repInputRow">
+          <input type="number" class="repQty" data-iid="${ing.id}" placeholder="0">
+          <span style="font-size:10px; font-weight:700;">個</span>
         </div>
       </div>`;
   });
@@ -753,7 +732,34 @@ function calc() {
   el("totalBadge").textContent = `総合計 ${grandTotal}個`;
 }
 
-/* --- カレンダー機能 --- */
+function renderFieldMenu() {
+  const grid = document.querySelector(".field-grid");
+  grid.innerHTML = FIELDS.map(field => `
+    <div class="field-item" onclick="showFieldDetail('${field.id}')">
+      <img src="images/${field.file}" class="field-img">
+      <div class="field-name">${field.name}</div>
+    </div>
+  `).join("");
+}
+
+function showFieldDetail(fieldId) {
+  const field = FIELDS.find(f => f.id === fieldId);
+  el("fieldMenu").style.display = "none";
+  el("fieldDetail").style.display = "block";
+  el("detailContent").innerHTML = `
+    <div class="card" style="text-align:center;">
+      <img src="images/${field.file}" style="width:80px;">
+      <div style="font-weight:900; margin-top:10px;">${field.name}</div>
+      <p style="font-size:12px; color:var(--muted); margin-top:20px;">ここに睡眠タイプごとのリストが表示されます</p>
+    </div>
+  `;
+}
+
+function backToMenu() {
+  el("fieldMenu").style.display = "block";
+  el("fieldDetail").style.display = "none";
+}
+
 function isAround(dateStr, targetArray) {
   const date = new Date(dateStr);
   return targetArray.some(target => {
@@ -768,63 +774,46 @@ function renderYearCalendar() {
   const year = 2026;
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-  
   const dows = ["月", "火", "水", "木", "金", "土", "日"];
   container.innerHTML = "";
 
   for (let m = 0; m < 12; m++) {
     let html = `<div class="month-card"><div class="month-name">${m + 1}月</div><div class="days-grid">`;
     dows.forEach(d => html += `<div class="dow">${d}</div>`);
-    
     const firstDayIdx = new Date(year, m, 1).getDay(); 
     let offset = (firstDayIdx === 0) ? 6 : firstDayIdx - 1;
     const lastDate = new Date(year, m + 1, 0).getDate();
 
     for (let i = 0; i < offset; i++) html += `<div></div>`;
-
     for (let d = 1; d <= lastDate; d++) {
-          const dateObj = new Date(year, m, d);
-          const dayOfWeek = dateObj.getDay();
-          const dateStr = `${year}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-          
-          let cls = "day";
-          
-          // 判定ロジック
-          if (dateStr === todayStr) cls += " day-today";
-          if (dayOfWeek === 6) cls += " day-sat";
-          else if (dayOfWeek === 0) cls += " day-sun";
-          if (HOLIDAYS_2026.includes(dateStr)) cls += " day-holiday";
-          
-          if (isAround(dateStr, FULL_MOONS)) cls += " gsd";
-          else if (isAround(dateStr, NEW_MOONS)) cls += " nmd";
-          
-          html += `<div class="${cls}">${d}</div>`;
-        }
+      const dateStr = `${year}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const dateObj = new Date(year, m, d);
+      const dayOfWeek = dateObj.getDay();
+      let cls = "day";
+      if (dateStr === todayStr) cls += " day-today";
+      if (dayOfWeek === 6) cls += " day-sat";
+      else if (dayOfWeek === 0) cls += " day-sun";
+      if (HOLIDAYS_2026.includes(dateStr)) cls += " day-holiday";
+      if (isAround(dateStr, FULL_MOONS)) cls += " gsd";
+      else if (isAround(dateStr, NEW_MOONS)) cls += " nmd";
+      html += `<div class="${cls}">${d}</div>`;
+    }
     html += `</div></div>`;
     container.innerHTML += html;
   }
 }
 
-/* --- 初期化処理 --- */
 window.onload = () => {
   renderGrids();
   renderYearCalendar();
-  
-  // 保存されたタブがあれば復元
+  renderFieldMenu();
   const savedTab = localStorage.getItem('activeTab') || 'tab1';
   switchTab(savedTab, null);
-
-  // 初期レシピ行（なければ1つ追加）
-  if (state.recipeRows.length === 0) {
-    addRecipeRow({meals: 0});
-  }
-
-  // モーダル管理
+  if (state.recipeRows.length === 0) { addRecipeRow({meals: 0}); }
   const modal = el("noticeModal");
   el("openNotice").onclick = () => modal.style.display = "flex";
   el("closeNotice").onclick = () => modal.style.display = "none";
   window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; };
-
   el("addRecipe").onclick = () => addRecipeRow({meals: 0});
   el("clearAll").onclick = () => { 
     el("recipeList").innerHTML = ""; state.recipeRows = [];
