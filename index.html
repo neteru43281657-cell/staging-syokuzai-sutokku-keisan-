@@ -813,6 +813,15 @@ function calc() {
   el("totalBadge").textContent = `総合計 ${grandTotal}個`;
 }
 
+// 初期化処理の追加
+window.onload = () => {
+  renderGrids();
+  addRecipeRow(); 
+};
+</script>
+</body>
+</html>
+  
 function renderFieldMenu() {
   // --- データ定義 ---
   const POKEMON_MASTER = {
