@@ -63,7 +63,11 @@
     } 
 
     .tab-content { display: none; }
-    .tab-content.active { display: block !important; }
+    .tab-content.active { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 16px; 
+    }
     
     .bottom-nav {
       position: fixed;
@@ -374,24 +378,13 @@
   <div id="tab2" class="tab-content">
     <div id="fieldMenu">
       <section class="card">
-        <div style="font-weight:900; font-size:15px; margin-bottom:12px;">フィールド選択</div>
-        <div id="fieldGrid" class="field-grid"></div>
+        <div style="font-weight:900; font-size:16px; color:var(--main); margin-bottom:12px; text-align:center;">フィールド選択</div>
+        <div class="field-grid"></div>
       </section>
     </div>
-  
     <div id="fieldDetail" style="display:none;">
-      <button onclick="backToMenu()" style="margin-bottom:15px; padding:8px 16px; border-radius:20px; border:1px solid var(--line); background:#fff; font-size:12px; font-weight:bold; cursor:pointer;">← フィールド一覧に戻る</button>
-      <section class="card">
-        <div id="detailTitle" style="font-weight:900; font-size:20px; margin-bottom:16px; color:var(--main); text-align:center;"></div>
-        
-        <div style="font-weight:900; font-size:14px; margin-bottom:8px;">出現ポケモン数と必要エナジー</div>
-        <div id="energyTableContainer"></div>
-  
-        <div style="height:1px; background:var(--line); margin:24px 0;"></div>
-  
-        <div style="font-weight:900; font-size:14px; margin-bottom:4px;">出現ポケモン</div>
-        <div id="pokemonImageContainer"></div>
-      </section>
+      <button onclick="backToMenu()" style="margin-bottom:10px; padding:6px 12px; background:none; border:1px solid var(--line); border-radius:8px; font-size:12px; color:var(--muted);">← 戻る</button>
+      <div id="detailContent"></div>
     </div>
   </div>
 
@@ -553,17 +546,13 @@ const FIELDS = [
 function getIng(id) { return INGREDIENTS.find(x => x.id === id); }
 function imgSrc(file) { return "images/" + encodeURIComponent(file); }
 
-function switchTab(tabId, tabEl) {
-  // 追加：別のタブへ行くときに詳細画面を閉じてメニューに戻しておく
-  if (tabId !== 'tab2') {
-    backToMenu();
-  }
+function switchTab(tabId, clickedEl) {
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
 
-  if (tabEl) {
-    tabEl.classList.add('active');
+  if (clickedEl) {
+    clickedEl.classList.add('active');
   } else {
     const targetNav = Array.from(document.querySelectorAll('.nav-item')).find(n => n.getAttribute('onclick').includes(tabId));
     if (targetNav) targetNav.classList.add('active');
@@ -586,23 +575,37 @@ function switchTab(tabId, tabEl) {
   window.scrollTo(0, 0);
 }
 
-let isRendering = false;
-
 function renderGrids() {
-  if (isRendering) return; // すでに実行中なら何もしない
-  isRendering = true;
-
-  const container = el("gridsContainer");
-  if (!container) {
-    isRendering = false;
-    return;
-  }
-
-  let html = "";
-
-  container.innerHTML = html;
-
-  isRendering = false; // 終了後にフラグを戻す
+  const ex = el("excludeGrid"), rep = el("replenishGrid");
+  ex.innerHTML = ""; rep.innerHTML = "";
+  INGREDIENTS.forEach(ing => {
+    ex.innerHTML += `
+      <div class="tile">
+        <div class="tileName" title="${ing.name}">${ing.name}</div>
+        <img class="icon" src="${imgSrc(ing.file)}" alt="">
+        <div class="exInputRow" style="width:100%; display:flex; justify-content:center; align-items:center;">
+          <label class="chkLabel"><input type="checkbox" class="exChk" data-iid="${ing.id}">除外</label>
+        </div>
+      </div>`;
+    rep.innerHTML += `
+      <div class="tile">
+          <div class="tileName" title="${ing.name}">${ing.name}</div>
+          <img class="icon" src="${imgSrc(ing.file)}" alt="">
+          <div class="repInputRow" style="padding: 0 8px;"> 
+            <input type="number" class="repQty" data-iid="${ing.id}" placeholder="0">
+            <span style="font-size:9px; font-weight:700; margin-left:1px;">個</span>
+          </div>
+        </div>`;
+  });
+  document.querySelectorAll(".exChk, .repQty").forEach(input => {
+    input.oninput = (e) => {
+      if (e.target.classList.contains("repQty")) {
+        if (e.target.value > 999) e.target.value = 999;
+        if (e.target.value < 0) e.target.value = 0;
+      }
+      calc();
+    };
+  });
 }
 
 function addRecipeRow(init) {
@@ -738,136 +741,14 @@ function calc() {
   el("totalBadge").textContent = `総合計 ${grandTotal}個`;
 }
 
-  // ポケモン名から画像ファイル名への変換マップ
-  const POKEMON_MAP = {
-      "フシギダネ":"1.webp","フシギソウ":"2.webp","フシギバナ":"3.webp","ヒトカゲ":"4.webp","リザード":"5.webp","リザードン":"6.webp","ゼニガメ":"7.webp","カメール":"8.webp","カメックス":"9.webp","キャタピー":"10.webp","トランセル":"11.webp","バタフリー":"12.webp","コラッタ":"19.webp","ラッタ":"20.webp","アーボ":"23.webp","アーボック":"24.webp","ピカチュウ":"25.webp","ライチュウ":"26.webp","ピッピ":"35.webp","ピクシー":"36.webp","ロコン":"37.webp","キュウコン":"38.webp","プリン":"39.webp","プクリン":"40.webp","ディグダ":"50.webp","ダグトリオ":"51.webp","ニャース":"52.webp","ペルシアン":"53.webp","コダック":"54.webp","ゴルダック":"55.webp","マンキー":"56.webp","オコリザル":"57.webp","ガーディ":"58.webp","ウインディ":"59.webp","マダツボミ":"69.webp","ウツドン":"70.webp","ウツボット":"71.webp","イシツブテ":"74.webp","ゴローン":"75.webp","ゴローニャ":"76.webp","ヤドン":"79.webp","ヤドラン":"80.webp","コイル":"81.webp","レアコイル":"82.webp","ドードー":"84.webp","ドードリオ":"85.webp","パウワウ":"86.webp","ジュゴン":"87.webp","ゴース":"92.webp","ゴースト":"93.webp","ゲンガー":"94.webp","イワーク":"95.webp","スリープ":"96.webp","スリーパー":"97.webp","カラカラ":"104.webp","ガラガラ":"105.webp","ガルーラ":"115.webp","カイロス":"127.webp","メタモン":"132.webp","イーブイ":"133.webp","シャワーズ":"134.webp","サンダース":"135.webp","ブースター":"136.webp","ポリゴン":"137.webp","ミニリュウ":"147.webp","ハクリュー":"148.webp","カイリュー":"149.webp","チコリータ":"152.webp","ベイリーフ":"153.webp","メガニウム":"154.webp","ヒノアラシ":"155.webp","マグマラシ":"156.webp","バクフーン":"157.webp","ワニノコ":"158.webp","アリゲイツ":"159.webp","オーダイル":"160.webp","オタチ":"161.webp","オオタチ":"162.webp","レディバ":"165.webp","レディアン":"166.webp","クロバット":"169.webp","チョンチー":"170.webp","ランターン":"171.webp","ピチュー":"172.webp","ピィ":"173.webp","ププリン":"174.webp","トゲピー":"175.webp","トゲチック":"176.webp","ネイティ":"177.webp","ネイティオ":"178.webp","メリープ":"179.webp","モココ":"180.webp","デンリュウ":"181.webp","ウソッキー":"185.webp","エイパム":"190.webp","ヤンヤンマ":"193.webp","ウパー":"194.webp","ヌオー":"195.webp","エーフィ":"196.webp","ブラッキー":"197.webp","ヤミカラス":"198.webp","ヤドキング":"199.webp","ムウマ":"200.webp","ソーナンス":"202.webp","キリンリキ":"203.webp","クヌギダマ":"204.webp","フォレトス":"205.webp","ノコッチ":"206.webp","ハガネール":"208.webp","ブルー":"209.webp","グランブル":"210.webp","ハリーセン":"211.webp","ヘラクロス":"214.webp","ニューラ":"215.webp","ヒメグマ":"216.webp","リングマ":"217.webp","デルビル":"228.webp","ヘルガー":"229.webp","ポリゴン２":"233.webp","ドーブル":"235.webp","バルキー":"236.webp","ムチュール":"238.webp","エレキッド":"239.webp","ブビィ":"240.webp","ミルタンク":"241.webp","ハピナス":"242.webp","ライコウ":"243.webp","エンテイ":"244.webp","スイクン":"245.webp","ヨーギラス":"246.webp","サナギラス":"247.webp","バンギラス":"248.webp","ルギア":"249.webp","ホウオウ":"250.webp","セレビィ":"251.webp","キモリ":"252.webp","ジュプトル":"253.webp","ジュカイン":"254.webp","アチャモ":"255.webp","ワカシャモ":"256.webp","バシャーモ":"257.webp","ミズゴロウ":"258.webp","ヌマクロー":"259.webp","ラグラージ":"260.webp","ラルトス":"280.webp","キルリア":"281.webp","サーナイト":"282.webp","ナマケロ":"287.webp","ヤルキモノ":"288.webp","ケッキング":"289.webp","クチート":"303.webp","ココドラ":"304.webp","コドラ":"305.webp","ボスゴドラ":"306.webp","プラスル":"311.webp","マイナン":"312.webp","ゴクリン":"316.webp","マルノーム":"317.webp","ナックラー":"328.webp","ビブラーバ":"329.webp","フライゴン":"330.webp","チルット":"333.png","チルタリス":"334.webp","カゲボウズ":"353.webp","ジュペッタ":"354.webp","アブソル":"359.webp","ソーナノ":"360.webp","タマザラシ":"363.webp","トどグラー":"364.webp","トどゼルガ":"365.webp","タツベイ":"371.webp","コモルー":"372.webp","ボーマンダ":"373.webp","コリンク":"403.webp","ルクシオ":"404.webp","レントラー":"405.webp","フワンテ":"425.webp","フワライド":"426.webp","ドンカラス":"430.webp","ウソハチ":"438.webp","マネネ":"439.webp","ピンプク":"440.webp","ミカルゲ":"442.webp","リオル":"447.webp","ルカリオ":"448.webp","グレッグル":"453.webp","ドクロッグ":"454.webp","ジバコイル":"462.webp","トゲキッス":"468.webp","リーフィア":"470.webp","グレイシア":"471.webp","マンムー":"473.webp","エルレイド":"475.webp","ユキメノコ":"478.webp","ロトム":"479.webp","ユキカブリ":"459.webp","ユキノオー":"460.webp","ムンナ":"517.webp","ムシャーナ":"518.webp","ワシボン":"627.webp","ウォーグル":"628.webp","ニンフィア":"700.webp","デデンネ":"702.webp","メレシー":"703.webp","ヌイコグマ":"759.webp","キテルグマ":"760.webp","ミミッキュ":"778.webp","トゲデマル":"777.webp","キュワワー":"764.webp","アゴジムシ":"736.webp","デンヂムシ":"737.webp","クワガノン":"738.webp","ウッウ":"845.webp","エレズン":"848.webp","ストリンダー（ハイ）":"849.webp","ストリンダー（ロー）":"849.webp","ウパー（パルデア）":"194.webp","ドオー":"980.webp","バケッチャ":"710.webp","パンプジン":"711.webp","イシズマイ":"557.webp","イわパレス":"558.webp","ニャオハ":"906.webp","ニャローテ":"907.webp","マスカーニャ":"908.webp","ホゲータ":"909.webp","アチゲータ":"910.webp","ラウドボーン":"911.webp","クワッス":"912.webp","ウェルカモ":"913.webp","ウェーニバル":"914.webp","パモ":"921.webp","パモット":"922.webp","パーモット":"923.webp","アルクジラ":"974.webp","ハルクジラ":"975.webp","ロコン（アローラ）":"37.webp","キュウコン（アローラ）":"38.webp","クレセリア":"488.webp"
-  };
-  
-  // フィールド別エナジーテーブル
-  const FIELD_ENERGY_DATA = {
-      "ワカクサ本島": [{q:4,e:"9,653"},{q:5,e:"20,737"},{q:6,e:"46,264"},{q:7,e:"83,315"},{q:8,e:"195,636"}],
-      "シアンの砂浜": [{q:4,e:"15,744"},{q:5,e:"35,113"},{q:6,e:"71,624"},{q:7,e:"134,883"},{q:8,e:"304,918"}],
-      "トープ洞窟": [{q:4,e:"18,295"},{q:5,e:"46,264"},{q:6,e:"99,359"},{q:7,e:"195,636"},{q:8,e:"437,065"}],
-      "ウノハナ雪原": [{q:4,e:"28,214"},{q:5,e:"71,624"},{q:6,e:"154,692"},{q:7,e:"287,728"},{q:8,e:"656,934"}],
-      "ラピスラズリ湖畔": [{q:4,e:"31,536"},{q:5,e:"77,305"},{q:6,e:"166,599"},{q:7,e:"304,918"},{q:8,e:"686,643"}],
-      "ゴールド旧発電所": [{q:4,e:"35,420"},{q:5,e:"85,617"},{q:6,e:"182,752"},{q:7,e:"331,310"},{q:8,e:"740,689"}],
-      "アンバー渓谷": [{q:4,e:"39,268"},{q:5,e:"93,803"},{q:6,e:"198,429"},{q:7,e:"355,548"},{q:8,e:"788,144"}],
-      "ワカクサ本島EX": [{q:4,e:"9,653"},{q:5,e:"20,737"},{q:6,e:"46,264"},{q:7,e:"83,315"},{q:8,e:"195,636"}]
-  };
-  
-  // フィールド別・睡眠タイプ別出現リスト（テキストファイルに基づき昇順で作成）
-  const FIELD_POKEMON_LISTS = {
-      "ワカクサ本島": {
-          "うとうと": ["フシギダネ","フシギソウ","フシギバナ","キャタピー","トランセル","バタフリー","マンキー","オコリザル","マダツボミ","ウツドン","ウツボット","ゴース","ゴースト","デルビル","ヘルガー","ゴクリン","マルノーム","カゲボウズ","ジュペッタ","アブソル","グレッグル","ドクロッグ","リーフィア","ブラッキー","チコリータ","ベイリーフ","メガニウム","キモリ","ジュプトル","ジュカイン","ヤルキモノ","フワンテ","フワライド","デリバード","ヤミカラス","ドンカラス","ニューラ","マニューラ","カイロス","ヘラクロス","ミカルゲ","ミミッキュ","バケッチャ","パンプジン","ウパー（パルデア）","ドオー","ニャオハ","ニャローテ","マスカーニャ","ストリンダー（ハイ）","ストリンダー（ロー）"],
-          "すやすや": ["ヒトカゲ","リザード","リザードン","ピカチュウ","ライチュウ","ピッピ","ピクシー","プリン","プクリン","ニャース","ペルシアン","ガーディ","ウインディ","ヤドン","ヤドラン","ヤドキング","イーブイ","ブースター","サンダース","エーフィ","コラッタ","ラッタ","ディグダ","ダグトリオ","メリープ","モココ","デンリュウ","ネイティ","ネイティオ","ソーナンス","ナマケロ","ケッキング","ヒノアラシ","マグマラシ","バクフーン","アチャモ","ワカシャモ","バシャーモ","ホゲータ","アチゲータ","ラウドボーン","デデンネ","キュワワー","バリヤード","ガルーラ","メタモン","ラッキー","ハピナス","ムンナ","ムシャーナ","クレセリア","ライコウ","エンテイ"],
-          "ぐっすり": ["ゼニガメ","カメール","カメックス","イシツブテ","ゴローン","ゴローニャ","コイル","レアコイル","ジバコイル","ドードー","ドードリオ","ピチュー","ピィ","ププリン","トゲピー","トゲチック","トゲキッス","ワニノコ","アリゲイツ","オーダイル","ウソッキー","ウソハチ","カラカラ","ガラガラ","タマザラシ","トどグラー","トどゼルガ","グレイシア","リオル","ルカリオ","ミズゴロウ","ヌマクロー","ラグラージ","ナックラー","ビブラーバ","フライゴン","ヌイコグマ","キテルグマ","クワッス","ウェルカモ","ウェーニバル","パモ","パモット","パーモット","ウパー","ヌオー","マネネ","チルット","チルタリス","トゲデマル","ワシボン","ウォーグル","ウッウ","タツベイ","コモルー","ボーマンダ","スイクン"]
-      },
-      "シアンの砂浜": {
-          "うとうと": ["キャタピー","バタフリー","アーボ","アーボック","マンキー","オコリザル","マダツボミ","ウツドン","ウツボット","ゴクリン","ドクロッグ","チコリータ","キモリ","ジュプトル","ジュカイン","カイロス","ヘラクロス","ラウドボーン"],
-          "すやすや": ["コラッタ","ラッタ","ピカチュウ","ピッピ","ピクシー","プリン","プクリン","ディグダ","ガーディ","ヤドン","ヤドラン","ヤドキング","イーブイ","ホゲータ","アチゲータ","バリヤード","メタモン","ガルーラ","キュワワー","ラッキー","ハピナス"],
-          "ぐっすり": ["ゼニガメ","カメール","カメックス","ワニノコ","アリゲイツ","オーダイル","ピィ","ププリン","ウソッキー","ウソハチ","タマザラシ","マネネ","ウパー","ヌオー","ミズゴロウ","ヌマクロー","ラグラージ","ピンプク","ワシボン","ウォーグル","クワッス","ウェルカモ","ウェーニバル","ゴルダック","ウッウ","カモネギ","シャワーズ","スイクン"]
-      },
-      "トープ洞窟": {
-          "うとうと": ["アーボ","アーボック","ゴース","ゴースト","ゲンガー","デルビル","ヘルガー","ゴクリン","マルノーム","グレッグル","ドクロッグ","カゲボウズ","ジュペッタ","ヤミラミ","ブラッキー","ウパー（パルデア）","ドオー","ラウドボーン","バンギラス"],
-          "すやすや": ["ヒトカゲ","リザード","リザードン","コラッタ","ラッタ","ピッピ","ピクシー","プリン","プクリン","ディグダ","ダグトリオ","ガーディ","ウインディ","イーブイ","ブースター","エーフィ","ヒノアラシ","マグマラシ","バクフーン","ソーナンス","ロコン","キュウコン","アチャモ","ホゲータ","アチゲータ","メタモン","エンテイ"],
-          "ぐっすり": ["イシツブテ","ゴローン","ゴローニャ","カラカラ","ガラガラ","ピィ","ププリン","トゲピー","ヨーギラス","サナギラス","ソーナノ","リオル","ウパー","ヌオー","ミズゴロウ","ヌマクロー","ナックラー","ビブラーバ","イワーク","ハガネール","ワカシャモ","バシャーモ","クチート"]
-      },
-      "ウノハナ雪原": {
-          "うとうと": ["コダック","マンキー","オコリザル","マダツボミ","ゴース","ゴースト","ゴクリン","マルノーム","グレッグル","ドクロッグ","ヤルキモノ","ヤミカラス","ドンカラス","ニューラ","マニューラ","チルタリス","アブソル","デリバード","ミカルゲ"],
-          "すやすや": ["コラッタ","ラッタ","ピッピ","ピクシー","プリン","ヤドン","ヤドラン","イーブイ","メリープ","モココ","デンリュウ","ソーナンス","ナマケロ","ケッキング","パモ","パモット","パーモット","トゲチック","メタモン","ラッキー","ハピナス","クレセリア"],
-          "ぐっすり": ["イシツブテ","カラカラ","ガラガラ","ピィ","トゲピー","チルット","ソーナノ","タマザラシ","トどグラー","トどゼルガ","ピンプク","リオル","ルカリオ","ユキカブリ","ユキノオー","ワシボン","ウォーグル","アルクジラ","ハルクジラ","ロコン（アローラ）","キュウコン（アローラ）","ウッウ","トゲデマル","グレイシア"]
-      },
-      "ラピスラズリ湖畔": {
-          "うとうと": ["フシギダネ","フシギソウ","フシギバナ","アーボ","コダック","マンキー","オコリザル","マダツボミ","ウツドン","ウツボット","ミニリュウ","ハクリュー","カイリュー","チコリータ","ベイリーフ","メガニウム","キモリ","ジュプトル","ジュカイン","ニャオハ","ニャローテ","マスカーニャ","チルタリス","ミカルゲ","リーフィア"],
-          "すやすや": ["ピカチュウ","ピッピ","ピクシー","プリン","ニャース","ペルシアン","ヤドン","ヤドラン","イーブイ","エーフィ","ネイティ","ネイティオ","ソーナンス","アチャモ","ラルトス","キルリア","サーナイト","ムンナ","ムシャーナ","トゲチック","メタモン","デデンネ","キュワワー","クレセリア"],
-          "ぐっすり": ["ゼニガメ","カメール","カメックス","ドードー","ドードリオ","ピチュー","ピィ","ププリン","トゲピー","ウソッキー","チルット","ソーナノ","リオル","ヌイコグマ","キテルグマ","クワッス","ウェルカモ","ワカシャモ","バシャーモ"]
-      },
-      "ゴールド旧発電所": {
-          "うとうと": ["キャタピー","バタフリー","アーボ","アーボック","ゴース","ゴースト","ゲンガー","キモリ","ジュプトル","ジュカイン","カゲボウズ","ジュペッタ","フワンテ","フワライド","バケッチャ","パンプジン","アゴジムシ","デンヂムシ","クワガノン","ニャオハ","ニャローテ","マスカーニャ","ヤミカラス","ドンカラス","ミミッキュ","ストリンダー（ハイ）","ストリンダー（ロー）","ラウドボーン"],
-          "すやすや": ["ピカチュウ","ライチュウ","ピッピ","ピクシー","ディグダ","ダグトリオ","バリヤード","イーブイ","サンダース","メリープ","モココ","デンリュウ","コリンク","ルクシオ","レントラー","ムンナ","ムシャーナ","ホゲータ","アチゲータ","パモ","パモット","パーモット","メタモン","デデンネ","プラスル","マイナン","ライコウ"],
-          "ぐっすり": ["イシツブテ","ゴローン","コイル","レアコイル","ピチュー","ピィ","ウパー","ココドラ","マネネ","エレズン","クワッス","ウェルカモ"]
-      },
-      "アンバー渓谷": {
-          "うとうと": ["キャタピー","バタフリー","アーボ","アーボック","ウパー（パルデア）","ドオー","タツベイ","コモルー","ボーマンダ","イシズマイ","イわパレス","バケッチャ","パンプジン","カイロス","ヘラクロス","チルタリス","ミカルゲ","ストリンダー（ハイ）","ストリンダー（ロー）","バンギラス"],
-          "すやすや": ["ヒトカゲ","リザード","リザードン","ピッピ","ピクシー","ロコン","キュウコン","イーブイ","ネイティ","ネイティオ","アチャモ","ムンナ","ムシャーナ","メタモン","ガルーラ","ラッキー","ハピナス","プラスル","マイナン","エンテイ"],
-          "ぐっすり": ["ピィ","ヨーギラス","サナギラス","ミズゴロウ","ヌマクロー","ラグラージ","ナックラー","ビブラーバ","フライゴン","チルット","ピンプク","ワシボン","ウォーグル","エレズン","ワカシャモ","バシャーモ","クチート","トゲデマル"]
-      },
-      "ワカクサ本島EX": {
-          "うとうと": ["フシギダネ","フシギソウ","フシギバナ","キャタピー","トランセル","バタフリー","チコリータ","ベイリーフ","メガニウム","デルビル","ヘルガー","キモリ","ジュプトル","ジュカイン","カゲボウズ","ジュペッタ","バケッチャ","パンプジン","ニャオハ","ニャローテ","マスカーニャ","ウパー（パルデア）","ドオー","ヤルキモノ","チルタリス","フワンテ","フワライド","ヤミカラス","ドンカラス","ニューラ","マニューラ","ヤミラミ","カイロス","ヘラクロス","アブソル","ブラッキー","デリバード","ミカルゲ","リーフィア","ミミッキュ","ストリンダー（ハイ）","ストリンダー（ロー）","ラウドボーン","バンギラス"],
-          "すやすや": ["ヒトカゲ","リザード","リザードン","ピカチュウ","ライチュウ","ピッピ","ピクシー","ロコン","キュウコン","ニャース","ペルシアン","ガーディ","ウインディ","イーブイ","ブースター","サンダース","エーフィ","ヒノアラシ","マグマラシ","バクフーン","ネイティ","ネイティオ","メリープ","モココ","デンリュウ","アチャモ","ワカシャモ","バシャーモ","ラルトス","キルリア","サーナイト","ナマケロ","ケッキング","ムンナ","ムシャーナ","ホゲータ","アチゲータ","ラウドボーン","パモ","パモット","パーモット","メタモン","デデンネ","キュワワー","ガルーラ","ラッキー","ハピナス","クレセリア","ライコウ","エンテイ"],
-          "ぐっすり": ["ゼニガメ","カメール","カメックス","イシツブテ","ゴローン","ゴローニャ","コイル","レアコイル","ジバコイル","ドードー","ドードリオ","ピチュー","ピィ","ププリン","トゲピー","トゲチック","トゲキッス","ワニノコ","アリゲイツ","オーダイル","シャワーズ","ウソッキー","ウソハチ","カラカラ","ガラガラ","タマザラシ","トどグラー","トどゼルガ","グレイシア","リオル","ルカリオ","ミズゴロウ","ヌマクロー","ラグラージ","ナックラー","ビブラーバ","フライゴン","ヌイコグマ","キテルグマ","クワッス","ウェルカモ","ウェーニバル","パモ","パモット","パーモット","ウパー","ヌオー","マネネ","チルット","チルタリス","トゲデマル","ワシボン","ウォーグル","ウッウ","タツベイ","コモルー","ボーマンダ","スイクン"]
-      }
-  };
-  
-// フィールド詳細を表示する関数
-function showFieldDetail(name) {
-  // 1. メニューを隠し、詳細エリアを表示
-  el("fieldMenu").style.display = "none";
-  el("fieldDetail").style.display = "block";
-  el("detailTitle").innerText = name;
-
-  // 2. エナジーテーブルの生成
-  const ed = FIELD_ENERGY_DATA[name] || [];
-  let table = `<table style="width:100%; border-collapse:collapse; text-align:center; font-size:12px; margin-top:10px;">
-    <tr style="background:var(--main-soft); border-bottom:1px solid var(--line);"><th style="padding:8px;">ポケモン数</th><th style="padding:8px;">必要エナジー</th></tr>`;
-  ed.forEach(row => {
-    table += `<tr style="border-bottom:1px solid var(--line);"><td style="padding:8px;">${row.q}</td><td>${row.e}</td></tr>`;
-  });
-  table += `</table>`;
-  el("energyTableContainer").innerHTML = table;
-
-  // 3. 睡眠タイプごとのポケモン画像一覧を生成
-  const types = ["うとうと", "すやすや", "ぐっすり"];
-  let pokemonHtml = "";
-  
-  types.forEach(type => {
-    const list = FIELD_POKEMON_LISTS[name] ? FIELD_POKEMON_LISTS[name][type] : [];
-    if (list && list.length > 0) {
-      pokemonHtml += `
-        <div style="margin-top:20px;">
-          <div style="font-weight:bold; color:var(--main); margin-bottom:10px; border-left:4px solid var(--main); padding-left:8px;">● ${type}</div>
-          <div class="pokemon-grid">`;
-      
-      list.forEach(pName => {
-        const file = POKEMON_MAP[pName] || "stage.png";
-        pokemonHtml += `
-          <div class="pokemon-cell">
-            <div class="pokemon-img-box"><img src="images/${file}" onerror="this.src='images/stage.png'"></div>
-            <div class="pokemon-label">${pName}</div>
-          </div>`;
-      });
-      
-      pokemonHtml += `</div></div>`;
-    }
-  });
-  
-  el("pokemonImageContainer").innerHTML = pokemonHtml;
-  window.scrollTo(0, 0); // 上部へスクロール
-}
-
-// 戻るボタンの処理
-function backToMenu() {
-  el("fieldMenu").style.display = "block";
-  el("fieldDetail").style.display = "none";
-}
-
-// 既存の renderFieldMenu を拡張
 function renderFieldMenu() {
-  const fields = ["ワカクサ本島", "ワカクサ本島EX", "シアンの砂浜", "トープ洞窟", "ウノハナ雪原", "ラピスラズリ湖畔", "ゴールド旧発電所", "アンバー渓谷"];
-  const container = el("fieldGrid");
-  if (!container) return;
-  container.innerHTML = "";
-  fields.forEach(f => {
-    const div = document.createElement("div");
-    div.className = "field-item";
-    div.style.cursor = "pointer";
-    div.innerHTML = `
-      <img src="images/${f}.png" class="field-img" onerror="this.src='images/stage.png'">
-      <div class="field-name">${f}</div>
-    `;
-    div.onclick = () => showFieldDetail(f);
-    container.appendChild(div);
-  });
+  const grid = document.querySelector(".field-grid");
+  grid.innerHTML = FIELDS.map(field => `
+    <div class="field-item" onclick="showFieldDetail('${field.id}')">
+      <img src="images/${field.file}" class="field-img">
+      <div class="field-name">${field.name}</div>
+    </div>
+  `).join("");
 }
 
 function showFieldDetail(fieldId) {
