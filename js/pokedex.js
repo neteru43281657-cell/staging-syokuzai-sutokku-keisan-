@@ -1,7 +1,7 @@
 // pokedex.js
 "use strict";
 
-const el = (id) => document.getElementById(id);
+const pokEl = (id) => document.getElementById(id);
 function imgSrc(file) { return "images/" + encodeURIComponent(file); }
 
 // caches
@@ -225,11 +225,11 @@ function renderFieldMenu() {
 async function showFieldDetail(fieldId) {
   const field = FIELDS.find(f => f.id === fieldId);
 
-  el("fieldMenu").style.display = "none";
-  el("fieldDetail").style.display = "block";
+  pokEl("fieldMenu").style.display = "none";
+  pokEl("fieldDetail").style.display = "block";
 
   // まずはローディング表示
-  el("detailContent").innerHTML = `
+  pokEl("detailContent").innerHTML = `
     <div class="card" style="text-align:center;">
       <div style="font-weight:900;">読み込み中...</div>
       <div style="font-size:12px; color:var(--muted); margin-top:8px;">${field?.name || ""}</div>
@@ -261,14 +261,14 @@ async function showFieldDetail(fieldId) {
     const suya = buildPokemonGridHTML("すやすや", "badge-suya", pokeBySleep["すやすや"], master);
     const gusu = buildPokemonGridHTML("ぐっすり", "badge-gusu", pokeBySleep["ぐっすり"], master);
 
-    el("detailContent").innerHTML = `
+    pokEl("detailContent").innerHTML = `
       ${headerHtml}
       ${uto}
       ${suya}
       ${gusu}
     `;
   } catch (err) {
-    el("detailContent").innerHTML = `
+    pokEl("detailContent").innerHTML = `
       <div class="card">
         <div style="font-weight:900; color:var(--danger);">読み込みに失敗しました</div>
         <div style="font-size:12px; color:var(--muted); margin-top:8px;">
@@ -283,8 +283,8 @@ async function showFieldDetail(fieldId) {
 }
 
 function backToMenu() {
-  el("fieldMenu").style.display = "block";
-  el("fieldDetail").style.display = "none";
+  pokEl("fieldMenu").style.display = "block";
+  pokEl("fieldDetail").style.display = "none";
 }
 
 window.PokedexTab = { renderFieldMenu, showFieldDetail, backToMenu };
