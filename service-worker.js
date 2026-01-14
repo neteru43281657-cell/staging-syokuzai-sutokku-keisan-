@@ -1,4 +1,4 @@
-const CACHE_NAME = "stockcalc-v1.1.0";
+const CACHE_NAME = "stockcalc-v1.1.1"; // ★必ず上げること
 
 const ASSETS = [
   "./",
@@ -10,8 +10,10 @@ const ASSETS = [
   "./data/ingredients.js",
   "./data/recipes.js",
   "./data/fields.js",
-  "./data/出現ポケモン数.txt",
-  "./data/ポケモン一覧.txt",
+
+  "./data/energy.txt",
+  "./data/pokedex_master.txt",
+
   "./data/ワカクサ本島.txt",
   "./data/ワカクサ本島EX.txt",
   "./data/シアンの砂浜.txt",
