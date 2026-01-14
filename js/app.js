@@ -1,6 +1,52 @@
 // app.js
 "use strict";
 
+// ===== 診断モード：JSエラーを画面に表示 =====
+(function attachErrorOverlay() {
+  function ensureBox() {
+    let box = document.getElementById("jsErrorOverlay");
+    if (!box) {
+      box = document.createElement("div");
+      box.id = "jsErrorOverlay";
+      box.style.cssText = `
+        position: fixed; left: 10px; right: 10px; bottom: 70px;
+        z-index: 99999; background: #fff; border: 2px solid #d00;
+        border-radius: 12px; padding: 10px; font-size: 12px;
+        color: #111; box-shadow: 0 6px 20px rgba(0,0,0,.2);
+        display: none; white-space: pre-wrap; line-height: 1.4;
+      `;
+      document.body.appendChild(box);
+    }
+    return box;
+  }
+
+  function show(msg) {
+    try {
+      const box = ensureBox();
+      box.textContent = msg;
+      box.style.display = "block";
+    } catch (_) {}
+  }
+
+  window.addEventListener("error", (e) => {
+    const msg = [
+      "[JS Error]",
+      e.message || "(no message)",
+      `@ ${e.filename || ""}:${e.lineno || ""}:${e.colno || ""}`,
+    ].join("\n");
+    show(msg);
+  });
+
+  window.addEventListener("unhandledrejection", (e) => {
+    const reason = e.reason && (e.reason.stack || e.reason.message || String(e.reason));
+    show(["[Unhandled Promise Rejection]", reason || "(no reason)"].join("\n"));
+  });
+
+  // app.js が読み込めているかの目印
+  window.__APP_JS_LOADED__ = true;
+})();
+
+
 // ★一度だけ：古いService Worker & Cacheを全削除してリロード
 async function resetSWAndCacheOnce() {
   const KEY = "sw_cache_reset_done_v111";
@@ -248,6 +294,7 @@ function calc() {
 }
 
 window.onload = () => {
+  console.log("app.js onload fired", window.__APP_JS_LOADED__, window.INGREDIENTS, window.RECIPES);
   resetSWAndCacheOnce();
   registerSW();
   renderGrids();
