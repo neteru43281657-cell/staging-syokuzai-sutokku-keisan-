@@ -513,12 +513,32 @@
   </div>
 </div>
 
-<script src="data/ingredients.js"></script>
-<script src="data/recipes.js"></script>
-<script src="data/fields.js"></script>
+<script>
+(function(){
+  function box(){
+    let b=document.getElementById("bootDiag");
+    if(!b){
+      b=document.createElement("div");
+      b.id="bootDiag";
+      b.style.cssText="position:fixed;left:10px;right:10px;bottom:70px;z-index:99999;background:#fff;border:2px solid #d00;border-radius:12px;padding:10px;font-size:12px;white-space:pre-wrap;display:none";
+      document.addEventListener("DOMContentLoaded",()=>document.body.appendChild(b));
+    }
+    return b;
+  }
+  function show(t){const b=box(); b.textContent=t; b.style.display="block";}
+  window.addEventListener("error",e=>show("[JS Error]\n"+(e.message||"")+"\n"+(e.filename||"")+":"+e.lineno+":"+e.colno));
+  window.addEventListener("unhandledrejection",e=>show("[Promise Rejection]\n"+(e.reason&& (e.reason.stack||e.reason.message))||String(e.reason)));
+  // 目印：このブロックが動いてるか
+  window.__BOOT_DIAG__ = "OK";
+})();
+</script>
+  
+<script src="data/ingredients.js?v=20260115-003"></script>
+<script src="data/recipes.js?v=20260115-003"></script>
+<script src="data/fields.js?v=20260115-003"></script>
 
-<script src="js/calendar.js"></script>
-<script src="js/pokedex.js"></script>
-<script src="js/app.js"></script>
+<script src="js/calendar.js?v=20260115-003"></script>
+<script src="js/pokedex.js?v=20260115-003"></script>
+<script src="js/app.js?v=20260115-003"></script>
 </body>
 </html>
