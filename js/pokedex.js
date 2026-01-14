@@ -24,14 +24,6 @@ async function fetchText(path) {
 
 async function loadPokemonMaster() {
   if (POKE_MASTER) return POKE_MASTER;
-  // ===== 図鑑順の例外調整ルール =====
-  // key を target の「直後 / 直前」に配置する
-  const DEX_ORDER_OVERRIDES = [
-    { name: "ストリンダー（ロー）", after: "ストリンダー（ハイ）" },
-    { name: "ウパー（パルデア）", before: "ドオー" },
-    { name: "ロコン（アローラ）", after: "ロコン" },
-    { name: "キュウコン（アローラ）", after: "キュウコン" }
-  ];
 
   const tsv = await fetchText("pokedex_master.txt");
   const lines = tsv.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
