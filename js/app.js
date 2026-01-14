@@ -214,8 +214,8 @@ function calc() {
 
 window.onload = () => {
   renderGrids();
-  renderYearCalendar();
-  renderFieldMenu();
+  if (typeof renderYearCalendar === "function") renderYearCalendar();
+  if (typeof renderFieldMenu === "function") renderFieldMenu();
   const savedTab = localStorage.getItem('activeTab') || 'tab1';
   switchTab(savedTab, null);
   if (state.recipeRows.length === 0) { addRecipeRow({meals: 0}); }
