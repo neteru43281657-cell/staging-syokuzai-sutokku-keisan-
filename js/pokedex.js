@@ -103,13 +103,7 @@ async function loadEnergyMap() {
   return ENERGY_MAP;
 }
 
-const FIELD_POKEMON_CACHE = new Map();
-
 async function loadFieldPokemon(fieldName) {
-  if (FIELD_POKEMON_CACHE.has(fieldName)) {
-    return FIELD_POKEMON_CACHE.get(fieldName);
-  }
-
   const text = await fetchText(`${fieldName}.txt`);
   const lines = text.split(/\r?\n/);
 
@@ -122,21 +116,16 @@ async function loadFieldPokemon(fieldName) {
 
     if (line.startsWith("・")) {
       const key = line.replace(/^・/, "").trim();
-      mode = result[key] ? key : null;
+      if (key in result) mode = key;
+      else mode = null;
       continue;
     }
 
-    if (mode) result[mode].push(line);
+    if (!mode) continue;
+    // ポケモン名行
+    result[mode].push(line);
   }
-
-  FIELD_POKEMON_CACHE.set(fieldName, result);
   return result;
-}
-
-function nextFrame() {
-  return new Promise(resolve =>
-    requestAnimationFrame(() => resolve())
-  );
 }
 
 function sortByDexOrder(names, orderMap) {
@@ -188,7 +177,7 @@ function buildEnergyTableHTML(fieldName, energyMap) {
 
   return `
     <table class="energy-table">
-      <thead><tr><th>出現ポケモン数</th><th>必要エナジー</th></tr></thead>
+      <thead><tr><th>出現数</th><th>必要エナジー</th></tr></thead>
       <tbody>${trs}</tbody>
     </table>
   `;
@@ -201,7 +190,7 @@ function buildPokemonGridHTML(label, badgeClass, names, master) {
     const file = master.fileMap.get(name);
     const src = file ? imgSrc(file) : "";
     const imgHtml = file
-      ? `<img src="${src}" alt="${name}" loading="lazy" decoding="async">`
+      ? `<img src="${src}" alt="${name}">`
       : `<div style="width:44px;height:44px;border:1px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);">no img</div>`;
 
     return `
@@ -234,58 +223,64 @@ function renderFieldMenu() {
 }
 
 async function showFieldDetail(fieldId) {
+  const field = FIELDS.find(f => f.id === fieldId);
+
+  pokEl("fieldMenu").style.display = "none";
+  pokEl("fieldDetail").style.display = "block";
+
+  // まずはローディング表示
+  pokEl("detailContent").innerHTML = `
+    <div class="card" style="text-align:center;">
+      <div style="font-weight:900;">読み込み中...</div>
+      <div style="font-size:12px; color:var(--muted); margin-top:8px;">${field?.name || ""}</div>
+    </div>
+  `;
+
   try {
-    const field = FIELDS.find(f => f.id === fieldId);
-    if (!field) return;
+    const master = await loadPokemonMaster();
+    const energyMap = await loadEnergyMap();
 
-    const [master, energyMap] = await Promise.all([
-      loadPokemonMaster(),
-      loadEnergyMap()
-    ]);
+    // フィールド名（例：ワカクサ本島）をそのままファイル名として使う想定
+    const fieldName = field.name;
+    const pokeBySleep = await loadFieldPokemon(fieldName);
 
-    // ① 先に軽いUI（ヘッダー＋エナジー表）
-    detailContent.innerHTML = `
+    const headerHtml = `
       <div class="card">
         <div class="field-header">
-          <img src="images/${field.file}" loading="lazy" decoding="async">
+          <img src="images/${field.file}" alt="${fieldName}">
           <div>
-            <div class="field-title">${field.name}</div>
-            <div class="field-sub">出現ポケモン数 / 必要エナジー</div>
+            <div class="field-title">${fieldName}</div>
+            <div style="font-size:12px; color:var(--muted); font-weight:800;">出現ポケモン数 / 必要エナジー</div>
           </div>
         </div>
-        ${buildEnergyTableHTML(field.name, energyMap)}
-      </div>
-
-      <div id="pokeSections">
-        <div class="card" style="text-align:center;">
-          ポケモン一覧を読み込み中…
-        </div>
+        ${buildEnergyTableHTML(fieldName, energyMap)}
       </div>
     `;
 
-    await nextFrame();
+    const uto = buildPokemonGridHTML("うとうと", "badge-uto", pokeBySleep["うとうと"], master);
+    const suya = buildPokemonGridHTML("すやすや", "badge-suya", pokeBySleep["すやすや"], master);
+    const gusu = buildPokemonGridHTML("ぐっすり", "badge-gusu", pokeBySleep["ぐっすり"], master);
 
-    // ② 重いデータを後から
-    const pokeBySleep = await loadFieldPokemon(field.name);
-    const container = document.getElementById("pokeSections");
-
-    let html = "";
-    html += buildPokemonGridHTML("うとうと", "badge-uto", pokeBySleep["うとうと"], master);
-    container.innerHTML = html;
-    await nextFrame();
-
-    html += buildPokemonGridHTML("すやすや", "badge-suya", pokeBySleep["すやすや"], master);
-    container.innerHTML = html;
-    await nextFrame();
-
-    html += buildPokemonGridHTML("ぐっすり", "badge-gusu", pokeBySleep["ぐっすり"], master);
-    container.innerHTML = html;
-
-  } catch (e) {
-    detailContent.innerHTML = `<div class="card">読み込みに失敗しました</div>`;
+    pokEl("detailContent").innerHTML = `
+      ${headerHtml}
+      ${uto}
+      ${suya}
+      ${gusu}
+    `;
+  } catch (err) {
+    pokEl("detailContent").innerHTML = `
+      <div class="card">
+        <div style="font-weight:900; color:var(--danger);">読み込みに失敗しました</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:8px;">
+          ${String(err)}
+        </div>
+        <div style="font-size:12px; color:var(--muted); margin-top:12px;">
+          ※ txtファイルが index.html と同じ階層にあるか、ファイル名が一致しているか確認してください。
+        </div>
+      </div>
+    `;
   }
 }
-
 
 function backToMenu() {
   pokEl("fieldMenu").style.display = "block";
