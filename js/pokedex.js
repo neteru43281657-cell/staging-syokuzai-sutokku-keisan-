@@ -16,7 +16,8 @@ const DEX_ORDER_OVERRIDES = [
   ];
 
 async function fetchText(path) {
-  const res = await fetch(path, { cache: "no-store" });
+  // data/配下に揃えたので、全部 data/ から読む
+  const res = await fetch("data/" + path, { cache: "no-store" });
   if (!res.ok) throw new Error(`Failed to fetch: ${path}`);
   return await res.text();
 }
@@ -32,7 +33,7 @@ async function loadPokemonMaster() {
     { name: "キュウコン（アローラ）", after: "キュウコン" }
   ];
 
-  const tsv = await fetchText("ポケモン一覧.txt");
+  const tsv = await fetchText("pokedex_master.txt");
   const lines = tsv.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
 
   // 1行目はヘッダー想定：ファイル名	ファイル形式	ポケモン名
@@ -63,7 +64,7 @@ async function loadPokemonMaster() {
 async function loadEnergyMap() {
   if (ENERGY_MAP) return ENERGY_MAP;
 
-  const text = await fetchText("出現ポケモン数.txt");
+  const text = await fetchText("energy.txt");
   const lines = text.split(/\r?\n/);
 
   const map = new Map();
