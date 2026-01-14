@@ -13,11 +13,6 @@ const MEALS_PER_DAY = 3;
 const MAX_RECIPE_ROWS = 9;
 const MAX_TOTAL_MEALS = 21;
 
-// safety (in case constants were removed accidentally)
-const MEALS_PER_DAY = typeof MEALS_PER_DAY !== "undefined" ? MEALS_PER_DAY : 3;
-const MAX_RECIPE_ROWS = typeof MAX_RECIPE_ROWS !== "undefined" ? MAX_RECIPE_ROWS : 9;
-const MAX_TOTAL_MEALS = typeof MAX_TOTAL_MEALS !== "undefined" ? MAX_TOTAL_MEALS : 21;
-
 function getIng(id) { return INGREDIENTS.find(x => x.id === id); }
 
 function imgSrc(file) { return "images/" + encodeURIComponent(file); }
