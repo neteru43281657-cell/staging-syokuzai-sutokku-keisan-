@@ -113,13 +113,13 @@ function switchTab(tabId, clickedEl) {
 
   if (tabId === 'tab1') {
     headerTitle.textContent = '食材ストック計算';
-    headerVer.textContent = 'ver1.0.2';
+    headerVer.textContent = 'ver1.0.3';
   } else if (tabId === 'tab2') {
     headerTitle.textContent = '出現ポケモン一覧';
-    headerVer.textContent = 'ver1.0.1';
+    headerVer.textContent = 'ver1.0.3';
   } else if (tabId === 'tab3') {
     headerTitle.textContent = '2026年 月齢カレンダー';
-    headerVer.textContent = 'ver1.0.1';
+    headerVer.textContent = 'ver1.0.3';
   }
   window.scrollTo(0, 0);
 }
