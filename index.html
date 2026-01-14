@@ -241,9 +241,23 @@
     .preview span { display: flex; align-items: center; background: var(--main-soft); color: var(--main); padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 1px solid #d0e7ff; }
 
     /* カレンダー用 */
-    .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
-    .month-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 10px; }
-    .month-name { font-weight: 900; text-align: center; border-bottom: 1px solid var(--line); margin-bottom: 5px; color: var(--text); }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    
+    .month-card {
+      padding: 10px;
+      font-size: clamp(10px, 2.4vw, 12px);
+    }
+    
+    .month-name {
+      font-size: clamp(11px, 2.8vw, 14px);
+      font-weight: 900;
+      text-align: center;
+      margin-bottom: 6px;
+    }
     
     .days-grid { 
       display: grid; 
@@ -253,18 +267,9 @@
       justify-items: center; }
     
     .day {
-      width: 100%;
-      aspect-ratio: 1/1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 10px;
-      position: relative;
-      border-radius: 4px; 
-      transition: background 0.2s;
-      line-height: 1;
-      padding-top: 1px;
+      aspect-ratio: 1 / 1;
+      font-size: clamp(10px, 2.6vw, 13px);
+      font-weight: 900;
     }
     
     .gsd { background-color: #add8e6; color: #000; border-radius: 4px; }
