@@ -646,6 +646,14 @@ async function fetchText(path) {
 // ===== ポケモン一覧.txt を読み込み：表示順 + 画像ファイル名を作る =====
 async function loadPokemonMaster() {
   if (POKE_MASTER) return POKE_MASTER;
+  // ===== 図鑑順の例外調整ルール =====
+  // key を target の「直後 / 直前」に配置する
+  const DEX_ORDER_OVERRIDES = [
+    { name: "ストリンダー（ロー）", after: "ストリンダー（ハイ）" },
+    { name: "ウパー（パルデア）", before: "ドオー" },
+    { name: "ロコン（アローラ）", after: "ロコン" },
+    { name: "キュウコン（アローラ）", after: "キュウコン" }
+  ];
 
   const tsv = await fetchText("ポケモン一覧.txt");
   const lines = tsv.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
@@ -754,13 +762,41 @@ async function loadFieldPokemon(fieldName) {
 
 // ===== 並び替え（ポケモン一覧.txt の順＝図鑑順） =====
 function sortByDexOrder(names, orderMap) {
-  return [...names].sort((a, b) => {
+  // まず通常の図鑑順
+  const base = [...names].sort((a, b) => {
     const ai = orderMap.has(a) ? orderMap.get(a) : 1e9;
     const bi = orderMap.has(b) ? orderMap.get(b) : 1e9;
     if (ai !== bi) return ai - bi;
     return a.localeCompare(b, "ja");
   });
+
+  // 例外ルールを適用
+  DEX_ORDER_OVERRIDES.forEach(rule => {
+    const idx = base.indexOf(rule.name);
+    if (idx === -1) return;
+
+    base.splice(idx, 1); // 一旦外す
+
+    if (rule.after) {
+      const targetIdx = base.indexOf(rule.after);
+      if (targetIdx !== -1) {
+        base.splice(targetIdx + 1, 0, rule.name);
+      } else {
+        base.push(rule.name);
+      }
+    } else if (rule.before) {
+      const targetIdx = base.indexOf(rule.before);
+      if (targetIdx !== -1) {
+        base.splice(targetIdx, 0, rule.name);
+      } else {
+        base.push(rule.name);
+      }
+    }
+  });
+
+  return base;
 }
+
 
 // ===== 表HTML =====
 function buildEnergyTableHTML(fieldName, energyMap) {
