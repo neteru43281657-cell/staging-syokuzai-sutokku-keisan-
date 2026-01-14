@@ -306,4 +306,5 @@ window.onload = () => {
   const modal = el("noticeModal");
   el("openNotice").onclick = () => modal.style.display = "flex";
   el("closeNotice").onclick = () => modal.style.display = "none";
-  window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; };
+    window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; };
+};
