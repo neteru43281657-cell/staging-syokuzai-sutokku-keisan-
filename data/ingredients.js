@@ -18,6 +18,6 @@ const INGREDIENTS = [
   { id:"coffee", name:"めざましコーヒー", file:"めざましコーヒー.webp" },
   { id:"pumpkin", name:"ずっしりカボチャ", file:"ずっしりカボチャ.webp" },
   { id:"avocado", name:"つやつやアボカド", file:"つやつやアボカド.webp" }
-]
+];
 
 window.INGREDIENTS = INGREDIENTS;
