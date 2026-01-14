@@ -1,6 +1,41 @@
 // app.js
 "use strict";
 
+// ★一度だけ：古いService Worker & Cacheを全削除してリロード
+async function resetSWAndCacheOnce() {
+  const KEY = "sw_cache_reset_done_v111";
+  if (localStorage.getItem(KEY)) return;
+
+  try {
+    // unregister service workers
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+
+    // delete all caches
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+  } catch (e) {
+    // 失敗しても致命的ではないので握りつぶし
+    console.warn("resetSWAndCacheOnce failed:", e);
+  }
+
+  localStorage.setItem(KEY, "1");
+  location.reload();
+}
+
+async function registerSW() {
+  if (!("serviceWorker" in navigator)) return;
+  try {
+    await navigator.serviceWorker.register("./service-worker.js");
+  } catch (e) {
+    console.warn("SW register failed:", e);
+  }
+}
+
 const el = (id) => document.getElementById(id);
 
 let state = { recipeRows: [] };
@@ -213,6 +248,8 @@ function calc() {
 }
 
 window.onload = () => {
+  resetSWAndCacheOnce();
+  registerSW();
   renderGrids();
   if (typeof renderYearCalendar === "function") renderYearCalendar();
   if (typeof renderFieldMenu === "function") renderFieldMenu();
