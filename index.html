@@ -327,6 +327,95 @@
       font-weight: 800;
       color: var(--text);
     }
+/* ===== 出現ポケモン一覧（tab2 詳細） ===== */
+    .field-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .field-header img {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+    }
+    .field-title {
+      font-weight: 900;
+      font-size: 16px;
+      color: var(--text);
+    }
+    .energy-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    .energy-table th, .energy-table td {
+      border: 1px solid var(--line);
+      padding: 8px;
+      text-align: center;
+    }
+    .energy-table th {
+      background: #f7f9fc;
+      font-weight: 900;
+    }
+    
+    .sleep-section {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .sleep-label {
+      padding: 10px 12px;
+      font-weight: 900;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+    .sleep-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 64px;
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-weight: 900;
+      font-size: 12px;
+      color: #111;
+    }
+    .badge-uto { background: #ffe66a; }
+    .badge-suya { background: #aee7f2; }
+    .badge-gusu { background: #8fb3ff; color: #0b1b3a; }
+    
+    .poke-grid {
+      padding: 10px 10px 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+      gap: 8px;
+    }
+    .poke-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .poke-item img {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+    }
+    .poke-name {
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.2;
+      word-break: keep-all;
+    }
   </style>
 </head>
 <body>
@@ -543,6 +632,182 @@ const FIELDS = [
 ];
 
 /* --- 基本関数 --- */
+// ===== テキスト取得（SW/キャッシュがあってもOKな形）=====
+async function fetchText(path) {
+  const res = await fetch(path, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Failed to fetch: ${path}`);
+  return await res.text();
+}
+
+// ===== ポケモン一覧.txt を読み込み：表示順 + 画像ファイル名を作る =====
+async function loadPokemonMaster() {
+  if (POKE_MASTER) return POKE_MASTER;
+
+  const tsv = await fetchText("ポケモン一覧.txt");
+  const lines = tsv.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+
+  // 1行目はヘッダー想定：ファイル名	ファイル形式	ポケモン名
+  const orderMap = new Map();
+  const fileMap = new Map();
+
+  let idx = 0;
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(/\t+/);
+    if (cols.length < 3) continue;
+    const fileName = cols[0].trim();     // "1" や "37-1" や "ハロウィンイーブイ"
+    const ext = cols[1].trim();          // "webp"
+    const name = cols[2].trim();         // "フシギダネ" 等
+    const file = `${fileName}.${ext}`;   // "1.webp"
+
+    if (!orderMap.has(name)) {
+      orderMap.set(name, idx++);
+    }
+    if (!fileMap.has(name)) {
+      fileMap.set(name, file);
+    }
+  }
+
+  POKE_MASTER = { orderMap, fileMap };
+  return POKE_MASTER;
+}
+
+// ===== 出現ポケモン数.txt を読み込み：フィールド名→表データ =====
+async function loadEnergyMap() {
+  if (ENERGY_MAP) return ENERGY_MAP;
+
+  const text = await fetchText("出現ポケモン数.txt");
+  const lines = text.split(/\r?\n/);
+
+  const map = new Map();
+  let currentField = null;
+  let inTable = false;
+
+  for (const raw of lines) {
+    const line = raw.trim();
+
+    if (!line) continue;
+
+    // フィールド名行（例：ワカクサ本島）
+    // 「ポケモン数」などの見出しではない、かつタブを含まない単独行をフィールド名扱い
+    if (!line.includes("\t") && !line.includes("ポケモン数") && line !== "...") {
+      currentField = line;
+      inTable = false;
+      if (!map.has(currentField)) map.set(currentField, []);
+      continue;
+    }
+
+    if (!currentField) continue;
+
+    // 見出し行
+    if (line.startsWith("ポケモン数")) {
+      inTable = true;
+      continue;
+    }
+
+    if (!inTable) continue;
+
+    // 例： 4	9,653
+    if (line === "...") continue;
+    const cols = line.split(/\t+/);
+    if (cols.length < 2) continue;
+
+    const count = Number(cols[0]);
+    const energyText = (cols[1] || "").trim();
+    if (!Number.isFinite(count)) continue;
+
+    map.get(currentField).push({ count, energyText: energyText || "-" });
+  }
+
+  ENERGY_MAP = map;
+  return ENERGY_MAP;
+}
+
+// ===== フィールドtxt（ワカクサ本島.txt など）を読み込み：睡眠タイプ別リスト =====
+async function loadFieldPokemon(fieldName) {
+  const text = await fetchText(`${fieldName}.txt`);
+  const lines = text.split(/\r?\n/);
+
+  const result = { "うとうと": [], "すやすや": [], "ぐっすり": [] };
+  let mode = null;
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) continue;
+
+    if (line.startsWith("・")) {
+      const key = line.replace(/^・/, "").trim();
+      if (key in result) mode = key;
+      else mode = null;
+      continue;
+    }
+
+    if (!mode) continue;
+    // ポケモン名行
+    result[mode].push(line);
+  }
+  return result;
+}
+
+// ===== 並び替え（ポケモン一覧.txt の順＝図鑑順） =====
+function sortByDexOrder(names, orderMap) {
+  return [...names].sort((a, b) => {
+    const ai = orderMap.has(a) ? orderMap.get(a) : 1e9;
+    const bi = orderMap.has(b) ? orderMap.get(b) : 1e9;
+    if (ai !== bi) return ai - bi;
+    return a.localeCompare(b, "ja");
+  });
+}
+
+// ===== 表HTML =====
+function buildEnergyTableHTML(fieldName, energyMap) {
+  const rows = energyMap.get(fieldName) || [];
+  if (!rows.length) {
+    return `<div style="font-size:12px; color:var(--muted); margin-top:8px;">出現ポケモン数の表データが見つかりませんでした。</div>`;
+  }
+
+  const trs = rows
+    .filter(r => r.count >= 4 && r.count <= 8)
+    .map(r => `<tr><td>${r.count}体</td><td>${r.energyText}</td></tr>`)
+    .join("");
+
+  return `
+    <table class="energy-table">
+      <thead><tr><th>出現数</th><th>必要エナジー</th></tr></thead>
+      <tbody>${trs}</tbody>
+    </table>
+  `;
+}
+
+// ===== ポケモングリッドHTML =====
+function buildPokemonGridHTML(label, badgeClass, names, master) {
+  const sorted = sortByDexOrder(names, master.orderMap);
+
+  const items = sorted.map(name => {
+    const file = master.fileMap.get(name);
+    const src = file ? imgSrc(file) : "";
+    const imgHtml = file
+      ? `<img src="${src}" alt="${name}">`
+      : `<div style="width:44px;height:44px;border:1px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);">no img</div>`;
+
+    return `
+      <div class="poke-item" title="${name}">
+        ${imgHtml}
+        <div class="poke-name">${name}</div>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div class="sleep-section">
+      <div class="sleep-label">
+        <span class="sleep-badge ${badgeClass}">${label}</span>
+        <span style="font-size:12px; color:var(--muted); font-weight:900;">${sorted.length}種</span>
+      </div>
+      <div class="poke-grid">${items}</div>
+    </div>
+  `;
+}
+
 function getIng(id) { return INGREDIENTS.find(x => x.id === id); }
 function imgSrc(file) { return "images/" + encodeURIComponent(file); }
 
@@ -751,18 +1016,66 @@ function renderFieldMenu() {
   `).join("");
 }
 
-function showFieldDetail(fieldId) {
+async function showFieldDetail(fieldId) {
   const field = FIELDS.find(f => f.id === fieldId);
+
   el("fieldMenu").style.display = "none";
   el("fieldDetail").style.display = "block";
+
+  // まずはローディング表示
   el("detailContent").innerHTML = `
     <div class="card" style="text-align:center;">
-      <img src="images/${field.file}" style="width:80px;">
-      <div style="font-weight:900; margin-top:10px;">${field.name}</div>
-      <p style="font-size:12px; color:var(--muted); margin-top:20px;">ここに睡眠タイプごとのリストが表示されます</p>
+      <div style="font-weight:900;">読み込み中...</div>
+      <div style="font-size:12px; color:var(--muted); margin-top:8px;">${field?.name || ""}</div>
     </div>
   `;
+
+  try {
+    const master = await loadPokemonMaster();
+    const energyMap = await loadEnergyMap();
+
+    // フィールド名（例：ワカクサ本島）をそのままファイル名として使う想定
+    const fieldName = field.name;
+    const pokeBySleep = await loadFieldPokemon(fieldName);
+
+    const headerHtml = `
+      <div class="card">
+        <div class="field-header">
+          <img src="images/${field.file}" alt="${fieldName}">
+          <div>
+            <div class="field-title">${fieldName}</div>
+            <div style="font-size:12px; color:var(--muted); font-weight:800;">出現ポケモン数 / 必要エナジー</div>
+          </div>
+        </div>
+        ${buildEnergyTableHTML(fieldName, energyMap)}
+      </div>
+    `;
+
+    const uto = buildPokemonGridHTML("うとうと", "badge-uto", pokeBySleep["うとうと"], master);
+    const suya = buildPokemonGridHTML("すやすや", "badge-suya", pokeBySleep["すやすや"], master);
+    const gusu = buildPokemonGridHTML("ぐっすり", "badge-gusu", pokeBySleep["ぐっすり"], master);
+
+    el("detailContent").innerHTML = `
+      ${headerHtml}
+      ${uto}
+      ${suya}
+      ${gusu}
+    `;
+  } catch (err) {
+    el("detailContent").innerHTML = `
+      <div class="card">
+        <div style="font-weight:900; color:var(--danger);">読み込みに失敗しました</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:8px;">
+          ${String(err)}
+        </div>
+        <div style="font-size:12px; color:var(--muted); margin-top:12px;">
+          ※ txtファイルが index.html と同じ階層にあるか、ファイル名が一致しているか確認してください。
+        </div>
+      </div>
+    `;
+  }
 }
+
 
 function backToMenu() {
   el("fieldMenu").style.display = "block";
