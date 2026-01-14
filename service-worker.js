@@ -1,32 +1,46 @@
-const CACHE_NAME = "stockcalc-v1.0.2"; // バージョンを上げる
+const CACHE_NAME = "stockcalc-v1.1.0";
+
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./manifest.webmanifest",
+  "./js/app.js",
+  "./js/pokedex.js",
+  "./js/calendar.js",
+  "./data/ingredients.js",
+  "./data/recipes.js",
+  "./data/fields.js",
+  "./data/出現ポケモン数.txt",
+  "./data/ポケモン一覧.txt",
+  "./data/ワカクサ本島.txt",
+  "./data/ワカクサ本島EX.txt",
+  "./data/シアンの砂浜.txt",
+  "./data/トープ洞窟.txt",
+  "./data/ウノハナ雪原.txt",
+  "./data/ラピスラズリ湖畔.txt",
+  "./data/ゴールド旧発電所.txt",
+  "./data/アンバー渓谷.txt",
+];
 
 self.addEventListener("install", (e) => {
-  // 新しい SW がインストールされたら、待機せずに即座に有効化する
   self.skipWaiting();
+  e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
 });
 
 self.addEventListener("activate", (e) => {
-  // 古いキャッシュを削除
   e.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) return caches.delete(key);
-        })
-      );
-    })
+    caches.keys()
+      .then((keys) => Promise.all(keys.map((k) => (k !== CACHE_NAME ? caches.delete(k) : null))))
+      .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener("fetch", (e) => {
-  // ネットワークを優先し、取得できればキャッシュを更新する
   e.respondWith(
     fetch(e.request)
       .then((res) => {
         const resClone = res.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(e.request, resClone);
-        });
+        caches.open(CACHE_NAME).then((cache) => cache.put(e.request, resClone));
         return res;
       })
       .catch(() => caches.match(e.request))
