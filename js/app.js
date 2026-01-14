@@ -86,9 +86,6 @@ const el = (id) => document.getElementById(id);
 
 let state = { recipeRows: [] };
 
-// Use data loaded on window (from data/*.js)
-const INGREDIENTS = window.INGREDIENTS;
-const RECIPES = window.RECIPES;
 
 const MEALS_PER_DAY = 3;
 const MAX_RECIPE_ROWS = 9;
