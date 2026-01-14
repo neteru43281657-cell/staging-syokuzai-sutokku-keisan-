@@ -517,6 +517,10 @@
 const el = (id) => document.getElementById(id);
 let state = { recipeRows: [] };
 
+// ===== tab2 用キャッシュ（1回ロードして使い回し）=====
+let POKE_MASTER = null;     // { orderMap: Map(name->index), fileMap: Map(name->"xxx.webp") }
+let ENERGY_MAP = null;      // Map(fieldName -> Array<{count:number, energyText:string}>)
+  
 const MEALS_PER_DAY = 3;
 const MAX_RECIPE_ROWS = 9;
 const MAX_TOTAL_MEALS = 21;
@@ -1124,7 +1128,7 @@ function renderYearCalendar() {
     container.innerHTML += html;
   }
 }
-
+  
 window.onload = () => {
   renderGrids();
   renderYearCalendar();
