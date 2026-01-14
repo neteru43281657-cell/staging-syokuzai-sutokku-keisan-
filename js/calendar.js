@@ -12,7 +12,7 @@ const FULL_MOONS = ["2026-01-03", "2026-02-02", "2026-03-03", "2026-04-02", "202
 const NEW_MOONS = ["2026-01-19", "2026-02-17", "2026-03-19", "2026-04-17", "2026-05-17", "2026-06-15", "2026-07-14", "2026-08-13", "2026-09-11", "2026-10-11", "2026-11-09", "2026-12-09"]
 
 // --- helpers ---
-const el = (id) => document.getElementById(id);
+const calEl = (id) => document.getElementById(id);
 
 function isAround(dateStr, targetArray) {
   const date = new Date(dateStr);
@@ -24,7 +24,7 @@ function isAround(dateStr, targetArray) {
 }
 
 function renderYearCalendar() {
-  const container = el("yearCalendar");
+  const container = calEl("yearCalendar");
   const year = 2026;
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
