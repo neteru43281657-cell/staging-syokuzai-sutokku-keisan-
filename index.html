@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>食材ストック計算</title>
+  
+  <link rel="apple-touch-icon" sizes="180x180" href="images/ステージング.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/ステージング.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/ステージング.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  
+  <meta name="theme-color" content="#007bff">
+  <meta name="background-color" content="#f5f8fa">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="食材ストック">
+
+  <style>
+    :root {
+      --bg: #f5f8fa; 
+      --card: #ffffff; 
+      --main: #007bff; 
+      --main-soft: #eaf4ff; 
+      --text: #2c3e50; 
+      --muted: #5d6d7e; 
+      --line: #d6e0ea; 
+      --danger: #e74c3c;
+    }
+    * { box-sizing: border-box; }
+    body { 
+      margin: 0; 
+      font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      line-height: 1.5; 
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header { 
+      padding: 10px 20px; 
+      background: var(--main);
+      color: #fff; 
+      position: sticky; 
+      top: 0; 
+      z-index: 100; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .title-text { font-weight: 800; letter-spacing: 0.03em; font-size: 18px; }
+    .ver-text { font-size: 11px; font-weight: 400; opacity: 0.8; margin-top: 2px; }
+
+    main { 
+      max-width: 980px; 
+      margin: 0 auto; 
+      padding: 16px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 16px; 
+      padding-bottom: 100px; 
+    } 
+
+    .tab-content { display: none; }
+    .tab-content.active { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 16px; 
+    }
+    
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 65px;
+      background: #fff;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      flex: 1;
+      padding: 8px 0;
+    }
+    .nav-item.active { color: var(--main); }
+    .nav-icon { font-size: 20px; }
+
+    .card { 
+      background: var(--card); 
+      border: 1px solid var(--line); 
+      border-radius: 16px; 
+      padding: 16px; 
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+    
+    .result-card { 
+      border: 2px solid var(--main); 
+      background: #ffffff; 
+      border-radius: 16px; 
+      padding: 16px; 
+      box-shadow: 0 4px 20px rgba(0,123,255,0.1); 
+    }
+
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .grid5 { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); 
+      gap: 8px; 
+      width: 100%;
+    }
+    
+    label { font-size: 11px; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px; }
+    
+    select, input[type="number"] { 
+      padding: 10px; 
+      border: 1px solid var(--line); 
+      border-radius: 10px; 
+      font-size: 14px; 
+      width: 100%; 
+      background: #fff; 
+      color: var(--text);
+    }
+
+    button { 
+      padding: 10px 16px; 
+      border: 1px solid var(--line);
+      border-radius: 10px; 
+      font-weight: 800; 
+      cursor: pointer; 
+      font-size: 14px;
+    }
+    button.primary { background: var(--main); color: #fff; border-color: var(--main); }
+    button.danger { color: var(--danger); border-color: #fadbd8; background: #fff; }
+    
+    .badge { font-size: 12px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); font-weight: 700; }
+    #summaryBadge { background: var(--main-soft); color: var(--main); border: 1px solid #cce5ff; }
+    .total-badge { background: var(--main); color: #fff; border: none; padding: 4px 16px; }
+
+    /* タイルと入力欄の修正 */
+    .tile { 
+      border: 1px solid var(--line); 
+      border-radius: 12px; 
+      padding: 6px 3px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 4px; 
+      background: #fff; 
+      align-items: center; 
+      text-align: center; 
+      min-height: 95px; 
+      justify-content: space-between; 
+    }
+    .icon { width: 30px; height: 30px; object-fit: contain; }
+    .tileName { font-size: 8px; font-weight: 700; width: 100%; overflow: hidden; text-overflow: clip; white-space: nowrap; }
+    
+    .chkLabel { 
+      font-size: 10px; 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 3px; 
+      width: 100%; 
+      height: 24px;      /* 獲得量ペーンの入力欄と同じ高さに固定 */
+      margin: 0;         /* 余計なマージンを排除 */
+      padding: 0 4px;    /* 左右の余白を獲得量ペーンに合わせる */
+    }
+    .exChk {
+      margin: 0;
+      cursor: pointer;
+      width: 13px;
+      height: 13px;
+    }
+
+    .repInputRow { 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 2px; 
+      width: 100%; 
+      padding: 0 4px;
+    }
+    .repQty { 
+      width: 100% !important; 
+      height: 24px !important;    /* 28pxから24pxへ縮小 */
+      padding: 0 2px !important; 
+      font-size: 14px !important;  /* フォントサイズ調整 */
+      font-weight: 800 !important; 
+      text-align: center; 
+      border-radius: 6px !important; /* 角丸も少しシャープに */
+    }
+
+    .recipeRow { 
+      border: 1px solid var(--line); 
+      background: #fcfdfe;
+      border-radius: 16px; 
+      padding: 16px; 
+      display: flex; 
+      gap: 12px; 
+      flex-wrap: wrap; 
+      align-items: flex-end; 
+      margin-bottom: 12px; 
+      position: relative; 
+    }
+    .removeBtn {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--danger);
+      width: 26px;
+      height: 26px;
+      padding: 0;
+      line-height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      cursor: pointer;
+    }
+
+    .preview { font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; width: 100%; align-items: center; }
+    .preview span { display: flex; align-items: center; background: var(--main-soft); color: var(--main); padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 1px solid #d0e7ff; }
+
+    /* カレンダー用 */
+    .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+    .month-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 10px; }
+    .month-name { font-weight: 900; text-align: center; border-bottom: 1px solid var(--line); margin-bottom: 5px; color: var(--text); }
+    
+    .days-grid { 
+      display: grid; 
+      grid-template-columns: repeat(7, 1fr); 
+      gap: 2px;           
+      align-items: center;
+      justify-items: center; }
+    
+    .day {
+      width: 100%;
+      aspect-ratio: 1/1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 10px;
+      position: relative;
+      border-radius: 4px; 
+      transition: background 0.2s;
+      line-height: 1;
+      padding-top: 1px;
+    }
+    
+    .gsd { background-color: #add8e6; color: #000; border-radius: 4px; }
+    .nmd { background-color: #000080; color: #fff; border-radius: 4px; }
+    
+    .dow { 
+      font-size: 8px; 
+      margin-bottom: 1px; }
+    .dow:nth-child(6) { color: #007bff !important; } 
+    .dow:nth-child(7) { color: #e74c3c !important; } 
+    .day-sat { color: #007bff !important; } 
+    .day-sun { color: #e74c3c !important; } 
+    .day-holiday { color: #ff8c00 !important; font-weight: 900; }
+    
+    .day-today::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid #ff4757;
+      border-radius: 4px;
+      background-color: rgba(255, 71, 87, 0.1);
+      pointer-events: none;
+      z-index: 2; }
+    @media (max-width: 480px) { .calendar-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    /* フィールドメニュー用スタイル */
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 12px;
+    }
+    .field-item {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      background: #fff;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .field-item:active {
+      transform: scale(0.98);
+      background: var(--main-soft);
+    }
+    .field-img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      margin-bottom: 8px;
+    }
+    .field-name {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text);
+    }
+/* ===== 出現ポケモン一覧（tab2 詳細） ===== */
+    .field-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .field-header img {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+    }
+    .field-title {
+      font-weight: 900;
+      font-size: 16px;
+      color: var(--text);
+    }
+    .energy-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    .energy-table th, .energy-table td {
+      border: 1px solid var(--line);
+      padding: 8px;
+      text-align: center;
+    }
+    .energy-table th {
+      background: #f7f9fc;
+      font-weight: 900;
+    }
+    
+    .sleep-section {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .sleep-label {
+      padding: 10px 12px;
+      font-weight: 900;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+    .sleep-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 64px;
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-weight: 900;
+      font-size: 12px;
+      color: #111;
+    }
+    .badge-uto { background: #ffe66a; }
+    .badge-suya { background: #aee7f2; }
+    .badge-gusu { background: #8fb3ff; color: #0b1b3a; }
+    
+    .poke-grid {
+      padding: 10px 10px 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+      gap: 8px;
+    }
+    .poke-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .poke-item img {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+    }
+    .poke-name {
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.2;
+      word-break: keep-all;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div id="headerTitle" class="title-text">食材ストック計算</div>
+    <div id="headerVer" class="ver-text">ver1.0.2</div>
+  </div>
+  <button id="openNotice" style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer;">ⓘ</button>
+</header>
+
+<main>
+  <div id="tab1" class="tab-content active">
+    <section class="card">
+      <div class="row" style="justify-content: space-between; align-items: flex-start;">
+        <div>
+          <div style="font-weight:900; font-size:15px; color:var(--text); margin-bottom: 4px;">条件設定</div>
+          <span class="badge" id="summaryBadge">合計 0食 / 21食</span>
+        </div>
+        <div class="row">
+          <button id="addRecipe" class="primary">+ 追加</button>
+          <button id="clearAll" class="danger">クリア</button>
+        </div>
+      </div>
+      <div id="recipeList" style="margin-top:10px;"></div>
+    </section>
+
+    <section class="card">
+      <div style="font-weight:900; font-size:14px; margin-bottom:12px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text);">計算から除外</div>
+      <div id="excludeGrid" class="grid5"></div>
+    </section>
+
+    <section class="card">
+      <div style="font-weight:900; font-size:14px; margin-bottom:12px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text);">1日当たりの獲得量</div>
+      <div id="replenishGrid" class="grid5"></div>
+    </section>
+
+    <section class="result-card">
+      <div class="row" style="justify-content: space-between;">
+        <div style="font-weight:900; font-size:16px; color:var(--main);">計算結果</div>
+        <span class="badge total-badge" id="totalBadge">総合計 0個</span>
+      </div>
+      <div style="height:1px; background:var(--main); opacity:0.1; margin:16px 0;"></div>
+      <div id="resultGrid" class="grid5"></div>
+    </section>
+  </div>
+
+  <div id="tab2" class="tab-content">
+    <div id="fieldMenu">
+      <section class="card">
+        <div style="font-weight:900; font-size:16px; color:var(--main); margin-bottom:12px; text-align:center;">フィールド選択</div>
+        <div class="field-grid"></div>
+      </section>
+    </div>
+    <div id="fieldDetail" style="display:none;">
+      <button onclick="backToMenu()" style="margin-bottom:10px; padding:6px 12px; background:none; border:1px solid var(--line); border-radius:8px; font-size:12px; color:var(--muted);">← 戻る</button>
+      <div id="detailContent"></div>
+    </div>
+  </div>
+
+  <div id="tab3" class="tab-content">
+    <section class="card">
+      <div style="display: flex; gap: 10px; margin-bottom: 10px; font-size: 11px;">
+        <span style="display:flex; align-items:center; gap:4px;"><span style="width:12px; height:12px; background:#add8e6; display:inline-block; border-radius:2px;"></span>Good Sleep Day</span>
+        <span style="display:flex; align-items:center; gap:4px;"><span style="width:12px; height:12px; background:#000080; display:inline-block; border-radius:2px;"></span>New Moon Day</span>
+      </div>
+      <div id="yearCalendar" class="calendar-grid"></div>
+    </section>
+  </div>
+</main>
+
+<nav class="bottom-nav">
+  <div class="nav-item active" onclick="switchTab('tab1', this)">
+    <span class="nav-icon">🔍</span>
+    <span>食材ストック計算</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('tab2', this)">
+    <span class="nav-icon">🐾</span>
+    <span>出現ポケモン一覧</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('tab3', this)">
+    <span class="nav-icon">📅</span>
+    <span>月齢カレンダー</span>
+  </div>
+</nav>
+
+<div id="noticeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; padding:20px;">
+  <div class="card" style="max-width:400px; width:100%; position:relative;">
+    <div style="font-weight:900; margin-bottom:12px; border-bottom:1px solid var(--line); padding-bottom:8px;">ご利用上の注意</div>
+    <p style="font-size:13px; color:var(--text); line-height:1.6; margin-bottom:20px;">
+      このアプリは非公式であり、<strong>ﾈﾃﾙ.exe（@suiminloop.bsky.social）</strong>が個人で作ったものです。<br><br>ご利用いただく際は自己責任でお願いします🙇
+    </p>
+    <button id="closeNotice" class="primary" style="width:100%;">閉じる</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  function box(){
+    let b=document.getElementById("bootDiag");
+    if(!b){
+      b=document.createElement("div");
+      b.id="bootDiag";
+      b.style.cssText="position:fixed;left:10px;right:10px;bottom:70px;z-index:99999;background:#fff;border:2px solid #d00;border-radius:12px;padding:10px;font-size:12px;white-space:pre-wrap;display:none";
+      document.addEventListener("DOMContentLoaded",()=>document.body.appendChild(b));
+    }
+    return b;
+  }
+  function show(t){const b=box(); b.textContent=t; b.style.display="block";}
+  window.addEventListener("error",e=>show("[JS Error]\n"+(e.message||"")+"\n"+(e.filename||"")+":"+e.lineno+":"+e.colno));
+  window.addEventListener("unhandledrejection",e=>show("[Promise Rejection]\n"+(e.reason&& (e.reason.stack||e.reason.message))||String(e.reason)));
+  // 目印：このブロックが動いてるか
+  window.__BOOT_DIAG__ = "OK";
+})();
+</script>
+  
+<script src="data/ingredients.js"></script>
+<script src="data/recipes.js"></script>
+<script src="data/fields.js"></script>
+
+<script src="js/calendar.js"></script>
+<script src="js/pokedex.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
