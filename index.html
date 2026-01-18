@@ -533,15 +533,30 @@
       <button id="closeDocs" style="background:none; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-weight:800; cursor:pointer;">閉じる</button>
     </div>
 
+<!-- お役立ち資料：画像ビューア（アプリ内） -->
+<div id="docViewerModal"
+  style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+         background:rgba(0,0,0,0.7); z-index:3000; align-items:center; justify-content:center; padding:14px;">
+  <div class="card" style="max-width:900px; width:100%; max-height:92vh; overflow:auto; position:relative;">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:12px;">
+      <div id="docViewerTitle" style="font-weight:900;">資料</div>
+      <button id="closeDocViewer"
+        style="background:none; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-weight:800; cursor:pointer;">
+        戻る
+      </button>
+    </div>
+
+    <img id="docViewerImg" src="" alt=""
+      style="width:100%; height:auto; border-radius:12px; border:1px solid var(--line); background:#fff;">
+  </div>
+</div>
+    
     <div style="display:flex; flex-direction:column; gap:12px;">
       <!-- 1 -->
       <div style="border:1px solid var(--line); border-radius:14px; padding:12px;">
         <div style="font-weight:900; margin-bottom:8px;">エナジー効率の良いレシピ一覧</div>
         <div class="row">
-          <a href="images/エナジー効率の良いレシピ一覧.png" target="_blank" rel="noopener"
-             style="text-decoration:none;">
-            <button class="primary" type="button">開く</button>
-          </a>
+          <button class="primary" type="button" onclick="openDoc('エナジー効率の良いレシピ一覧.png')">開く</button>
           <a href="images/エナジー効率の良いレシピ一覧.png" download
              style="text-decoration:none;">
             <button type="button">保存</button>
@@ -552,10 +567,7 @@
       <div style="border:1px solid var(--line); border-radius:14px; padding:12px;">
         <div style="font-weight:900; margin-bottom:8px;">きのみタイプ強さランキング</div>
         <div class="row">
-          <a href="images/きのみタイプ強さランキング.png" target="_blank" rel="noopener"
-             style="text-decoration:none;">
-            <button class="primary" type="button">開く</button>
-          </a>
+          <button class="primary" type="button" onclick="openDoc('きのみタイプ強さランキング.png')">開く</button>
           <a href="images/きのみタイプ強さランキング.png" download
              style="text-decoration:none;">
             <button type="button">保存</button>
@@ -567,10 +579,7 @@
       <div style="border:1px solid var(--line); border-radius:14px; padding:12px;">
         <div style="font-weight:900; margin-bottom:8px;">お香で呼べるポケモンかけらランキング</div>
         <div class="row">
-          <a href="images/お香で呼べるポケモンかけらランキング.png" target="_blank" rel="noopener"
-             style="text-decoration:none;">
-            <button class="primary" type="button">開く</button>
-          </a>
+          <button class="primary" type="button" onclick="openDoc('お香で呼べるポケモンかけらランキング.png')">開く</button>
           <a href="images/お香で呼べるポケモンかけらランキング.png" download
              style="text-decoration:none;">
             <button type="button">保存</button>
