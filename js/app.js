@@ -319,10 +319,20 @@ window.onload = () => {
   // 初期行がなければ1行追加
   if (state.recipeRows.length === 0) addRecipeRow({ meals: 0 });
 
-  // モーダル
+  // お役立ち資料集モーダル
+  const docsModal = el("docsModal");
+  el("openDocs").onclick = () => docsModal.style.display = "flex";
+  el("closeDocs").onclick = () => docsModal.style.display = "none";
+  
   const modal = el("noticeModal");
   el("openNotice").onclick = () => modal.style.display = "flex";
   el("closeNotice").onclick = () => modal.style.display = "none";
-  window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; };
+
+  // 背景タップで閉じる（資料集/注意書き 両方）
+  window.onclick = (e) => {
+    if (e.target == modal) modal.style.display = "none";
+    const docsModal = el("docsModal");
+    if (e.target == docsModal) docsModal.style.display = "none";
+  };
 };
 
