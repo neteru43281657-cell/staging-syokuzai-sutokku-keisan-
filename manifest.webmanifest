@@ -7,7 +7,7 @@
   "theme_color": "#007bff",
   "icons": [
     {
-      "src": "images/ステージング.png",
+      "src": "images/アイコン.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

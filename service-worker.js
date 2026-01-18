@@ -1,4 +1,4 @@
-const CACHE_NAME = "stockcalc-v1.1.1"; // ★必ず上げること
+const CACHE_NAME = "stockcalc-v1.1.3"; // ★必ず上げること
 
 const ASSETS = [
   "./",
