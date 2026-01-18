@@ -290,6 +290,19 @@ function calc() {
   el("totalBadge").textContent = `総合計 ${grandTotal}個`;
 }
 
+// お役立ち資料：アプリ内ビューアで開く（PWAで戻れなくなる問題を回避）
+window.openDoc = function (fileName) {
+  const viewer = document.getElementById("docViewerModal");
+  const img = document.getElementById("docViewerImg");
+  const title = document.getElementById("docViewerTitle");
+
+  if (!viewer || !img || !title) return;
+
+  title.textContent = fileName.replace(/\.png$/i, "");
+  img.src = "images/" + encodeURIComponent(fileName);
+  viewer.style.display = "flex";
+};
+
 window.onload = () => {
   console.log("app.js onload fired", window.__APP_JS_LOADED__, window.INGREDIENTS, window.RECIPES);
 
@@ -328,11 +341,18 @@ window.onload = () => {
   el("openNotice").onclick = () => modal.style.display = "flex";
   el("closeNotice").onclick = () => modal.style.display = "none";
 
+  // お役立ち資料：画像ビューア
+  const docViewer = el("docViewerModal");
+  const closeDocViewer = el("closeDocViewer");
+  if (closeDocViewer) closeDocViewer.onclick = () => docViewer.style.display = "none";
+  
   // 背景タップで閉じる（資料集/注意書き 両方）
   window.onclick = (e) => {
     if (e.target == modal) modal.style.display = "none";
     const docsModal = el("docsModal");
     if (e.target == docsModal) docsModal.style.display = "none";
+    const docViewer = el("docViewerModal");
+    if (e.target == docViewer) docViewer.style.display = "none";
   };
 };
 
