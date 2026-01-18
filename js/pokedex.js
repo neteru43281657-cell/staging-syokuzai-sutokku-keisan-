@@ -177,7 +177,7 @@ function buildEnergyTableHTML(fieldName, energyMap) {
 
   return `
     <table class="energy-table">
-      <thead><tr><th>出現数</th><th>必要エナジー</th></tr></thead>
+      <thead><tr><th>出現ポケモン数</th><th>必要エナジー</th></tr></thead>
       <tbody>${trs}</tbody>
     </table>
   `;

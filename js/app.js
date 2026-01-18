@@ -292,16 +292,37 @@ function calc() {
 
 window.onload = () => {
   console.log("app.js onload fired", window.__APP_JS_LOADED__, window.INGREDIENTS, window.RECIPES);
+
   resetSWAndCacheOnce();
   registerSW();
   renderGrids();
+
   if (typeof renderYearCalendar === "function") renderYearCalendar();
   if (typeof renderFieldMenu === "function") renderFieldMenu();
+
   const savedTab = localStorage.getItem('activeTab') || 'tab1';
   switchTab(savedTab, null);
-  if (state.recipeRows.length === 0) { addRecipeRow({meals: 0}); }
+
+  // ★ ここが重要：+追加 / クリア のボタンを再接続
+  el("addRecipe").onclick = () => addRecipeRow({ meals: 0 });
+
+  el("clearAll").onclick = () => {
+    el("recipeList").innerHTML = "";
+    state.recipeRows = [];
+    document.querySelectorAll(".exChk").forEach(chk => chk.checked = false);
+    document.querySelectorAll(".repQty").forEach(input => input.value = "");
+    checkAddButton();
+    addRecipeRow({ cat: "カレー・シチュー", recipeId: "avocado_gratin", meals: 0 });
+    calc();
+  };
+
+  // 初期行がなければ1行追加
+  if (state.recipeRows.length === 0) addRecipeRow({ meals: 0 });
+
+  // モーダル
   const modal = el("noticeModal");
   el("openNotice").onclick = () => modal.style.display = "flex";
   el("closeNotice").onclick = () => modal.style.display = "none";
-    window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; };
+  window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; };
 };
+
