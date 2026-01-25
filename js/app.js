@@ -93,9 +93,6 @@ const MODE3_TOTAL_MEALS = 63;
 // ② 異なるレシピを組み合わせて21食：最大行数
 const MAX_ROWS_MODE2 = 6;
 
-// ② 最大行数
-const MAX_ROWS_MODE2 = 6;
-
 // NCピカ（1日あたり差し引き分）※値はここで固定
 const NC_APPLE = 12;
 const NC_CACAO = 5;
@@ -161,44 +158,6 @@ function getFirstRecipeIdByCat(cat) {
   return first ? first.id : null;
 }
 
-/* =========================================================
-   タブ切替
-========================================================= */
-function switchTab(tabId, clickedEl) {
-  document
-    .querySelectorAll(".tab-content")
-    .forEach((c) => c.classList.remove("active"));
-  document
-    .querySelectorAll(".nav-item")
-    .forEach((i) => i.classList.remove("active"));
-  document.getElementById(tabId).classList.add("active");
-
-  if (clickedEl) {
-    clickedEl.classList.add("active");
-  } else {
-    const targetNav = Array.from(document.querySelectorAll(".nav-item")).find(
-      (n) => n.getAttribute("onclick") && n.getAttribute("onclick").includes(tabId)
-    );
-    if (targetNav) targetNav.classList.add("active");
-  }
-
-  localStorage.setItem("activeTab", tabId);
-
-  const headerTitle = el("headerTitle");
-  const headerVer = el("headerVer");
-  if (tabId === "tab1") {
-    headerTitle.textContent = "食材ストック計算";
-    headerVer.textContent = "ver1.1.0";
-  } else if (tabId === "tab2") {
-    headerTitle.textContent = "出現ポケモン一覧";
-    headerVer.textContent = "ver1.1.0";
-  } else if (tabId === "tab3") {
-    headerTitle.textContent = "2026年 月齢カレンダー";
-    headerVer.textContent = "ver1.1.0";
-  }
-
-  window.scrollTo(0, 0);
-}
 
 /* =========================================================
    除外 / 1日当たり獲得量 グリッド描画
@@ -1011,8 +970,8 @@ window.onload = () => {
   }
 
   const savedTab = localStorage.getItem("activeTab") || "tab1";
-  switchTab(savedTab, null);
-
+  window.switchTab(savedTab, null);
+   
    // +追加（②のみ）
    const addBtn = el("addRecipe");
    if (addBtn) {
