@@ -425,6 +425,52 @@
       line-height: 1.2;
       word-break: keep-all;
     }
+
+    /* ============================
+       スマホ：条件/ボタンを上段、モード選択を下段へ
+    ============================ */
+    @media (max-width: 520px) {
+      .settingsHeaderRow {
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+    
+      /* 上段：条件設定（左） */
+      #condBlock {
+        width: calc(100% - 140px); /* 右のボタン分を空ける */
+        min-width: 220px;
+      }
+    
+      /* 上段：操作ボタン（右） */
+      #actionBlock {
+        width: 130px;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+      #actionBlock .primary,
+      #actionBlock .danger {
+        padding: 10px 12px;
+        font-size: 13px;
+        white-space: nowrap;
+      }
+    
+      /* 下段：モード選択（横幅いっぱい） */
+      #modeBlock {
+        order: 3;
+        width: 100%;
+        justify-content: flex-start;
+        margin-top: 2px;
+      }
+      #modeBlock > div {
+        width: 100%;
+      }
+      #modeBlock .chkLabel {
+        font-size: 13px;
+        line-height: 1.25;
+      }
+    }
+
+    
   </style>
 </head>
 <body>
@@ -450,43 +496,47 @@
 <main>
   <div id="tab1" class="tab-content active">
     <section class="card">
-      <div class="row" style="justify-content: space-between; align-items: flex-start;">
-        <div>
+      <div class="row settingsHeaderRow" style="justify-content: space-between; align-items: flex-start;">
+        <!-- 条件設定 -->
+        <div id="condBlock">
           <div style="font-weight:900; font-size:14px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text); margin-bottom: 6px;">
             条件設定
           </div>
           <span class="badge" id="summaryBadge">合計 0食 / 21食</span>
         </div>
-
+    
         <!-- モード選択 -->
-        <div style="flex:1; display:flex; justify-content:center;">
-            <div style="display:flex; flex-direction:column; align-items:flex-start; gap:6px;">
-              <div style="font-weight:900; font-size:12px; color:var(--muted);">モードを選択してください</div>
-
-              <label class="chkLabel" style="font-size:12px; width:auto; height:auto; justify-content:flex-start;">
-                <input type="radio" name="calcMode" id="calcMode1" value="mode1">
-                ① 同じレシピを21食作り続ける
-              </label>
-
-              <label class="chkLabel" style="font-size:12px; width:auto; height:auto; justify-content:flex-start;">
-                <input type="radio" name="calcMode" id="calcMode2" value="mode2">
-                ② 2種以上のレシピを組み合わせて21食作る
-              </label>
-
-              <label class="chkLabel" style="font-size:12px; width:auto; height:auto; justify-content:flex-start;">
-                <input type="radio" name="calcMode" id="calcMode3" value="mode3">
-                ③ 別カテゴリーのレシピを組み合わせる
-              </label>
-            </div>
+        <div id="modeBlock" style="flex:1; display:flex; justify-content:center;">
+          <div style="display:flex; flex-direction:column; align-items:flex-start; gap:6px;">
+            <div style="font-weight:900; font-size:12px; color:var(--muted);">モードを選択してください</div>
+    
+            <label class="chkLabel" style="font-size:12px; width:auto; height:auto; justify-content:flex-start;">
+              <input type="radio" name="calcMode" id="calcMode1" value="mode1">
+              ① 同じレシピを21食作り続ける
+            </label>
+    
+            <label class="chkLabel" style="font-size:12px; width:auto; height:auto; justify-content:flex-start;">
+              <input type="radio" name="calcMode" id="calcMode2" value="mode2">
+              ② 2種以上のレシピを組み合わせて21食作る
+            </label>
+    
+            <label class="chkLabel" style="font-size:12px; width:auto; height:auto; justify-content:flex-start;">
+              <input type="radio" name="calcMode" id="calcMode3" value="mode3">
+              ③ 別カテゴリーのレシピを組み合わせる
+            </label>
           </div>
-
-        <div class="row">
+        </div>
+    
+        <!-- +追加 / クリア -->
+        <div id="actionBlock" class="row">
           <button id="addRecipe" class="primary">+ 追加</button>
           <button id="clearAll" class="danger">クリア</button>
         </div>
       </div>
+    
       <div id="recipeList" style="margin-top:10px;"></div>
     </section>
+
 
     <section class="card">
       <div style="font-weight:900; font-size:14px; margin-bottom:12px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text);">計算から除外</div>
