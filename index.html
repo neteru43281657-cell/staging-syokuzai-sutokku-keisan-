@@ -476,11 +476,17 @@
         font-size:14px;          /* ←少し大きく */
         color:var(--muted);
       }
-      #modeBlock .modeLabel {
+      .modeLabel {
         display: flex;
         align-items: center;
         gap: 6px;
       }
+      
+      .modeLabel input[type="radio"] {
+        margin: 0;
+        transform: translateY(1px); /* iOS用 微調整 */
+      }
+
       
       #modeBlock input[type="radio"] {
         margin: 0;
@@ -527,11 +533,11 @@
         /* ここで必ず小さくする（rowの影響を受けないように） */
         #actionBlock > button.primary,
         #actionBlock > button.danger {
-          height: 30px !important;
-          padding: 0 10px !important;
+          height: 32px !important;
+          padding: 0 12px !important;
           font-size: 12px !important;
-          line-height: 30px !important;
-          border-radius: 10px !important;
+          line-height: 32px !important;
+          border-radius: 999px !important; /* バッジと同系統 */
         }
       }
 
@@ -542,7 +548,10 @@
 
       
       #condBlock { grid-area: cond; }
-      #modeBlock { grid-area: mode; }
+      #modeBlock {
+        grid-area: mode;
+        padding-left: 12px; /* ← 左に寄りすぎ問題を解消 */
+      }
       #actionBlock { grid-area: actions; }
     
       /* 左側：条件設定ブロックを詰める */
@@ -678,15 +687,15 @@
         <div style="font-weight:900; font-size:16px; color:var(--main);">計算結果</div>
         <span class="badge total-badge" id="totalBadge">総合計 0個</span>
       </div>
-    
+      
+      <!-- ★ 注意書きはここ -->
       <div id="mode3Note" class="mode3Note">
         ※異なるカテゴリーのレシピ間で重複している食材は、
         各レシピ中で最も多く使われている食材の個数を参照して計算しています
       </div>
-    
-      <div class="resultDivider"></div>
-    
+
       <div id="resultGrid" class="grid5"></div>
+
     </section>
 
   </div>
