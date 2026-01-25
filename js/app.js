@@ -1,4 +1,3 @@
-// app.js
 "use strict";
 
 // ===== 診断モード：JSエラーを画面に表示 =====
@@ -86,7 +85,6 @@ const el = (id) => document.getElementById(id);
 
 let state = { recipeRows: [] };
 
-
 const MEALS_PER_DAY = 3;
 const MAX_RECIPE_ROWS = 9;
 const MAX_TOTAL_MEALS = 21;
@@ -108,7 +106,7 @@ function setOptBool(key, val) {
 }
 
 function getMaxTotalMeals() {
-  return getOptBool(OPT_KEYS.expand63, false) ? 63 : MAX_TOTAL_MEALS; // MAX_TOTAL_MEALSは既存(21)を維持
+  return getOptBool(OPT_KEYS.expand63, false) ? 63 : MAX_TOTAL_MEALS;
 }
 
 function isMaxOverlapMode() {
@@ -123,16 +121,55 @@ function syncOptionUIFromStorage() {
   if (cbMax) cbMax.checked = getOptBool(OPT_KEYS.maxOverlap, false);
 }
 
+function setSummaryBadge(totalMeals) {
+  const badge = el("summaryBadge");
+  if (!badge) return;
+  badge.textContent = `${totalMeals}食 / ${getMaxTotalMeals()}食`;
+}
+
+// ===== 63食プリセット（3カテゴリ×先頭料理×21食）=====
+const CATS_3 = ["カレー・シチュー", "サラダ", "デザート・ドリンク"];
+
+function getFirstRecipeIdByCat(cat) {
+  const first = (window.RECIPES || []).find(r => r.cat === cat);
+  return first ? first.id : null;
+}
+
+function apply63PresetRows() {
+  const list = el("recipeList");
+  if (!list) return;
+
+  // UIとstateを完全に作り直す（既存計算ロジックには触れない）
+  list.innerHTML = "";
+  state.recipeRows = [];
+
+  CATS_3.forEach(cat => {
+    const rid = getFirstRecipeIdByCat(cat);
+    if (!rid) return;
+    addRecipeRow({ cat, recipeId: rid, meals: 21 });
+  });
+
+  // 食数ドロップダウンが確実に63側へ収束するように再計算
+  updateAllMealDropdowns();
+  updateAllMealDropdowns();
+  calc();
+}
+
 function bindOptionUI() {
   const cb63 = el("optExpand63");
   if (cb63) {
     cb63.onchange = () => {
       setOptBool(OPT_KEYS.expand63, cb63.checked);
 
-      // 21 ↔ 63 の切替時に食数ドロップダウンが安全に収束するよう2回回す
-      updateAllMealDropdowns();
-      updateAllMealDropdowns();
-      calc();
+      if (cb63.checked) {
+        // ★ 63食ON：3カテゴリ×先頭料理×21食を自動セット
+        apply63PresetRows();
+      } else {
+        // OFF時：現状は崩さず、上限が21に戻るのでドロップダウンだけ整える
+        updateAllMealDropdowns();
+        updateAllMealDropdowns();
+        calc();
+      }
     };
   }
 
@@ -145,13 +182,8 @@ function bindOptionUI() {
   }
 }
 
-function setSummaryBadge(totalMeals) {
-  el("summaryBadge").textContent = `${totalMeals}食 / ${getMaxTotalMeals()}食`;
-}
-
-
+// ===== core helpers =====
 function getIng(id) { return INGREDIENTS.find(x => x.id === id); }
-
 function imgSrc(file) { return "images/" + encodeURIComponent(file); }
 
 function switchTab(tabId, clickedEl) {
@@ -185,6 +217,8 @@ function switchTab(tabId, clickedEl) {
 
 function renderGrids() {
   const ex = el("excludeGrid"), rep = el("replenishGrid");
+  if (!ex || !rep) return;
+
   ex.innerHTML = ""; rep.innerHTML = "";
   INGREDIENTS.forEach(ing => {
     ex.innerHTML += `
@@ -205,6 +239,7 @@ function renderGrids() {
           </div>
         </div>`;
   });
+
   document.querySelectorAll(".exChk, .repQty").forEach(input => {
     input.oninput = (e) => {
       if (e.target.classList.contains("repQty")) {
@@ -218,8 +253,14 @@ function renderGrids() {
 
 function addRecipeRow(init) {
   if (state.recipeRows.length >= MAX_RECIPE_ROWS) return;
+
   const rowId = crypto.randomUUID();
-  const rowData = { rowId, cat: init?.cat || "カレー・シチュー", recipeId: init?.recipeId || "avocado_gratin", meals: init?.meals || 0 };
+  const rowData = {
+    rowId,
+    cat: init?.cat || "カレー・シチュー",
+    recipeId: init?.recipeId || "avocado_gratin",
+    meals: Number(init?.meals || 0)
+  };
   state.recipeRows.push(rowData);
 
   const wrap = document.createElement("div");
@@ -245,21 +286,26 @@ function addRecipeRow(init) {
     </div>
     <div class="preview"></div>`;
 
-  const cSel = wrap.querySelector(".catSel"), rSel = wrap.querySelector(".recipeSel"), mSel = wrap.querySelector(".mealsSel"), pre = wrap.querySelector(".preview");
+  const cSel = wrap.querySelector(".catSel");
+  const rSel = wrap.querySelector(".recipeSel");
+  const mSel = wrap.querySelector(".mealsSel");
+  const pre = wrap.querySelector(".preview");
 
   const updateRecipeList = () => {
     const filtered = RECIPES.filter(r => r.cat === cSel.value);
     rSel.innerHTML = filtered.map(r => `<option value="${r.id}">${r.name}</option>`).join("");
+
     if (filtered.some(r => r.id === rowData.recipeId)) rSel.value = rowData.recipeId;
     else rowData.recipeId = rSel.value;
+
     updatePreview();
   };
 
   const updatePreview = () => {
-    rowData.cat = cSel.value; 
-    rowData.recipeId = rSel.value; 
+    rowData.cat = cSel.value;
+    rowData.recipeId = rSel.value;
     rowData.meals = Number(mSel.value);
-    
+
     const r = RECIPES.find(x => x.id === rSel.value);
     if (r) {
       const totalIngredients = Object.values(r.ingredients).reduce((sum, count) => sum + count, 0);
@@ -270,42 +316,67 @@ function addRecipeRow(init) {
       html += `<span class="badge" style="margin-left: auto; background:var(--main-soft); color:var(--main); border:1px solid #cce5ff; padding: 2px 10px; font-size: 11px;">${totalIngredients}個</span>`;
       pre.innerHTML = html;
     }
+
     updateAllMealDropdowns();
     calc();
   };
 
-  cSel.onchange = updateRecipeList; rSel.onchange = updatePreview; mSel.onchange = updatePreview;
+  cSel.onchange = updateRecipeList;
+  rSel.onchange = updatePreview;
+  mSel.onchange = updatePreview;
+
   wrap.querySelector(".removeBtn").onclick = () => {
     state.recipeRows = state.recipeRows.filter(r => r.rowId !== rowId);
-    wrap.remove(); updateAllMealDropdowns(); checkAddButton(); calc();
+    wrap.remove();
+    updateAllMealDropdowns();
+    checkAddButton();
+    calc();
   };
 
-  cSel.value = rowData.cat; updateRecipeList();
+  cSel.value = rowData.cat;
+  updateRecipeList();
+
   el("recipeList").appendChild(wrap);
-  updateAllMealDropdowns(); checkAddButton();
+
+  updateAllMealDropdowns();
+  checkAddButton();
 }
 
 function updateAllMealDropdowns() {
   const currentTotal = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
+
   state.recipeRows.forEach(row => {
     const wrap = document.querySelector(`.recipeRow[data-row-id="${row.rowId}"]`);
     if (!wrap) return;
+
     const mSel = wrap.querySelector(".mealsSel");
     const otherMeals = currentTotal - row.meals;
     const maxAvailable = getMaxTotalMeals() - otherMeals;
+
     const prevVal = row.meals;
     mSel.innerHTML = "";
-    for (let i = 0; i <= maxAvailable; i++) {
+
+    for (let i = 0; i <= Math.max(0, maxAvailable); i++) {
       const opt = document.createElement("option");
-      opt.value = i; opt.textContent = i;
+      opt.value = i;
+      opt.textContent = i;
       mSel.appendChild(opt);
     }
-    mSel.value = Math.min(prevVal, maxAvailable);
+
+    mSel.value = Math.min(prevVal, Math.max(0, maxAvailable));
     row.meals = Number(mSel.value);
   });
+
+  // バッジ更新（食数更新後の合計）
+  const totalMeals = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
+  setSummaryBadge(totalMeals);
 }
 
-function checkAddButton() { el("addRecipe").disabled = state.recipeRows.length >= MAX_RECIPE_ROWS; }
+function checkAddButton() {
+  const btn = el("addRecipe");
+  if (!btn) return;
+  btn.disabled = state.recipeRows.length >= MAX_RECIPE_ROWS;
+}
 
 function calc() {
   const exclude = new Set([...document.querySelectorAll(".exChk:checked")].map(c => c.dataset.iid));
@@ -358,8 +429,10 @@ function calc() {
     });
   }
 
-  // ===== 結果描画（既存のまま）=====
+  // ===== 結果描画 =====
   const resultGrid = el("resultGrid");
+  if (!resultGrid) return;
+
   resultGrid.innerHTML = "";
   let grandTotal = 0;
 
@@ -380,10 +453,9 @@ function calc() {
     }
   });
 
-  el("totalBadge").textContent = `総合計 ${grandTotal}個`;
+  const totalBadge = el("totalBadge");
+  if (totalBadge) totalBadge.textContent = `総合計 ${grandTotal}個`;
 }
-
-
 
 // お役立ち資料：アプリ内ビューアで開く（PWAで戻れなくなる問題を回避）
 window.openDoc = function (fileName) {
@@ -403,52 +475,67 @@ window.onload = () => {
 
   resetSWAndCacheOnce();
   registerSW();
+
   renderGrids();
 
-  if (typeof renderYearCalendar === "function") renderYearCalendar();
-  if (typeof renderFieldMenu === "function") renderFieldMenu();
+  if (window.CalendarTab && typeof window.CalendarTab.renderYearCalendar === "function") {
+    window.CalendarTab.renderYearCalendar();
+  }
+  if (window.PokedexTab && typeof window.PokedexTab.renderFieldMenu === "function") {
+    window.PokedexTab.renderFieldMenu();
+  }
 
   const savedTab = localStorage.getItem('activeTab') || 'tab1';
-  syncOptionUIFromStorage();
-  bindOptionUI();
   switchTab(savedTab, null);
 
-  el("addRecipe").onclick = () => addRecipeRow({ meals: 0 });
+  // ★ ここが重要：+追加 / クリア のボタンを再接続
+  const addBtn = el("addRecipe");
+  if (addBtn) addBtn.onclick = () => addRecipeRow({ meals: 0 });
 
-  el("clearAll").onclick = () => {
-    el("recipeList").innerHTML = "";
-    state.recipeRows = [];
-    document.querySelectorAll(".exChk").forEach(chk => chk.checked = false);
-    document.querySelectorAll(".repQty").forEach(input => input.value = "");
-    checkAddButton();
-    addRecipeRow({ cat: "カレー・シチュー", recipeId: "avocado_gratin", meals: 0 });
-    calc();
-  };
+  const clearBtn = el("clearAll");
+  if (clearBtn) {
+    clearBtn.onclick = () => {
+      const list = el("recipeList");
+      if (list) list.innerHTML = "";
+      state.recipeRows = [];
+      document.querySelectorAll(".exChk").forEach(chk => chk.checked = false);
+      document.querySelectorAll(".repQty").forEach(input => input.value = "");
+      checkAddButton();
+      addRecipeRow({ cat: "カレー・シチュー", recipeId: "avocado_gratin", meals: 0 });
+      calc();
+    };
+  }
 
   // 初期行がなければ1行追加
   if (state.recipeRows.length === 0) addRecipeRow({ meals: 0 });
 
+  // ===== オプションUI（初期反映＆イベント接続）=====
+  syncOptionUIFromStorage();
+  bindOptionUI();
+
   // お役立ち資料集モーダル
   const docsModal = el("docsModal");
-  el("openDocs").onclick = () => docsModal.style.display = "flex";
-  el("closeDocs").onclick = () => docsModal.style.display = "none";
-  
-  const modal = el("noticeModal");
-  el("openNotice").onclick = () => modal.style.display = "flex";
-  el("closeNotice").onclick = () => modal.style.display = "none";
+  const openDocs = el("openDocs");
+  const closeDocs = el("closeDocs");
+  if (openDocs && docsModal) openDocs.onclick = () => docsModal.style.display = "flex";
+  if (closeDocs && docsModal) closeDocs.onclick = () => docsModal.style.display = "none";
+
+  // 注意書きモーダル
+  const noticeModal = el("noticeModal");
+  const openNotice = el("openNotice");
+  const closeNotice = el("closeNotice");
+  if (openNotice && noticeModal) openNotice.onclick = () => noticeModal.style.display = "flex";
+  if (closeNotice && noticeModal) closeNotice.onclick = () => noticeModal.style.display = "none";
 
   // お役立ち資料：画像ビューア
   const docViewer = el("docViewerModal");
   const closeDocViewer = el("closeDocViewer");
-  if (closeDocViewer) closeDocViewer.onclick = () => docViewer.style.display = "none";
-  
-  // 背景タップで閉じる（資料集/注意書き 両方）
+  if (closeDocViewer && docViewer) closeDocViewer.onclick = () => docViewer.style.display = "none";
+
+  // 背景タップで閉じる（資料集/注意書き/画像ビューア）
   window.onclick = (e) => {
-    if (e.target == modal) modal.style.display = "none";
-    const docsModal = el("docsModal");
-    if (e.target == docsModal) docsModal.style.display = "none";
-    const docViewer = el("docViewerModal");
-    if (e.target == docViewer) docViewer.style.display = "none";
+    if (noticeModal && e.target === noticeModal) noticeModal.style.display = "none";
+    if (docsModal && e.target === docsModal) docsModal.style.display = "none";
+    if (docViewer && e.target === docViewer) docViewer.style.display = "none";
   };
 };
-
