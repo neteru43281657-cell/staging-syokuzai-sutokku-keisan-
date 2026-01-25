@@ -1197,8 +1197,9 @@ window.switchTab = window.switchTab || function (tabId, clickedEl) {
 };
 
 function updateMode3Notice() {
-  const note = document.getElementById("mode3Notice");
+  const note = document.getElementById("mode3Note"); // ←HTMLと合わせる
   if (!note) return;
   note.style.display = (state.mode === MODES.PRESET63) ? "block" : "none";
 }
+
 
