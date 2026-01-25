@@ -275,7 +275,7 @@ function setMode(mode) {
       });
     });
   }
-
+  updateMode3Notice();
   updateAllMealDropdowns();
   calc();
 }
@@ -974,6 +974,15 @@ window.onload = () => {
 
   renderGrids();
 
+  const nc = document.getElementById("optNcPika");
+   document.querySelectorAll(".repQty").forEach((inp) => {
+     inp.addEventListener("input", () => calc());
+   });
+
+   
+  if (nc) nc.addEventListener("change", () => calc());
+
+   
   if (window.CalendarTab && typeof window.CalendarTab.renderYearCalendar === "function") {
     window.CalendarTab.renderYearCalendar();
   }
@@ -1070,6 +1079,8 @@ window.onload = () => {
     if (docViewer && e.target === docViewer) docViewer.style.display = "none";
   };
 
+  updateMode3Notice();
+   
   // 初回描画
   updateAllMealDropdowns();
   calc();
@@ -1127,3 +1138,10 @@ window.switchTab = window.switchTab || function (tabId, clickedEl) {
 
   localStorage.setItem("activeTab", tabId);
 };
+
+function updateMode3Notice() {
+  const note = document.getElementById("mode3Notice");
+  if (!note) return;
+  note.style.display = (state.mode === MODES.PRESET63) ? "block" : "none";
+}
+
