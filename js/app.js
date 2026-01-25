@@ -94,6 +94,7 @@ const OPT_KEYS = {
   expand63: "opt_expand63_meals",
   maxOverlap: "opt_max_overlap_ingredient",
   setMeals21: "opt_set_meals_21",
+  ncPika: "opt_nc_pika_subtract",
 };
 
 function getOptBool(key, def = false) {
@@ -123,6 +124,9 @@ function syncOptionUIFromStorage() {
   
   const cb21 = el("optSetMeals21");
   if (cb21) cb21.checked = getOptBool(OPT_KEYS.setMeals21, false);
+
+  const cbNc = el("optNcPika");
+  if (cbNc) cbNc.checked = getOptBool(OPT_KEYS.ncPika, false);
 }
 
 function setSummaryBadge(totalMeals) {
@@ -210,6 +214,14 @@ function bindOptionUI() {
   if (cbMax) {
     cbMax.onchange = () => {
       setOptBool(OPT_KEYS.maxOverlap, cbMax.checked);
+      calc();
+    };
+  }
+
+  const cbNc = el("optNcPika");
+  if (cbNc) {
+    cbNc.onchange = () => {
+      setOptBool(OPT_KEYS.ncPika, cbNc.checked);
       calc();
     };
   }
@@ -414,6 +426,11 @@ function checkAddButton() {
 function calc() {
   const exclude = new Set([...document.querySelectorAll(".exChk:checked")].map(c => c.dataset.iid));
   const replenishMap = new Map([...document.querySelectorAll(".repQty")].map(c => [c.dataset.iid, Number(c.value) || 0]));
+  if (getOptBool(OPT_KEYS.ncPika, false)) {
+    replenishMap.set("apple", (replenishMap.get("apple") || 0) + 12);
+    replenishMap.set("cacao", (replenishMap.get("cacao") || 0) + 5);
+    replenishMap.set("honey", (replenishMap.get("honey") || 0) + 3);
+  }
   const totalMeals = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
 
   // 21 or 63 の表示
