@@ -46,7 +46,7 @@
 })();
 
 
-// ★一度だけ：古いService Worker & Cacheを全削除してリロード
+// 一度だけ古いService Worker & Cacheを全削除してリロード
 async function resetSWAndCacheOnce() {
   const KEY = "sw_cache_reset_done_v111";
   if (localStorage.getItem(KEY)) return;
@@ -192,31 +192,65 @@ function applyMeals21(mode = "all") {
 }
 
 function bindOptionUI() {
+  // 63食
   const cb63 = el("optExpand63");
   if (cb63) {
     cb63.onchange = () => {
       setOptBool(OPT_KEYS.expand63, cb63.checked);
 
       if (cb63.checked) {
-        // 63食ON時点で「21食固定」は意味が崩れるのでOFFに寄せる
-        setOptBool(OPT_KEYS.setMeals21, false);
-        const cb21 = el("optSetMeals21");
-        if (cb21) cb21.checked = false;
+        // 63食ON：3カテゴリ×先頭料理×21食を自動セット
+        apply63PresetRows();
+      } else {
+        // OFF：現状を崩さず上限だけ戻す
+        updateAllMealDropdowns();
+        updateAllMealDropdowns();
+        calc();
+      }
+    };
+  }
 
-        // ★ 63食ON：3カテゴリ×先頭料理×21食を自動セット
+  // 最大値計算
+  const cbMax = el("optMaxOverlap");
+  if (cbMax) {
+    cbMax.onchange = () => {
+      setOptBool(OPT_KEYS.maxOverlap, cbMax.checked);
+      calc();
+    };
+  }
+
+  // 食数に21食を設定する（チェックは入りっぱなし）
+  const cb21 = el("optSetMeals21");
+  if (cb21) {
+    cb21.addEventListener("change", () => {
+      cb21.checked = true;
+      setOptBool(OPT_KEYS.setMeals21, true);
+
+      const is63 = cb63 ? cb63.checked : getOptBool(OPT_KEYS.expand63, false);
+
+      if (is63) {
+        // 63食ONなら：カテゴリを3つに強制して各21
         apply63PresetRows();
         return;
       }
 
-      // ★ 63食OFF：上限が21に戻る
-      // 合計が22以上なら「一番上の行」に21を寄せ、残りは0〜で収まるよう丸める
-      normalizeMealsToMaxTotal(MAX_TOTAL_MEALS);
+      // 63食OFFの場合：
+      // 2行以上→先頭行だけ21 / 1行→その行
+      const rowCount = state.recipeRows.length;
+      if (rowCount >= 2) applyMeals21("firstOnly");
+      else applyMeals21("all");
+    });
+  }
 
-      updateAllMealDropdowns();
-      updateAllMealDropdowns();
-      calc();
+  const cbNc = el("optNcPika");
+  if (cbNc) {
+    cbNc.onchange = () => {
+      setOptBool(OPT_KEYS.ncPika, cbNc.checked);
+      calc(); 
     };
   }
+}
+
 
   const cb21 = el("optSetMeals21");
   if (cb21) {
@@ -349,7 +383,7 @@ function addRecipeRow(init) {
     rowId,
     cat: init?.cat || "カレー・シチュー",
     recipeId: init?.recipeId || "avocado_gratin",
-    meals: Number(init?.meals || 0)
+    meals: Number(init?.meals ?? 0)
   };
   state.recipeRows.push(rowData);
 
@@ -381,12 +415,28 @@ function addRecipeRow(init) {
   const mSel = wrap.querySelector(".mealsSel");
   const pre = wrap.querySelector(".preview");
 
+  // ここで食数セレクトを先に作る（空のままupdatePreviewに入ると0に潰れるのを防ぐ）
+  const initMealsSelect = () => {
+    mSel.innerHTML = "";
+    for (let i = 0; i <= getMaxTotalMeals(); i++) {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = i;
+      mSel.appendChild(opt);
+    }
+    mSel.value = String(rowData.meals);
+  };
+  initMealsSelect();
+
   const updateRecipeList = () => {
     const filtered = RECIPES.filter(r => r.cat === cSel.value);
     rSel.innerHTML = filtered.map(r => `<option value="${r.id}">${r.name}</option>`).join("");
 
-    if (filtered.some(r => r.id === rowData.recipeId)) rSel.value = rowData.recipeId;
-    else rowData.recipeId = rSel.value;
+    if (filtered.some(r => r.id === rowData.recipeId)) {
+      rSel.value = rowData.recipeId;
+    } else {
+      rowData.recipeId = rSel.value;
+    }
 
     updatePreview();
   };
@@ -394,7 +444,9 @@ function addRecipeRow(init) {
   const updatePreview = () => {
     rowData.cat = cSel.value;
     rowData.recipeId = rSel.value;
-    rowData.meals = Number(mSel.value);
+
+    // mSelが空文字のときに0で上書きしない（21が0に潰れる原因）
+    rowData.meals = (mSel.value === "" ? (rowData.meals || 0) : Number(mSel.value));
 
     const r = RECIPES.find(x => x.id === rSel.value);
     if (r) {
@@ -418,26 +470,28 @@ function addRecipeRow(init) {
   wrap.querySelector(".removeBtn").onclick = () => {
     state.recipeRows = state.recipeRows.filter(r => r.rowId !== rowId);
     wrap.remove();
-  
+
     // ×で閉じたら「食数に21食を設定する」はOFFに戻す
     setOptBool(OPT_KEYS.setMeals21, false);
     const cb21 = el("optSetMeals21");
     if (cb21) cb21.checked = false;
-  
+
     updateAllMealDropdowns();
     checkAddButton();
     calc();
   };
 
-
   cSel.value = rowData.cat;
   updateRecipeList();
 
+  // 最後にDOMへ追加
   el("recipeList").appendChild(wrap);
 
+  // 追加後に再度整える（63/21切替があっても安定）
   updateAllMealDropdowns();
   checkAddButton();
 }
+
 
 // ===== 上限(21/63)を超えている場合、上から順に「残り枠」に収まるように食数を丸める =====
 function normalizeMealsToMaxTotal(maxTotal) {
@@ -507,7 +561,7 @@ function calc() {
   const ncOn = cbNc ? cbNc.checked : getOptBool(OPT_KEYS.ncPika, false);
   
   if (ncOn) {
-    // ★NCピカチュウ（1日あたり：リンゴ12 / カカオ5 / ミツ3 を追加で差し引く）
+    // NCピカチュウ（1日あたり：リンゴ12 / カカオ5 / ミツ3 を追加で差し引く）
     replenishMap.set("apple", (replenishMap.get("apple") || 0) + 12);
     replenishMap.set("cacao", (replenishMap.get("cacao") || 0) + 5);
     replenishMap.set("honey", (replenishMap.get("honey") || 0) + 3);
@@ -620,7 +674,6 @@ window.onload = () => {
   const savedTab = localStorage.getItem('activeTab') || 'tab1';
   switchTab(savedTab, null);
 
-  // ★ ここが重要：+追加 / クリア のボタンを再接続
   const addBtn = el("addRecipe");
   if (addBtn) addBtn.onclick = () => addRecipeRow({ meals: 0 });
 
