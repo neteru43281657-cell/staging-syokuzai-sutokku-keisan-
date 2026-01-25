@@ -458,6 +458,89 @@
         align-items: start;
       }
 
+      /* 見出しの共通化（条件設定の青い縦線） */
+      .sectionTitle{
+        font-weight:900;
+        font-size:14px;
+        border-left: 5px solid var(--main);
+        padding-left: 10px;
+        color: var(--text);
+        margin-bottom: 6px;
+      }
+      
+      /* ===== モードUI（ラジオのズレ解消＆タイトルを大きく） ===== */
+      #modeBlock{ width:100%; display:flex; justify-content:center; }
+      #modeBlock .modeInner{ display:flex; flex-direction:column; align-items:flex-start; gap:10px; width:100%; }
+      #modeBlock .modeTitle{
+        font-weight:900;
+        font-size:14px;          /* ←少し大きく */
+        color:var(--muted);
+      }
+      #modeBlock .modeLabel{
+        display:flex;
+        align-items:center;      /* ←ラジオと文字の縦位置を揃える */
+        gap:8px;
+        font-size:13px;
+        font-weight:700;
+        color:var(--text);
+        line-height:1.25;
+      }
+      #modeBlock .modeLabel input[type="radio"]{
+        transform: translateY(1px); /* ←「文字が上に見える」微調整 */
+      }
+      
+      /* ===== 計算結果の見た目（枠・区切り） ===== */
+      .mode3Notice{
+        display:none;            /* ←JSでmode3の時だけ表示 */
+        justify-content:flex-start;
+        width:auto;
+        height:auto;
+        margin:6px 0 0;
+        font-size:12px;
+        font-weight:700;
+        color:var(--muted);
+      }
+      .resultDivider{
+        height:1px;
+        background:var(--main);
+        opacity:0.1;
+        margin:16px 0;
+      }
+      
+      /* ===== スマホ：2列レイアウト固定＋ボタンサイズ確定 ===== */
+      @media (max-width: 520px) {
+        .settingsHeaderRow{
+          display:grid;
+          grid-template-columns: 120px 1fr;
+          grid-template-areas:
+            "cond  mode"
+            "actions mode";
+          gap:12px;
+          align-items:start;
+        }
+        #condBlock{ grid-area:cond; }
+        #modeBlock{ grid-area:mode; padding-left:6px; }
+        #actionBlock{
+          grid-area:actions;
+          display:flex;
+          flex-direction:column;
+          gap:10px;
+          width:120px;            /* ←左列と同じ幅に固定 */
+        }
+      
+        /* ここで必ず小さくする（rowの影響を受けないように） */
+        #actionBlock > button.primary,
+        #actionBlock > button.danger{
+          height:36px !important;
+          padding:0 10px !important;
+          font-size:12px !important;
+          line-height:36px !important;
+          width:100% !important;
+          border-radius:10px !important;
+        }
+      }
+
+      
       /* モード見出しとラベルの左余白を整える */
       #modeBlock { padding-left: 6px; }
       #modeBlock > div { width: 100%; }
@@ -533,43 +616,44 @@
 <main>
   <div id="tab1" class="tab-content active">
     <section class="card">
-      <div class="row settingsHeaderRow" style="justify-content: space-between; align-items: flex-start;">
+      <div class="settingsHeaderRow">
         <!-- 条件設定 -->
         <div id="condBlock">
-          <div style="font-weight:900; font-size:14px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text); margin-bottom: 6px;">
+          <div class="sectionTitle">
             条件設定
           </div>
           <span class="badge" id="summaryBadge">合計 0食 / 21食</span>
         </div>
-    
+      
         <!-- モード選択 -->
-        <div id="modeBlock" style="flex:1; display:flex; justify-content:center;">
-          <div style="display:flex; flex-direction:column; align-items:flex-start; gap:6px;">
-            <div style="font-weight:900; font-size:12px; color:var(--muted);">  モードを選択してください</div>
-    
-            <label class="chkLabel" style="font-size:12px; width:auto; height:auto; justify-content:flex-start;">
+        <div id="modeBlock">
+          <div class="modeInner">
+            <div class="modeTitle">モードを選択してください</div>
+      
+            <label class="modeLabel">
               <input type="radio" name="calcMode" id="calcMode1" value="mode1">
-              ① 同じレシピを21食作り続ける
+              <span>① 同じレシピを21食作り続ける</span>
             </label>
-    
-            <label class="chkLabel" style="font-size:12px; width:auto; height:auto; justify-content:flex-start;">
+      
+            <label class="modeLabel">
               <input type="radio" name="calcMode" id="calcMode2" value="mode2">
-              ② 2種以上のレシピを組み合わせて21食作る
+              <span>② 2種以上のレシピを組み合わせて21食作る</span>
             </label>
-    
-            <label class="chkLabel" style="font-size:12px; width:auto; height:auto; justify-content:flex-start;">
+      
+            <label class="modeLabel">
               <input type="radio" name="calcMode" id="calcMode3" value="mode3">
-              ③ 別カテゴリーのレシピを組み合わせる
+              <span>③ 別カテゴリーのレシピを組み合わせる</span>
             </label>
           </div>
         </div>
-    
+      
         <!-- +追加 / クリア -->
-        <div id="actionBlock" class="row">
+        <div id="actionBlock">
           <button id="addRecipe" class="primary">+ 追加</button>
           <button id="clearAll" class="danger">クリア</button>
         </div>
       </div>
+
     
       <div id="recipeList" style="margin-top:10px;"></div>
     </section>
@@ -597,19 +681,20 @@
       <div id="replenishGrid" class="grid5"></div>
     </section>
 
+    <section class="result-card">
       <div class="result-header">
         <div class="result-left">
           <div class="result-title">計算結果</div>
-          <label id="mode3Notice" class="chkLabel" style="display:none; width:auto; height:auto; justify-content:flex-start; margin:6px 0 0;">
-            <input type="checkbox" tabindex="-1" aria-hidden="true" style="display:none;">
+    
+          <label id="mode3Notice" class="chkLabel mode3Notice">
             ※異なるカテゴリーのレシピ間で重複している食材があった場合、各レシピ中で最も多く使われている食材の個数を参照して計算しています
           </label>
         </div>
-      
+    
         <div id="totalBadge" class="totalBadge">総合計 0個</div>
       </div>
-      <div style="height:1px; background:var(--main); opacity:0.1; margin:16px 0;"></div>
-      
+    
+      <div class="resultDivider"></div>
       <div id="resultGrid" class="grid5"></div>
     </section>
   </div>
