@@ -90,6 +90,9 @@ const WEEK_DAYS = 7;
 const WEEK_MEALS = 21;
 const MODE3_TOTAL_MEALS = 63;
 
+// ② 異なるレシピを組み合わせて21食：最大行数
+const MAX_ROWS_MODE2 = 6;
+
 // ② 最大行数
 const MAX_ROWS_MODE2 = 6;
 
