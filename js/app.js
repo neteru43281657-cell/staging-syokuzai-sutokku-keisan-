@@ -389,8 +389,7 @@ function addRecipeRow(init) {
   wrap.className = "recipeRow";
   wrap.dataset.rowId = rowId;
 
-  // ×ボタンは ②のみ表示（①は1行固定、③は固定3行）
-  const showRemove = state.mode === MODES.MIX;
+  const showRemove = (state.mode === MODES.MIX || state.mode === MODES.PRESET63);
 
   wrap.innerHTML = `
     ${showRemove ? `<button class="removeBtn" title="削除">×</button>` : ``}
@@ -527,16 +526,21 @@ function addRecipeRow(init) {
   rSel.onchange = updatePreview;
   mSel.onchange = updatePreview;
 
-  // 削除（②のみ）
-  const rm = wrap.querySelector(".removeBtn");
-  if (rm) {
-    rm.onclick = () => {
-      state.recipeRows = state.recipeRows.filter((r) => r.rowId !== rowId);
-      wrap.remove();
-      updateAllMealDropdowns();
-      calc();
-    };
-  }
+   const rm = wrap.querySelector(".removeBtn");
+   if (rm) {
+     rm.onclick = () => {
+       // ★モード③：最低1カテゴリは残す
+       if (state.mode === MODES.PRESET63 && state.recipeRows.length <= 1) return;
+   
+       state.recipeRows = state.recipeRows.filter((r) => r.rowId !== rowId);
+       wrap.remove();
+   
+       updateAllMealDropdowns();
+       checkAddButton();
+       updateMode3Notice?.();
+       calc();
+     };
+   }
 
   // meals 選択肢は updateAllMealDropdowns に任せる（初期だけ仮セット）
   mSel.innerHTML = `<option value="${rowData.meals}">${rowData.meals}</option>`;
@@ -588,13 +592,17 @@ function applyAutoAdjustFlagAndBalance() {
    食数ドロップダウン再計算
 ========================================================= */
 function updateAllMealDropdowns() {
-  // 表示用 total
-  const totalMeals =
-    state.mode === MODES.ONE
-      ? WEEK_MEALS
-      : state.mode === MODES.PRESET63
-      ? WEEK_MEALS * 3
-      : state.recipeRows.reduce((sum, r) => sum + (Number(r.meals) || 0), 0);
+   let totalMeals = 0;
+   
+   if (state.mode === MODES.ONE) {
+     totalMeals = WEEK_MEALS;
+   } else if (state.mode === MODES.PRESET63) {
+     // ★残っているカテゴリ数 × 21
+     totalMeals = (state.recipeRows.length || 1) * WEEK_MEALS;
+   } else {
+     totalMeals = state.recipeRows.reduce((sum, r) => sum + (Number(r.meals) || 0), 0);
+   }
+
 
   // バッジ更新
   const badge = el("summaryBadge");
@@ -662,18 +670,41 @@ function checkAddButton() {
   const btn = el("addRecipe");
   if (!btn) return;
 
-  if (state.mode !== MODES.MIX) {
+  // ①：追加不可
+  if (state.mode === MODES.ONE) {
     btn.disabled = true;
     btn.style.opacity = "0.4";
     btn.style.cursor = "not-allowed";
     return;
   }
 
-  const canAdd = state.recipeRows.length < MAX_ROWS_MODE2;
-  btn.disabled = !canAdd;
-  btn.style.opacity = canAdd ? "1" : "0.4";
-  btn.style.cursor = canAdd ? "pointer" : "not-allowed";
+  // ②：最大6行
+  if (state.mode === MODES.MIX) {
+    const canAdd = state.recipeRows.length < MAX_ROWS_MODE2;
+    btn.disabled = !canAdd;
+    btn.style.opacity = canAdd ? "1" : "0.4";
+    btn.style.cursor = canAdd ? "pointer" : "not-allowed";
+    return;
+  }
+
+  // ③：欠けているカテゴリがある時だけ追加可能（最大3カテゴリ）
+  if (state.mode === MODES.PRESET63) {
+    const existing = new Set(state.recipeRows.map((r) => r.cat));
+    const missing = CATS_3.filter((c) => !existing.has(c));
+    const canAdd = missing.length > 0;
+
+    btn.disabled = !canAdd;
+    btn.style.opacity = canAdd ? "1" : "0.4";
+    btn.style.cursor = canAdd ? "pointer" : "not-allowed";
+    return;
+  }
+
+  // 念のため
+  btn.disabled = true;
+  btn.style.opacity = "0.4";
+  btn.style.cursor = "not-allowed";
 }
+
 
 
 /* =========================================================
@@ -993,24 +1024,50 @@ window.onload = () => {
   const savedTab = localStorage.getItem("activeTab") || "tab1";
   window.switchTab(savedTab, null);
    
-   // +追加（②のみ）
    const addBtn = el("addRecipe");
    if (addBtn) {
      addBtn.onclick = () => {
-       if (state.mode !== MODES.MIX) return;
+       // ②：先頭カテゴリを複製
+       if (state.mode === MODES.MIX) {
+         const head = state.recipeRows[0];
+         const headCat = head?.cat || "カレー・シチュー";
    
-       const head = state.recipeRows[0];
-       const headCat = head?.cat || "カレー・シチュー";
-       addRecipeRow({
-         cat: headCat,
-         recipeId: getFirstRecipeIdByCat(headCat),
-         meals: 0,
-       });
+         addRecipeRow({
+           cat: headCat,
+           recipeId: getFirstRecipeIdByCat(headCat),
+           meals: 0,
+         });
    
-       updateAllMealDropdowns();
-       calc();
+         updateAllMealDropdowns();
+         checkAddButton();
+         calc();
+         return;
+       }
+   
+       // ③：欠けているカテゴリを21食で復活
+       if (state.mode === MODES.PRESET63) {
+         const existing = new Set(state.recipeRows.map((r) => r.cat));
+         const missing = CATS_3.filter((c) => !existing.has(c));
+         if (missing.length === 0) return;
+   
+         const cat = missing[0]; // 先頭の欠けカテゴリを復活
+         addRecipeRow({
+           cat,
+           recipeId: getFirstRecipeIdByCat(cat),
+           meals: WEEK_MEALS, // 21固定
+         });
+   
+         updateAllMealDropdowns();
+         checkAddButton();
+         updateMode3Notice?.();
+         calc();
+         return;
+       }
+   
+       // ①：何もしない
      };
    }
+
    
    // モードUI：保存状態を先に反映 → イベント接続 → そのモードで初期構築
    syncModeUIFromStorage();
