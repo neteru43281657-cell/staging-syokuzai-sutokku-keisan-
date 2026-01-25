@@ -900,9 +900,46 @@ function calcWeeklySubtractByReplenish(displayOrder) {
 // (5) 週必要量の最終計算＆描画
 function calc() {
   const exclude = buildExcludeSet();
+  const perDay = buildReplenishPerDayMap(); // NC分はこの中で加算済み（apple/cacao/honey）
 
-  const { need: grossNeed, displayOrder } = calcWeeklyGrossNeedMap();
-  const subtractMap = calcWeeklySubtractByReplenish(displayOrder);
+  // mode別に「1食あたり数（基準）」を作る
+  // mode1: 単一レシピ qtyPerMeal
+  // mode2: 選択レシピの qtyPerMeal を単純合算（食数で重み付けしない）
+  // mode3: 3カテゴリで qtyPerMeal の最大値
+  const basePerMeal = new Map(); // iid -> base qtyPerMeal
+  const order = []; // 表示順
+
+  const pushOrder = (iid) => { if (!order.includes(iid)) order.push(iid); };
+
+  if (state.mode === MODES.ONE) {
+    const row = state.recipeRows[0];
+    const r = RECIPES.find((x) => x.id === row?.recipeId);
+    if (r) {
+      Object.entries(r.ingredients).forEach(([iid, q]) => {
+        basePerMeal.set(iid, q);
+        pushOrder(iid);
+      });
+    }
+  } else if (state.mode === MODES.MIX) {
+    state.recipeRows.forEach((row) => {
+      const r = RECIPES.find((x) => x.id === row.recipeId);
+      if (!r) return;
+      Object.entries(r.ingredients).forEach(([iid, q]) => {
+        basePerMeal.set(iid, (basePerMeal.get(iid) || 0) + q);
+        pushOrder(iid);
+      });
+    });
+  } else if (state.mode === MODES.PRESET63) {
+    state.recipeRows.forEach((row) => {
+      const r = RECIPES.find((x) => x.id === row.recipeId);
+      if (!r) return;
+      Object.entries(r.ingredients).forEach(([iid, q]) => {
+        const prev = basePerMeal.has(iid) ? basePerMeal.get(iid) : -Infinity;
+        if (q > prev) basePerMeal.set(iid, q);
+        pushOrder(iid);
+      });
+    });
+  }
 
   const resultGrid = el("resultGrid");
   if (!resultGrid) return;
@@ -910,26 +947,31 @@ function calc() {
   resultGrid.innerHTML = "";
   let grandTotal = 0;
 
-  displayOrder.forEach((iid) => {
+  order.forEach((iid) => {
     if (exclude.has(iid)) return;
 
-    const gross = grossNeed.get(iid) || 0;
-    const sub = subtractMap.get(iid) || 0;
+    const base = basePerMeal.get(iid) || 0;
+    if (base <= 0) return;
 
-    // 最終：gross - sub （マイナスは0）
-    const finalNeed = Math.max(0, Math.round(gross - sub));
+    const pd = perDay.get(iid) || 0;
 
-    if (finalNeed > 0) {
-      grandTotal += finalNeed;
-      const ing = getIng(iid);
+    // 1日消費 = base * 3、週 = *7
+    const weekly = (base * MEALS_PER_DAY - pd) * 7;
 
-      resultGrid.innerHTML += `
-        <div class="tile">
-          <div class="tileName">${ing.name}</div>
-          <img class="icon" src="${imgSrc(ing.file)}">
-          <div style="font-weight:900; font-size:13px;">${finalNeed}個</div>
-        </div>`;
-    }
+    // 端数は最終で四捨五入、マイナスは0
+    const finalNeed = Math.max(0, Math.round(weekly));
+    if (finalNeed <= 0) return;
+
+    grandTotal += finalNeed;
+
+    const ing = getIng(iid);
+    resultGrid.innerHTML += `
+      <div class="tile">
+        <div class="tileName">${ing.name}</div>
+        <img class="icon" src="${imgSrc(ing.file)}">
+        <div style="font-weight:900; font-size:13px;">${finalNeed}個</div>
+      </div>
+    `;
   });
 
   const totalBadge = el("totalBadge");
@@ -1060,4 +1102,43 @@ window.onload = () => {
   // 初回描画
   updateAllMealDropdowns();
   calc();
+};
+
+// =========================================================
+// タブ切替（index.html の onclick から呼ばれる）
+// =========================================================
+window.switchTab = function (tabId, clickedEl) {
+  // コンテンツ切替
+  document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
+  const target = document.getElementById(tabId);
+  if (target) target.classList.add("active");
+
+  // ナビのactive切替（clickedEl が来る場合）
+  if (clickedEl) {
+    document.querySelectorAll(".bottom-nav .nav-item").forEach((n) => n.classList.remove("active"));
+    clickedEl.classList.add("active");
+  } else {
+    // 復元時：tabIdからactiveを推定
+    const map = { tab1: 0, tab2: 1, tab3: 2 };
+    const idx = map[tabId] ?? 0;
+    const items = document.querySelectorAll(".bottom-nav .nav-item");
+    items.forEach((n) => n.classList.remove("active"));
+    if (items[idx]) items[idx].classList.add("active");
+  }
+
+  // ヘッダタイトル
+  const headerTitle = document.getElementById("headerTitle");
+  if (headerTitle) {
+    headerTitle.textContent =
+      tabId === "tab2" ? "出現ポケモン一覧" :
+      tabId === "tab3" ? "月齢カレンダー" :
+      "食材ストック計算";
+  }
+
+  // 保存
+  localStorage.setItem("activeTab", tabId);
+
+  // タブ固有の初期描画
+  if (tabId === "tab2" && window.PokedexTab?.renderFieldMenu) window.PokedexTab.renderFieldMenu();
+  if (tabId === "tab3" && window.CalendarTab?.renderYearCalendar) window.CalendarTab.renderYearCalendar();
 };
