@@ -202,13 +202,19 @@ function bindOptionUI() {
   const cb21 = el("optSetMeals21");
   if (cb21) {
     cb21.onchange = () => {
-      if (cb21.checked) {
+      if (!cb21.checked) return;
+  
+      // ★押した瞬間に実行
       applyMeals21ToVisibleRows();
-      cb21.checked = false;
-      }
+  
+      // ★“押せた感”が分かるように少しだけON表示してから戻す
+      setTimeout(() => { cb21.checked = false; }, 250);
+  
+      // 保存はしない（ボタン扱い）
       setOptBool(OPT_KEYS.setMeals21, false);
     };
   }
+
 
   const cbMax = el("optMaxOverlap");
   if (cbMax) {
@@ -426,11 +432,16 @@ function checkAddButton() {
 function calc() {
   const exclude = new Set([...document.querySelectorAll(".exChk:checked")].map(c => c.dataset.iid));
   const replenishMap = new Map([...document.querySelectorAll(".repQty")].map(c => [c.dataset.iid, Number(c.value) || 0]));
-  if (getOptBool(OPT_KEYS.ncPika, false)) {
+  const cbNc = el("optNcPika");
+  const ncOn = cbNc ? cbNc.checked : getOptBool(OPT_KEYS.ncPika, false);
+  
+  if (ncOn) {
+    // ★NCピカチュウ（1日あたり：リンゴ12 / カカオ5 / ミツ3 を追加で差し引く）
     replenishMap.set("apple", (replenishMap.get("apple") || 0) + 12);
     replenishMap.set("cacao", (replenishMap.get("cacao") || 0) + 5);
     replenishMap.set("honey", (replenishMap.get("honey") || 0) + 3);
   }
+
   const totalMeals = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
 
   // 21 or 63 の表示
