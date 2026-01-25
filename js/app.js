@@ -210,35 +210,27 @@ function bindOptionUI() {
     };
   }
 
-  const cb21 = el("optSetMeals21");
-  if (cb21) {
-    cb21.onclick = (e) => {
-      e.preventDefault();
-      cb21.checked = true;
-      setOptBool(OPT_KEYS.setMeals21, true);
+    const cb21 = el("optSetMeals21");
+    if (cb21) {
+      cb21.addEventListener("change", () => {
+        cb21.checked = true;
+        setOptBool(OPT_KEYS.setMeals21, true);
   
-      const cb63 = el("optExpand63");
-      const is63 = cb63 ? cb63.checked : getOptBool(OPT_KEYS.expand63, false);
+        const cb63 = el("optExpand63");
+        const is63 = cb63 ? cb63.checked : getOptBool(OPT_KEYS.expand63, false);
   
-      if (is63) {
-        // ★63食ONなら：カテゴリを3つに強制して各21
-        apply63PresetRows();         // ここで3行生成＋各21になる
-        // apply63PresetRowsの中でcalcまで走るので追加で何もしない
-        return;
-      }
+        if (is63) {
+          // 63食ONなら：3カテゴリ固定＋各21
+          apply63PresetRows();
+          return;
+        }
   
-      // 63食OFF
-      const rowCount = state.recipeRows.length;
-  
-      if (rowCount >= 2) {
-        // ★2カテゴリ以上なら：先頭行だけ21
-        applyMeals21("firstOnly");
-      } else {
-        // ★1行なら：全行（=その1行）を21
-        applyMeals21("all");
-      }
-    };
-  }
+        // 63食OFF：2行以上なら先頭行だけ、1行ならその行
+        const rowCount = state.recipeRows.length;
+        if (rowCount >= 2) applyMeals21("firstOnly");
+        else applyMeals21("all");
+      });
+    }
 
 
   const cbMax = el("optMaxOverlap");
