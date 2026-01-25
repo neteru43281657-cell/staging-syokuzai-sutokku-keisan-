@@ -252,60 +252,6 @@ function bindOptionUI() {
 }
 
 
-  const cb21 = el("optSetMeals21");
-  if (cb21) {
-    cb21.addEventListener("change", () => {
-      const on = cb21.checked;
-      setOptBool(OPT_KEYS.setMeals21, on);
-
-      // OFF：チェックを外すだけ（食数は触らない）
-      if (!on) return;
-
-      // ON：21食運用に寄せるので63はOFF
-      setOptBool(OPT_KEYS.expand63, false);
-      const cb63 = el("optExpand63");
-      if (cb63) cb63.checked = false;
-
-      // 「いまユーザーが一番上に設定中の行」＝先頭表示行を21、他は0
-      const rows = [...document.querySelectorAll(".recipeRow")];
-      if (rows.length) {
-        const firstId = rows[0].dataset.rowId;
-
-        state.recipeRows.forEach(r => {
-          r.meals = (r.rowId === firstId) ? 21 : 0;
-        });
-
-        rows.forEach(w => {
-          const mSel = w.querySelector(".mealsSel");
-          if (!mSel) return;
-          mSel.value = (w.dataset.rowId === firstId) ? "21" : "0";
-        });
-      }
-
-      updateAllMealDropdowns();
-      updateAllMealDropdowns();
-      calc();
-    });
-  }
-
-  const cbMax = el("optMaxOverlap");
-  if (cbMax) {
-    cbMax.onchange = () => {
-      setOptBool(OPT_KEYS.maxOverlap, cbMax.checked);
-      calc();
-    };
-  }
-
-  const cbNc = el("optNoCarry");
-  if (cbNc) {
-    cbNc.onchange = () => {
-      setOptBool(OPT_KEYS.noCarry, cbNc.checked);
-      calc();
-    };
-  }
-}
-
-
 // ===== core helpers =====
 function getIng(id) { return INGREDIENTS.find(x => x.id === id); }
 function imgSrc(file) { return "images/" + encodeURIComponent(file); }
