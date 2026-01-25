@@ -426,20 +426,43 @@
       word-break: keep-all;
     }
 
+    .result-header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+    }
+    
+    .result-left{
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .totalBadge{
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    
     /* ============================
        スマホ：2枚目の配置にする（cond左 / mode右 / actions左下）
     ============================ */
     @media (max-width: 520px) {
       .settingsHeaderRow {
         display: grid;
-        grid-template-columns: 140px 1fr;  /* 左=条件+ボタン、右=モード */
+        grid-template-columns: 120px 1fr; /* 右(モード)を広くする */
         grid-template-areas:
           "cond  mode"
           "actions mode";
         gap: 12px;
         align-items: start;
       }
-    
+
+      /* モード見出しとラベルの左余白を整える */
+      #modeBlock { padding-left: 6px; }
+      #modeBlock > div { width: 100%; }
+
+      
       #condBlock { grid-area: cond; }
       #modeBlock { grid-area: mode; }
       #actionBlock { grid-area: actions; }
@@ -471,15 +494,16 @@
         width: 140px; /* 左列と合わせる */
       }
     
-      #actionBlock .primary,
-      #actionBlock .danger {
-        width: 100%;
-        height: 40px;        /* 小さく */
-        padding: 0 10px;
-        font-size: 13px;
-        white-space: nowrap;
-        box-sizing: border-box;
-        border-radius: 10px; /* 角丸が大きすぎたらここを調整 */
+      #actionBlock button.primary,
+      #actionBlock button.danger {
+        width: 100% !important;
+        height: 36px !important;     /* ←小さめ */
+        padding: 0 10px !important;
+        font-size: 12px !important;  /* ←小さめ */
+        line-height: 36px !important;
+        white-space: nowrap !important;
+        box-sizing: border-box !important;
+        border-radius: 10px !important;
       }
     }
 
@@ -573,15 +597,16 @@
       <div id="replenishGrid" class="grid5"></div>
     </section>
 
-    <section class="result-card">
-      <div class="row" style="justify-content: space-between;">
-        <div style="font-weight:900; font-size:16px; color:var(--main);">計算結果</div>
-      <label id="mode3Notice" class="chkLabel" style="display:none; width:auto; height:auto; justify-content:flex-start; margin:0;">
-        <input type="checkbox" tabindex="-1" aria-hidden="true" style="display:none;">
-        ※異なるカテゴリーのレシピ間で重複している食材があった場合、各レシピ中で最も多く使われている食材の個数を参照して計算しています
-      </label>
-        
-        <span class="badge total-badge" id="totalBadge">総合計 0個</span>
+      <div class="result-header">
+        <div class="result-left">
+          <div class="result-title">計算結果</div>
+          <label id="mode3Notice" class="chkLabel" style="display:none; width:auto; height:auto; justify-content:flex-start; margin:6px 0 0;">
+            <input type="checkbox" tabindex="-1" aria-hidden="true" style="display:none;">
+            ※異なるカテゴリーのレシピ間で重複している食材があった場合、各レシピ中で最も多く使われている食材の個数を参照して計算しています
+          </label>
+        </div>
+      
+        <div id="totalBadge" class="totalBadge">総合計 0個</div>
       </div>
       <div style="height:1px; background:var(--main); opacity:0.1; margin:16px 0;"></div>
       
