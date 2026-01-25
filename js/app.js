@@ -91,6 +91,65 @@ const MEALS_PER_DAY = 3;
 const MAX_RECIPE_ROWS = 9;
 const MAX_TOTAL_MEALS = 21;
 
+// ===== オプション設定（localStorage）=====
+const OPT_KEYS = {
+  expand63: "opt_expand63_meals",
+  maxOverlap: "opt_max_overlap_ingredient",
+};
+
+function getOptBool(key, def = false) {
+  const v = localStorage.getItem(key);
+  if (v === null) return def;
+  return v === "1";
+}
+
+function setOptBool(key, val) {
+  localStorage.setItem(key, val ? "1" : "0");
+}
+
+function getMaxTotalMeals() {
+  return getOptBool(OPT_KEYS.expand63, false) ? 63 : MAX_TOTAL_MEALS; // MAX_TOTAL_MEALSは既存(21)を維持
+}
+
+function isMaxOverlapMode() {
+  return getOptBool(OPT_KEYS.maxOverlap, false);
+}
+
+function syncOptionUIFromStorage() {
+  const cb63 = el("optExpand63");
+  if (cb63) cb63.checked = getOptBool(OPT_KEYS.expand63, false);
+
+  const cbMax = el("optMaxOverlap");
+  if (cbMax) cbMax.checked = getOptBool(OPT_KEYS.maxOverlap, false);
+}
+
+function bindOptionUI() {
+  const cb63 = el("optExpand63");
+  if (cb63) {
+    cb63.onchange = () => {
+      setOptBool(OPT_KEYS.expand63, cb63.checked);
+
+      // 21 ↔ 63 の切替時に食数ドロップダウンが安全に収束するよう2回回す
+      updateAllMealDropdowns();
+      updateAllMealDropdowns();
+      calc();
+    };
+  }
+
+  const cbMax = el("optMaxOverlap");
+  if (cbMax) {
+    cbMax.onchange = () => {
+      setOptBool(OPT_KEYS.maxOverlap, cbMax.checked);
+      calc();
+    };
+  }
+}
+
+function setSummaryBadge(totalMeals) {
+  el("summaryBadge").textContent = `${totalMeals}食 / ${getMaxTotalMeals()}食`;
+}
+
+
 function getIng(id) { return INGREDIENTS.find(x => x.id === id); }
 
 function imgSrc(file) { return "images/" + encodeURIComponent(file); }
@@ -233,7 +292,7 @@ function updateAllMealDropdowns() {
     if (!wrap) return;
     const mSel = wrap.querySelector(".mealsSel");
     const otherMeals = currentTotal - row.meals;
-    const maxAvailable = MAX_TOTAL_MEALS - otherMeals;
+    const maxAvailable = getMaxTotalMeals() - otherMeals;
     const prevVal = row.meals;
     mSel.innerHTML = "";
     for (let i = 0; i <= maxAvailable; i++) {
@@ -252,43 +311,47 @@ function calc() {
   const exclude = new Set([...document.querySelectorAll(".exChk:checked")].map(c => c.dataset.iid));
   const replenishMap = new Map([...document.querySelectorAll(".repQty")].map(c => [c.dataset.iid, Number(c.value) || 0]));
   const totalMeals = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
-  el("summaryBadge").textContent = `${totalMeals}食 / 21食`;
+  setSummaryBadge(totalMeals);
   
   const netNeed = new Map();
   const displayOrder = [];
-  
-  state.recipeRows.forEach(row => {
-    if (row.meals <= 0) return;
-    const r = RECIPES.find(x => x.id === row.recipeId);
-    if (!r) return;
-    const rowDays = row.meals / MEALS_PER_DAY;
-    Object.entries(r.ingredients).forEach(([iid, qtyPerMeal]) => {
-      if (!displayOrder.includes(iid)) displayOrder.push(iid);
-      const gross = qtyPerMeal * row.meals;
-      const rowReplenish = (replenishMap.get(iid) || 0) * rowDays;
-      netNeed.set(iid, (netNeed.get(iid) || 0) + (gross - rowReplenish));
-    });
-  });
 
-  const resultGrid = el("resultGrid");
-  resultGrid.innerHTML = "";
-  let grandTotal = 0;
-  displayOrder.forEach(iid => {
-    if (exclude.has(iid)) return;
-    const finalNeed = Math.max(0, Math.ceil(netNeed.get(iid) || 0));
-    if (finalNeed > 0) {
-      grandTotal += finalNeed;
-      const ing = getIng(iid);
-      resultGrid.innerHTML += `
-        <div class="tile">
-          <div class="tileName">${ing.name}</div>
-          <img class="icon" src="${imgSrc(ing.file)}">
-          <div style="font-weight:900; font-size:13px;">${finalNeed}個</div>
-        </div>`;
-    }
-  });
-  el("totalBadge").textContent = `総合計 ${grandTotal}個`;
-}
+  if (!isMaxOverlapMode()) {
+    // ===== 既存挙動（合算）=====
+    state.recipeRows.forEach(row => {
+      if (row.meals <= 0) return;
+      const r = RECIPES.find(x => x.id === row.recipeId);
+      if (!r) return;
+      const rowDays = row.meals / MEALS_PER_DAY;
+      Object.entries(r.ingredients).forEach(([iid, qtyPerMeal]) => {
+        if (!displayOrder.includes(iid)) displayOrder.push(iid);
+        const gross = qtyPerMeal * row.meals;
+        const rowReplenish = (replenishMap.get(iid) || 0) * rowDays;
+        netNeed.set(iid, (netNeed.get(iid) || 0) + (gross - rowReplenish));
+      });
+    });
+  } else {
+    // ===== オプション：レシピ間で重複する食材は「最大値」で集計 =====
+    // 料理ごとに必要数を計算し、同一食材は最大値を採用
+    state.recipeRows.forEach(row => {
+      if (row.meals <= 0) return;
+      const r = RECIPES.find(x => x.id === row.recipeId);
+      if (!r) return;
+      const rowDays = row.meals / MEALS_PER_DAY;
+
+      Object.entries(r.ingredients).forEach(([iid, qtyPerMeal]) => {
+        if (!displayOrder.includes(iid)) displayOrder.push(iid);
+
+        const gross = qtyPerMeal * row.meals;
+        const rowReplenish = (replenishMap.get(iid) || 0) * rowDays;
+        const need = (gross - rowReplenish);
+
+        const prev = netNeed.has(iid) ? netNeed.get(iid) : -Infinity;
+        if (need > prev) netNeed.set(iid, need);
+      });
+    });
+  }
+
 
 // お役立ち資料：アプリ内ビューアで開く（PWAで戻れなくなる問題を回避）
 window.openDoc = function (fileName) {
@@ -314,9 +377,10 @@ window.onload = () => {
   if (typeof renderFieldMenu === "function") renderFieldMenu();
 
   const savedTab = localStorage.getItem('activeTab') || 'tab1';
+  syncOptionUIFromStorage();
+  bindOptionUI();
   switchTab(savedTab, null);
 
-  // ★ ここが重要：+追加 / クリア のボタンを再接続
   el("addRecipe").onclick = () => addRecipeRow({ meals: 0 });
 
   el("clearAll").onclick = () => {
