@@ -90,6 +90,14 @@ const WEEK_DAYS = 7;
 const WEEK_MEALS = 21;
 const MODE3_TOTAL_MEALS = 63;
 
+// ② 最大行数
+const MAX_ROWS_MODE2 = 6;
+
+// NCピカ（1日あたり差し引き分）※値はここで固定
+const NC_APPLE = 12;
+const NC_CACAO = 5;
+const NC_HONEY = 3;
+
 const CATS_3 = ["カレー・シチュー", "サラダ", "デザート・ドリンク"];
 
 const MODES = {
@@ -250,57 +258,53 @@ function syncModeUIFromStorage() {
 
 function bindModeUI() {
   const radios = document.querySelectorAll('input[name="calcMode"]');
+  if (!radios.length) return;
+
   radios.forEach((r) => {
     r.onchange = () => {
       if (!r.checked) return;
+      // value は MODES.ONE/MIX/PRESET63（= "mode1"/"mode2"/"mode3"）を想定
       setOptStr(OPT_KEYS.mode, r.value);
       setMode(r.value);
     };
   });
 }
 
-function bindModeUI() {
-  const radios = document.querySelectorAll('input[name="calcMode"]');
-  if (!radios.length) return;
-
-  radios.forEach((r) => {
-    r.onchange = () => {
-      setMode(r.value); // value は "one" / "mix" / "preset63"
-    };
-  });
-}
-
 function setMode(mode) {
-  // mode 正規化（ズレ防止）
   const next =
     mode === MODES.ONE || mode === MODES.MIX || mode === MODES.PRESET63
       ? mode
       : MODES.ONE;
 
   state.mode = next;
+  setOptStr(OPT_KEYS.mode, next); // ★ここで必ず同期
+
+  // ラジオ表示も合わせる（ズレ防止）
+  const r1 = el("calcMode1");
+  const r2 = el("calcMode2");
+  const r3 = el("calcMode3");
+  if (r1) r1.checked = next === MODES.ONE;
+  if (r2) r2.checked = next === MODES.MIX;
+  if (r3) r3.checked = next === MODES.PRESET63;
 
   // UI/State を作り直す
   const list = el("recipeList");
   if (list) list.innerHTML = "";
   state.recipeRows = [];
 
-  // モード別：行を構築
   if (state.mode === MODES.ONE) {
-    // ① 1行固定（食数21固定）
     addRecipeRow({
       cat: "カレー・シチュー",
       recipeId: getFirstRecipeIdByCat("カレー・シチュー"),
       meals: WEEK_MEALS,
     });
   } else if (state.mode === MODES.MIX) {
-    // ② 最大6行、最初は1行（食数は0開始）
     addRecipeRow({
       cat: "カレー・シチュー",
       recipeId: getFirstRecipeIdByCat("カレー・シチュー"),
       meals: 0,
     });
   } else if (state.mode === MODES.PRESET63) {
-    // ③ 3カテゴリ固定で3行（各21固定）
     CATS_3.forEach((cat) => {
       addRecipeRow({
         cat,
@@ -310,10 +314,10 @@ function setMode(mode) {
     });
   }
 
-  // ボタン状態・ドロップダウン更新
   updateAllMealDropdowns();
   calc();
 }
+
 
 
 /* =========================================================
@@ -983,12 +987,10 @@ window.onload = () => {
      };
    }
    
-   // モードUI接続
+   // モードUI：保存状態を先に反映 → イベント接続 → そのモードで初期構築
+   syncModeUIFromStorage();
    bindModeUI();
-   
-   // 初期モード：ラジオの選択を優先して反映
-   const checked = document.querySelector('input[name="calcMode"]:checked');
-   setMode(checked ? checked.value : MODES.ONE);
+   setMode(state.mode);
 
 
   // クリア
