@@ -209,8 +209,7 @@ function bindOptionUI() {
       }
     };
   }
-}
-  
+
   // 最大値計算
   const cbMax = el("optMaxOverlap");
   if (cbMax) {
@@ -247,7 +246,7 @@ function bindOptionUI() {
   if (cbNc) {
     cbNc.onchange = () => {
       setOptBool(OPT_KEYS.ncPika, cbNc.checked);
-      calc(); 
+      calc();
     };
   }
 }
