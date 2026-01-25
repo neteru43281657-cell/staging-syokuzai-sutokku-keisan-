@@ -161,12 +161,6 @@ function apply63PresetRows() {
 
 // ===== 食数を一括で21にする（表示中の行だけ）=====
 function applyMeals21ToVisibleRows() {
-  // 63食がOFFのままだと、3行×21=63 が入らないので、必要なら自動で63食ONにする
-  const cb63 = el("optExpand63");
-  if (cb63 && !cb63.checked) {
-    cb63.checked = true;
-    setOptBool(OPT_KEYS.expand63, true);
-  }
 
   // state とUIを同期：全行 21
   state.recipeRows.forEach(row => { row.meals = 21; });
@@ -204,12 +198,11 @@ function bindOptionUI() {
   const cb21 = el("optSetMeals21");
   if (cb21) {
     cb21.onchange = () => {
-      setOptBool(OPT_KEYS.setMeals21, cb21.checked);
-
       if (cb21.checked) {
-        // ★ ONにした瞬間だけ実行（チェックはそのまま残してOK）
-        applyMeals21ToVisibleRows();
+      applyMeals21ToVisibleRows();
+      cb21.checked = false;
       }
+      setOptBool(OPT_KEYS.setMeals21, false);
     };
   }
 
@@ -540,11 +533,25 @@ window.onload = () => {
       state.recipeRows = [];
       document.querySelectorAll(".exChk").forEach(chk => chk.checked = false);
       document.querySelectorAll(".repQty").forEach(input => input.value = "");
+
+      // オプション類も全部リセット（UI & localStorage）
+      setOptBool(OPT_KEYS.expand63, false);
+      setOptBool(OPT_KEYS.maxOverlap, false);
+      setOptBool(OPT_KEYS.setMeals21, false);
+      setOptBool(OPT_KEYS.ncPika, false);
+      
+      const cb63 = el("optExpand63"); if (cb63) cb63.checked = false;
+      const cbMax = el("optMaxOverlap"); if (cbMax) cbMax.checked = false;
+      const cb21 = el("optSetMeals21"); if (cb21) cb21.checked = false;
+      const cbNc = el("optNcPika"); if (cbNc) cbNc.checked = false;
+      
       checkAddButton();
       addRecipeRow({ cat: "カレー・シチュー", recipeId: "avocado_gratin", meals: 0 });
+      updateAllMealDropdowns();
       calc();
     };
   }
+
 
   // 初期行がなければ1行追加
   if (state.recipeRows.length === 0) addRecipeRow({ meals: 0 });
