@@ -259,12 +259,62 @@ function bindModeUI() {
   });
 }
 
+function bindModeUI() {
+  const radios = document.querySelectorAll('input[name="calcMode"]');
+  if (!radios.length) return;
+
+  radios.forEach((r) => {
+    r.onchange = () => {
+      setMode(r.value); // value は "one" / "mix" / "preset63"
+    };
+  });
+}
+
 function setMode(mode) {
-  state.mode = mode;
-  rebuildRecipeRowsForMode();
-  updateModeDependentUI();
+  // mode 正規化（ズレ防止）
+  const next =
+    mode === MODES.ONE || mode === MODES.MIX || mode === MODES.PRESET63
+      ? mode
+      : MODES.ONE;
+
+  state.mode = next;
+
+  // UI/State を作り直す
+  const list = el("recipeList");
+  if (list) list.innerHTML = "";
+  state.recipeRows = [];
+
+  // モード別：行を構築
+  if (state.mode === MODES.ONE) {
+    // ① 1行固定（食数21固定）
+    addRecipeRow({
+      cat: "カレー・シチュー",
+      recipeId: getFirstRecipeIdByCat("カレー・シチュー"),
+      meals: WEEK_MEALS,
+    });
+  } else if (state.mode === MODES.MIX) {
+    // ② 最大6行、最初は1行（食数は0開始）
+    addRecipeRow({
+      cat: "カレー・シチュー",
+      recipeId: getFirstRecipeIdByCat("カレー・シチュー"),
+      meals: 0,
+    });
+  } else if (state.mode === MODES.PRESET63) {
+    // ③ 3カテゴリ固定で3行（各21固定）
+    CATS_3.forEach((cat) => {
+      addRecipeRow({
+        cat,
+        recipeId: getFirstRecipeIdByCat(cat),
+        meals: WEEK_MEALS,
+      });
+    });
+  }
+
+  // ボタン状態・ドロップダウン更新
+  updateAllMealDropdowns();
   calc();
 }
+
 
 /* =========================================================
    料理行UI
@@ -352,19 +402,20 @@ function rebuildRecipeRowsForMode() {
 }
 
 function addRecipeRow(init) {
-  const list = el("recipeList");
-  if (!list) return;
+  // ①/③ は行追加禁止（setMode側で作るだけ）
+  if (state.mode === MODES.ONE || state.mode === MODES.PRESET63) {
+    if (state.recipeRows.length >= (state.mode === MODES.ONE ? 1 : 3)) return;
+  }
 
-  const rowId = (window.crypto && crypto.randomUUID)
-    ? crypto.randomUUID()
-    : ("row-" + Math.random().toString(36).slice(2) + Date.now());
+  // ② は最大6行
+  if (state.mode === MODES.MIX && state.recipeRows.length >= MAX_ROWS_MODE2) return;
 
+  const rowId = crypto.randomUUID();
   const rowData = {
     rowId,
-    cat: init.cat,
-    recipeId: init.recipeId || getFirstRecipeIdByCat(init.cat),
-    meals: Number(init.meals ?? 0),
-    autoAdjust: false,
+    cat: init?.cat || "カレー・シチュー",
+    recipeId: init?.recipeId || getFirstRecipeIdByCat(init?.cat || "カレー・シチュー"),
+    meals: Number(init?.meals ?? 0),
   };
   state.recipeRows.push(rowData);
 
@@ -372,26 +423,11 @@ function addRecipeRow(init) {
   wrap.className = "recipeRow";
   wrap.dataset.rowId = rowId;
 
-  const showRemove = init.showRemove !== false;
-  const showMeals = init.showMeals !== false;
-  const isFixed = !!init.fixed;
-
-  const removeBtnHtml = showRemove
-    ? `<button class="removeBtn" title="削除">×</button>`
-    : "";
-
-  const mealsHtml = showMeals
-    ? `<div style="width:60px;">
-         <label>食数</label>
-         <select class="mealsSel"></select>
-       </div>`
-    : `<div style="width:60px;">
-         <label>食数</label>
-         <div class="badge" style="width:100%; text-align:center; padding:10px 0; border-radius:10px; background:var(--main-soft); color:var(--main); border:1px solid #cce5ff;">${rowData.meals}</div>
-       </div>`;
+  // ×ボタンは ②のみ表示（①は1行固定、③は固定3行）
+  const showRemove = state.mode === MODES.MIX;
 
   wrap.innerHTML = `
-    ${removeBtnHtml}
+    ${showRemove ? `<button class="removeBtn" title="削除">×</button>` : ``}
     <div style="flex:1; min-width:100px;">
       <label>カテゴリー</label>
       <select class="catSel">
@@ -404,7 +440,10 @@ function addRecipeRow(init) {
       <label>料理</label>
       <select class="recipeSel"></select>
     </div>
-    ${mealsHtml}
+    <div style="width:60px;">
+      <label>食数</label>
+      <select class="mealsSel"></select>
+    </div>
     <div class="preview"></div>
   `;
 
@@ -413,18 +452,45 @@ function addRecipeRow(init) {
   const mSel = wrap.querySelector(".mealsSel");
   const pre = wrap.querySelector(".preview");
 
+  // ---- カテゴリ制約（②は「先頭行のカテゴリに統一」）
+  // ①：カテゴリ変更OK（1行だけ）
+  // ②：先頭行だけ変更OK、2行目以降は選択不可（先頭に追従）
+  // ③：カテゴリ固定（選択不可）
+  const rowIndex = state.recipeRows.findIndex((r) => r.rowId === rowId);
+
+  if (state.mode === MODES.PRESET63) {
+    cSel.disabled = true;
+  } else if (state.mode === MODES.MIX) {
+    if (rowIndex === 0) {
+      cSel.disabled = false;
+    } else {
+      cSel.disabled = true;
+    }
+  } else {
+    cSel.disabled = false;
+  }
+
+  // ---- 食数制約
+  // ①：21固定（選択不可）
+  // ③：21固定（選択不可）
+  // ②：合計21になる範囲で選択可
+  if (state.mode === MODES.ONE || state.mode === MODES.PRESET63) {
+    mSel.disabled = true;
+  } else {
+    mSel.disabled = false;
+  }
+
+  // 初期値反映
   cSel.value = rowData.cat;
 
   const updateRecipeList = () => {
-    const filtered = (window.RECIPES || []).filter((r) => r.cat === cSel.value);
-    rSel.innerHTML = filtered
-      .map((r) => `<option value="${r.id}">${r.name}</option>`)
-      .join("");
+    const filtered = RECIPES.filter((r) => r.cat === cSel.value);
+    rSel.innerHTML = filtered.map((r) => `<option value="${r.id}">${r.name}</option>`).join("");
 
     if (filtered.some((r) => r.id === rowData.recipeId)) {
       rSel.value = rowData.recipeId;
     } else {
-      rowData.recipeId = filtered[0] ? filtered[0].id : "";
+      rowData.recipeId = filtered[0]?.id || "";
       rSel.value = rowData.recipeId;
     }
     updatePreview();
@@ -434,130 +500,90 @@ function addRecipeRow(init) {
     rowData.cat = cSel.value;
     rowData.recipeId = rSel.value;
 
-    if (mSel) {
-      rowData.meals = Number(mSel.value || 0);
-    }
+    // meals は updateAllMealDropdowns が最終確定（ここでは現状 value を読むだけ）
+    rowData.meals = Number(mSel.value || rowData.meals || 0);
 
-    const r = (window.RECIPES || []).find((x) => x.id === rowData.recipeId);
+    const r = RECIPES.find((x) => x.id === rSel.value);
     if (r) {
-      const totalIngredients = Object.values(r.ingredients).reduce(
-        (sum, count) => sum + count,
-        0
-      );
+      const totalIngredients = Object.values(r.ingredients).reduce((sum, c) => sum + c, 0);
       let html = Object.entries(r.ingredients)
         .map(([id, q]) => {
           const ing = getIng(id);
-          if (!ing) return "";
-          return `<span><img src="${imgSrc(
-            ing.file
-          )}" style="width:14px; height:14px; margin-right:4px; vertical-align:middle;">${q}</span>`;
+          return `<span><img src="${imgSrc(ing.file)}" style="width:14px; height:14px; margin-right:4px; vertical-align:middle;">${q}</span>`;
         })
         .join("");
       html += `<span class="badge" style="margin-left: auto; background:var(--main-soft); color:var(--main); border:1px solid #cce5ff; padding: 2px 10px; font-size: 11px;">${totalIngredients}個</span>`;
       pre.innerHTML = html;
-    } else {
-      pre.innerHTML = "";
     }
 
+    // ②で先頭カテゴリが変わったら、他の行もカテゴリ固定で追従させる
     if (state.mode === MODES.MIX) {
-      applyAutoAdjustFlagAndBalance();
-    } else {
-      updateAllMealDropdowns();
-    }
-    calc();
-  };
-
-  if (mSel) {
-    mSel.innerHTML = "";
-    for (let i = 0; i <= WEEK_MEALS; i++) {
-      const opt = document.createElement("option");
-      opt.value = i;
-      opt.textContent = i;
-      mSel.appendChild(opt);
-    }
-    mSel.value = String(rowData.meals);
-  }
-
-  cSel.onchange = () => {
-    if (state.mode === MODES.PRESET63) {
-      cSel.value = rowData.cat;
-      return;
-    }
-
-    if (state.mode === MODES.MIX) {
-      const first = state.recipeRows[0];
-      if (first && first.rowId === rowData.rowId) {
-        const newCat = cSel.value;
-        state.recipeRows.forEach((rr) => (rr.cat = newCat));
-        document.querySelectorAll(".recipeRow").forEach((w) => {
-          const cs = w.querySelector(".catSel");
-          if (cs) cs.value = newCat;
+      const head = state.recipeRows[0];
+      if (head) {
+        state.recipeRows.forEach((rr) => (rr.cat = head.cat));
+        document.querySelectorAll(".recipeRow").forEach((rowEl, i) => {
+          const cs = rowEl.querySelector(".catSel");
+          if (!cs) return;
+          cs.value = head.cat;
+          cs.disabled = i !== 0; // 先頭以外はロック
         });
-
-        state.recipeRows.forEach((rr) => {
-          rr.recipeId = getFirstRecipeIdByCat(newCat);
-        });
-
-        document.querySelectorAll(".recipeRow").forEach((w) => {
-          const rs = w.querySelector(".recipeSel");
-          const cs = w.querySelector(".catSel");
-          if (!rs || !cs) return;
-          const filtered = (window.RECIPES || []).filter((r) => r.cat === cs.value);
-          rs.innerHTML = filtered
-            .map((r) => `<option value="${r.id}">${r.name}</option>`)
-            .join("");
-          rs.value = filtered[0] ? filtered[0].id : "";
-        });
-
-        calc();
-        return;
-      } else {
-        cSel.value = state.recipeRows[0]?.cat || rowData.cat;
-        return;
       }
     }
 
-    rowData.recipeId = getFirstRecipeIdByCat(cSel.value);
+    updateAllMealDropdowns();
+    calc();
+  };
+
+  cSel.onchange = () => {
+    // ②：先頭行でカテゴリ変更したら、他行は追従＆料理もカテゴリ先頭に寄せる
+    if (state.mode === MODES.MIX) {
+      const headCat = cSel.value;
+      state.recipeRows.forEach((rr) => (rr.cat = headCat));
+      // 他行：cat固定＆recipeをカテゴリ先頭に寄せる
+      state.recipeRows.forEach((rr, idx) => {
+        if (idx === 0) return;
+        rr.recipeId = getFirstRecipeIdByCat(headCat);
+        const w = document.querySelector(`.recipeRow[data-row-id="${rr.rowId}"]`);
+        if (!w) return;
+        const cs = w.querySelector(".catSel");
+        const rs = w.querySelector(".recipeSel");
+        if (cs) cs.value = headCat;
+        if (rs) {
+          const filtered = RECIPES.filter((x) => x.cat === headCat);
+          rs.innerHTML = filtered.map((x) => `<option value="${x.id}">${x.name}</option>`).join("");
+          rs.value = rr.recipeId;
+        }
+      });
+    }
     updateRecipeList();
   };
 
   rSel.onchange = updatePreview;
-  if (mSel) mSel.onchange = updatePreview;
+  mSel.onchange = updatePreview;
 
+  // 削除（②のみ）
   const rm = wrap.querySelector(".removeBtn");
   if (rm) {
     rm.onclick = () => {
-      if (state.mode !== MODES.MIX) return;
-
-      const first = state.recipeRows[0];
-      if (first && first.rowId === rowId) return;
-
       state.recipeRows = state.recipeRows.filter((r) => r.rowId !== rowId);
       wrap.remove();
-      applyAutoAdjustFlagAndBalance();
-      updateModeDependentUI();
+      updateAllMealDropdowns();
       calc();
     };
   }
 
-  if (isFixed) {
-    cSel.disabled = true;
-  } else {
-    if (state.mode === MODES.MIX) {
-      const first = state.recipeRows[0];
-      cSel.disabled = !first || first.rowId !== rowId;
-    }
-  }
+  // meals 選択肢は updateAllMealDropdowns に任せる（初期だけ仮セット）
+  mSel.innerHTML = `<option value="${rowData.meals}">${rowData.meals}</option>`;
+  mSel.value = String(rowData.meals);
 
   updateRecipeList();
-  list.appendChild(wrap);
+  el("recipeList").appendChild(wrap);
 
-  if (mSel) mSel.value = String(rowData.meals);
+  updateAllMealDropdowns();
+  checkAddButton();
 }
 
-/* =========================================================
-   mode2: 最後の行で残りを自動調整
-========================================================= */
+
 function applyAutoAdjustFlagAndBalance() {
   state.recipeRows.forEach((r) => (r.autoAdjust = false));
   if (state.recipeRows.length >= 2) {
@@ -596,49 +622,41 @@ function applyAutoAdjustFlagAndBalance() {
    食数ドロップダウン再計算
 ========================================================= */
 function updateAllMealDropdowns() {
-  let totalMeals = 0;
+  // 表示用 total
+  const totalMeals =
+    state.mode === MODES.ONE
+      ? WEEK_MEALS
+      : state.mode === MODES.PRESET63
+      ? WEEK_MEALS * 3
+      : state.recipeRows.reduce((sum, r) => sum + (Number(r.meals) || 0), 0);
 
-  if (state.mode === MODES.ONE) {
-    totalMeals = WEEK_MEALS;
-  } else if (state.mode === MODES.PRESET63) {
-    totalMeals = WEEK_MEALS * 3;
-  } else {
-    totalMeals = state.recipeRows.reduce((sum, r) => sum + (Number(r.meals) || 0), 0);
-  }
-
-  // 表示バッジ
+  // バッジ更新
   const badge = el("summaryBadge");
   if (badge) {
-    const cap = (state.mode === MODES.PRESET63) ? (WEEK_MEALS * 3) : WEEK_MEALS;
+    const cap = state.mode === MODES.PRESET63 ? WEEK_MEALS * 3 : WEEK_MEALS;
     badge.textContent = `${totalMeals}食 / ${cap}食`;
   }
 
-  // ドロップダウン自体の選択肢を作り直す（モードごと）
+  // 各行の mealsSel を更新
   state.recipeRows.forEach((row, idx) => {
     const wrap = document.querySelector(`.recipeRow[data-row-id="${row.rowId}"]`);
     if (!wrap) return;
-
     const mSel = wrap.querySelector(".mealsSel");
     if (!mSel) return;
 
-    // モード①：固定21（UIも固定）
-    if (state.mode === MODES.ONE) {
+    // ①/③：21固定
+    if (state.mode === MODES.ONE || state.mode === MODES.PRESET63) {
+      row.meals = WEEK_MEALS;
       mSel.innerHTML = `<option value="${WEEK_MEALS}">${WEEK_MEALS}</option>`;
       mSel.value = String(WEEK_MEALS);
-      row.meals = WEEK_MEALS;
+      mSel.disabled = true;
       return;
     }
 
-    // モード③：各行固定21（3行固定）
-    if (state.mode === MODES.PRESET63) {
-      mSel.innerHTML = `<option value="${WEEK_MEALS}">${WEEK_MEALS}</option>`;
-      mSel.value = String(WEEK_MEALS);
-      row.meals = WEEK_MEALS;
-      return;
-    }
+    // ②：合計21になる範囲で可変
+    mSel.disabled = false;
 
-    // モード②：合計21になるように選択肢を制限
-    const currentTotal = state.recipeRows.reduce((sum, r) => sum + (Number(r.meals) || 0), 0);
+    const currentTotal = state.recipeRows.reduce((s, r) => s + (Number(r.meals) || 0), 0);
     const otherMeals = currentTotal - (Number(row.meals) || 0);
     const maxAvailable = Math.max(0, WEEK_MEALS - otherMeals);
 
@@ -657,20 +675,17 @@ function updateAllMealDropdowns() {
     row.meals = newVal;
   });
 
-  // モード②：合計が21を超えた場合は最後の行で調整（要件A）
-  if (state.mode === MODES.MIX) {
-    const rows = [...state.recipeRows];
-    if (rows.length) {
-      let sum = rows.reduce((s, r) => s + (Number(r.meals) || 0), 0);
-      if (sum > WEEK_MEALS) {
-        const last = rows[rows.length - 1];
-        const overflow = sum - WEEK_MEALS;
-        last.meals = Math.max(0, (Number(last.meals) || 0) - overflow);
+  // ②：合計が21を超えたら最後の行で調整（要件A）
+  if (state.mode === MODES.MIX && state.recipeRows.length) {
+    let sum = state.recipeRows.reduce((s, r) => s + (Number(r.meals) || 0), 0);
+    if (sum > WEEK_MEALS) {
+      const last = state.recipeRows[state.recipeRows.length - 1];
+      const overflow = sum - WEEK_MEALS;
+      last.meals = Math.max(0, (Number(last.meals) || 0) - overflow);
 
-        const w = document.querySelector(`.recipeRow[data-row-id="${last.rowId}"]`);
-        const ms = w ? w.querySelector(".mealsSel") : null;
-        if (ms) ms.value = String(last.meals);
-      }
+      const w = document.querySelector(`.recipeRow[data-row-id="${last.rowId}"]`);
+      const ms = w ? w.querySelector(".mealsSel") : null;
+      if (ms) ms.value = String(last.meals);
     }
   }
 
@@ -681,20 +696,19 @@ function checkAddButton() {
   const btn = el("addRecipe");
   if (!btn) return;
 
-  // モード①/③：追加不可
-  if (state.mode === MODES.ONE || state.mode === MODES.PRESET63) {
+  if (state.mode !== MODES.MIX) {
     btn.disabled = true;
     btn.style.opacity = "0.4";
     btn.style.cursor = "not-allowed";
     return;
   }
 
-  // モード②：最大6行
   const canAdd = state.recipeRows.length < MAX_ROWS_MODE2;
   btn.disabled = !canAdd;
   btn.style.opacity = canAdd ? "1" : "0.4";
   btn.style.cursor = canAdd ? "pointer" : "not-allowed";
 }
+
 
 /* =========================================================
    計算ロジック（モード別）
@@ -950,18 +964,32 @@ window.onload = () => {
   const savedTab = localStorage.getItem("activeTab") || "tab1";
   switchTab(savedTab, null);
 
-  // +追加
-  const addBtn = el("addRecipe");
-  if (addBtn) addBtn.onclick = () => {
-    // モード②以外は追加不可
-    if (state.mode !== MODES.MIX) return;
+   // +追加（②のみ）
+   const addBtn = el("addRecipe");
+   if (addBtn) {
+     addBtn.onclick = () => {
+       if (state.mode !== MODES.MIX) return;
+   
+       const head = state.recipeRows[0];
+       const headCat = head?.cat || "カレー・シチュー";
+       addRecipeRow({
+         cat: headCat,
+         recipeId: getFirstRecipeIdByCat(headCat),
+         meals: 0,
+       });
+   
+       updateAllMealDropdowns();
+       calc();
+     };
+   }
+   
+   // モードUI接続
+   bindModeUI();
+   
+   // 初期モード：ラジオの選択を優先して反映
+   const checked = document.querySelector('input[name="calcMode"]:checked');
+   setMode(checked ? checked.value : MODES.ONE);
 
-    // 先頭のカテゴリを複製（要件）
-    const head = state.recipeRows[0];
-    addRecipeRow({ cat: head?.cat || "カレー・シチュー", recipeId: head?.recipeId || getFirstRecipeIdByCat(head?.cat || "カレー・シチュー"), meals: 0 });
-    updateAllMealDropdowns();
-    calc();
-  };
 
   // クリア
   const clearBtn = el("clearAll");
