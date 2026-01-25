@@ -489,15 +489,12 @@
 
       
       /* ===== 計算結果の見た目（枠・区切り） ===== */
-      .mode3Notice{
-        display:none;            /* ←JSでmode3の時だけ表示 */
-        justify-content:flex-start;
-        width:auto;
-        height:auto;
-        margin:6px 0 0;
-        font-size:12px;
-        font-weight:700;
-        color:var(--muted);
+      .mode3Note {
+        display: none;
+        margin: 8px 0 0;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
       }
       .resultDivider{
         height:1px;
@@ -681,16 +678,17 @@
         <div style="font-weight:900; font-size:16px; color:var(--main);">計算結果</div>
         <span class="badge total-badge" id="totalBadge">総合計 0個</span>
       </div>
-      <div style="height:1px; background:var(--main); opacity:0.1; margin:16px 0;"></div>
-
+    
       <div id="mode3Note" class="mode3Note">
         ※異なるカテゴリーのレシピ間で重複している食材は、
         各レシピ中で最も多く使われている食材の個数を参照して計算しています
       </div>
-      
+    
       <div class="resultDivider"></div>
-
+    
+      <div id="resultGrid" class="grid5"></div>
     </section>
+
   </div>
 
     
