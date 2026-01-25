@@ -1075,6 +1075,8 @@ window.onload = () => {
    syncModeUIFromStorage();
    bindModeUI();
    setMode(state.mode);
+   document.body.classList.toggle("mode3", mode === MODES.PRESET63);
+
 
 
   // クリア
