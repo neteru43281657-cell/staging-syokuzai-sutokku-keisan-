@@ -209,7 +209,8 @@ function bindOptionUI() {
       }
     };
   }
-
+}
+  
   // 最大値計算
   const cbMax = el("optMaxOverlap");
   if (cbMax) {
