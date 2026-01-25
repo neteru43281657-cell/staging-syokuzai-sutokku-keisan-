@@ -239,6 +239,8 @@ function setMode(mode) {
       : MODES.ONE;
 
   state.mode = next;
+    document.body.classList.toggle("mode3", next === MODES.PRESET63);
+
   setOptStr(OPT_KEYS.mode, next); // ★ここで必ず同期
 
   // ラジオ表示も合わせる（ズレ防止）
