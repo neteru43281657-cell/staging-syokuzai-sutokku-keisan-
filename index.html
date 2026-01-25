@@ -427,45 +427,30 @@
     }
 
     /* ============================
-       スマホ：条件/ボタンを上段(2列)、モード選択を下段へ（崩れ防止版）
+       スマホ：2枚目の配置にする（cond左 / mode右 / actions左下）
     ============================ */
     @media (max-width: 520px) {
-      /* 上段は Grid で「左=条件」「右=ボタン」を固定 */
       .settingsHeaderRow {
         display: grid;
-        grid-template-columns: 1fr auto;
+        grid-template-columns: 140px 1fr;  /* 左=条件+ボタン、右=モード */
         grid-template-areas:
-          "cond actions"
-          "mode mode";
+          "cond  mode"
+          "actions mode";
         gap: 12px;
         align-items: start;
       }
     
       #condBlock { grid-area: cond; }
-      #actionBlock { grid-area: actions; }
       #modeBlock { grid-area: mode; }
+      #actionBlock { grid-area: actions; }
     
-      /* 右のボタン群：縦並び・幅と高さを揃える */
-      #actionBlock {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
-        width: 120px; /* スマホでちょうど良い幅 */
+      /* 左側：条件設定ブロックを詰める */
+      #condBlock .badge {
+        display: inline-block;
+        margin-top: 6px;
       }
     
-      /* ボタンの“見かけのサイズ差”を消す */
-      #actionBlock .primary,
-      #actionBlock .danger {
-        width: 100%;
-        height: 44px;              /* 高さ固定 */
-        padding: 0 10px;           /* 高さはheightで担保 */
-        font-size: 13px;
-        white-space: nowrap;
-        box-sizing: border-box;    /* border込みで同寸に */
-      }
-    
-      /* モード選択は横幅いっぱいに */
+      /* 右側：モードは横幅いっぱい */
       #modeBlock {
         display: flex;
         justify-content: flex-start;
@@ -476,6 +461,25 @@
       #modeBlock .chkLabel {
         font-size: 13px;
         line-height: 1.25;
+      }
+    
+      /* 左下：ボタンを小さめに */
+      #actionBlock {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 140px; /* 左列と合わせる */
+      }
+    
+      #actionBlock .primary,
+      #actionBlock .danger {
+        width: 100%;
+        height: 40px;        /* 小さく */
+        padding: 0 10px;
+        font-size: 13px;
+        white-space: nowrap;
+        box-sizing: border-box;
+        border-radius: 14px; /* 角丸が大きすぎたらここを調整 */
       }
     }
 
@@ -572,17 +576,11 @@
     <section class="result-card">
       <div class="row" style="justify-content: space-between;">
         <div style="font-weight:900; font-size:16px; color:var(--main);">計算結果</div>
-      <div id="mode3Notice"
-        style="
-          display:flex;
-          font-size:12px;
-          color:var(--muted);
-          line-height:1.4;
-          margin-bottom:2px;
-          flex:1;
-        ">
-        ※異なるカテゴリーのレシピ間で食材の重複があった場合、より多い方の食材数で計算しています
-      </div>
+      <label id="mode3Notice" class="chkLabel" style="display:none; width:auto; height:auto; justify-content:flex-start; margin:0;">
+        <input type="checkbox" tabindex="-1" aria-hidden="true" style="display:none;">
+        ※異なるカテゴリーのレシピ間で重複している食材があった場合、各レシピ中で最も多く使われている食材の個数を参照して計算しています
+      </label>
+        
         <span class="badge total-badge" id="totalBadge">総合計 0個</span>
       </div>
       <div style="height:1px; background:var(--main); opacity:0.1; margin:16px 0;"></div>
