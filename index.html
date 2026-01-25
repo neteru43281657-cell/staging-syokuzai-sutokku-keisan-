@@ -486,15 +486,17 @@
     </section>
 
     <section class="card">
-      <div class="row" style="justify-content: space-between; margin-bottom:12px;">
+      <div class="row" style="margin-bottom:12px;">
         <div style="font-weight:900; font-size:14px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text);">
           1日当たりの獲得量
         </div>
       
-        <label class="chkLabel" style="font-size:12px; width:auto; height:auto; justify-content:flex-start;">
-          <input type="checkbox" id="optNcPika">
-          NCピカチュウ獲得分を差し引く
-        </label>
+        <div style="flex:1; display:flex; justify-content:center;">
+          <label class="chkLabel" style="font-size:12px; width:auto; height:auto; justify-content:flex-start;">
+            <input type="checkbox" id="optNcPika">
+            NCピカチュウ獲得分を差し引く
+          </label>
+        </div>
       </div>
 
       <div id="replenishGrid" class="grid5"></div>
