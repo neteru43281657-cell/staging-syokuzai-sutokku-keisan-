@@ -5,11 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>食材ストック計算</title>
 
+  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-GNGLETKNNR"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
+
     gtag('config', 'G-GNGLETKNNR');
   </script>
 
@@ -247,127 +249,485 @@
     .preview { font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; width: 100%; align-items: center; }
     .preview span { display: flex; align-items: center; background: var(--main-soft); color: var(--main); padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 1px solid #d0e7ff; }
 
-    /* ============================ 修正箇所：画像のはみ出し防止 ============================ */
-    .result-left img {
-      max-width: 40px;
-      height: auto;
-      object-fit: contain;
+    /* カレンダー用 */
+    .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+    .month-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 10px; }
+    .month-name { font-weight: 900; text-align: center; border-bottom: 1px solid var(--line); margin-bottom: 5px; color: var(--text); }
+
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      align-items: center;
+      justify-items: center; }
+
+    .day {
+      width: 100%;
+      aspect-ratio: 1/1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 10px;
+      position: relative;
+      border-radius: 4px;
+      transition: background 0.2s;
+      line-height: 1;
+      padding-top: 1px;
     }
 
-    /* ============================ スマホ：2列レイアウト調整 ============================ */
+    .gsd { background-color: #add8e6; color: #000; border-radius: 4px; }
+    .nmd { background-color: #000080; color: #fff; border-radius: 4px; }
+
+    .dow {
+      font-size: 8px;
+      margin-bottom: 1px; }
+    .dow:nth-child(6) { color: #007bff !important; }
+    .dow:nth-child(7) { color: #e74c3c !important; }
+    .day-sat { color: #007bff !important; }
+    .day-sun { color: #e74c3c !important; }
+    .day-holiday { color: #ff8c00 !important; font-weight: 900; }
+
+    .day-today::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid #ff4757;
+      border-radius: 4px;
+      background-color: rgba(255, 71, 87, 0.1);
+      pointer-events: none;
+      z-index: 2; }
+    @media (max-width: 480px) { .calendar-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    /* フィールドメニュー用スタイル */
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .field-item {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      background: #fff;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .field-item:active {
+      transform: scale(0.98);
+      background: var(--main-soft);
+    }
+    .field-img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      margin-bottom: 8px;
+    }
+    .field-name {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    /* ===== 出現ポケモン一覧（tab2 詳細） ===== */
+    .field-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .field-header img {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+    }
+    .field-title {
+      font-weight: 900;
+      font-size: 16px;
+      color: var(--text);
+    }
+    .energy-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    .energy-table th, .energy-table td {
+      border: 1px solid var(--line);
+      padding: 8px;
+      text-align: center;
+    }
+    .energy-table th {
+      background: #f7f9fc;
+      font-weight: 900;
+    }
+
+    .sleep-section {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .sleep-label {
+      padding: 10px 12px;
+      font-weight: 900;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+    .sleep-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 64px;
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-weight: 900;
+      font-size: 12px;
+      color: #111;
+    }
+    .badge-uto { background: #ffe66a; }
+    .badge-suya { background: #aee7f2; }
+    .badge-gusu { background: #8fb3ff; color: #0b1b3a; }
+
+    .poke-grid {
+      padding: 10px 10px 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+      gap: 8px;
+    }
+    .poke-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .poke-item img {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+    }
+    .poke-name {
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.2;
+      word-break: keep-all;
+    }
+
+    .result-header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+    }
+    
+    .result-left{
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .totalBadge{
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    
+    /* ============================
+       スマホ：2枚目の配置にする（cond左 / mode右 / actions左下）
+    ============================ */
     @media (max-width: 520px) {
       .settingsHeaderRow {
         display: grid;
-        grid-template-columns: 120px 1fr;
-        grid-template-areas: "cond mode" "actions mode";
+        grid-template-columns: 120px 1fr; /* 右(モード)を広くする */
+        grid-template-areas:
+          "cond  mode"
+          "actions mode";
         gap: 12px;
         align-items: start;
       }
-      .sectionTitle {
-        font-weight: 900;
-        font-size: 14px;
+
+      /* 見出しの共通化（条件設定の青い縦線） */
+      .sectionTitle{
+        font-weight:900;
+        font-size:14px;
         border-left: 5px solid var(--main);
         padding-left: 10px;
         color: var(--text);
         margin-bottom: 6px;
       }
-      #condBlock { grid-area: cond; }
-      #modeBlock { 
-        grid-area: mode; 
-        padding-left: 10px; /* 左側に寄りすぎないよう調整 */
-      }
-      #actionBlock {
-        grid-area: actions;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        width: 120px;
-      }
-      /* 修正：ボタンのサイズをコンパクトに */
-      #actionBlock > button.primary, #actionBlock > button.danger {
-        width: 100px !important; /* 横幅を制限 */
-        height: 32px !important;
-        padding: 0 !important;
-        font-size: 12px !important;
-        line-height: 32px !important;
-        border-radius: 999px !important;
-        margin-left: 0 !important;
-      }
       
-      /* モード選択のラベル配置調整 */
+      /* ===== モードUI（ラジオのズレ解消＆タイトルを大きく） ===== */
+      #modeBlock{ width:100%; display:flex; justify-content:center; }
+      #modeBlock .modeInner{ display:flex; flex-direction:column; align-items:flex-start; gap:10px; width:100%; }
+      #modeBlock .modeTitle{
+        font-weight:900;
+        font-size:14px;          /* ←少し大きく */
+        color:var(--muted);
+      }
       .modeLabel {
         display: flex;
         align-items: center;
-        gap: 8px;
-        margin-bottom: 8px;
+        gap: 6px;
+      }
+      
+      .modeLabel input[type="radio"] {
+        margin: 0;
+        transform: translateY(1px); /* iOS用 微調整 */
+      }
+
+      
+      #modeBlock input[type="radio"] {
+        margin: 0;
+        transform: none;
+      }
+
+      
+      /* ===== 計算結果の見た目（枠・区切り） ===== */
+      .mode3Note {
+        display: none;
+        margin: 8px 0 0;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+      }
+      .resultDivider{
+        height:1px;
+        background:var(--main);
+        opacity:0.1;
+        margin:16px 0;
+      }
+      
+      /* ===== スマホ：2列レイアウト固定＋ボタンサイズ確定 ===== */
+      @media (max-width: 520px) {
+        .settingsHeaderRow{
+          display:grid;
+          grid-template-columns: 120px 1fr;
+          grid-template-areas:
+            "cond  mode"
+            "actions mode";
+          gap:12px;
+          align-items:start;
+        }
+        #condBlock{ grid-area:cond; }
+        #modeBlock{ grid-area:mode; padding-left:6px; }
+        #actionBlock{
+          grid-area:actions;
+          display:flex;
+          flex-direction:column;
+          gap:10px;
+          width:120px;            /* ←左列と同じ幅に固定 */
+        }
+      
+        /* ここで必ず小さくする（rowの影響を受けないように） */
+        #actionBlock > button.primary,
+        #actionBlock > button.danger {
+          height: 32px !important;
+          padding: 0 12px !important;
+          font-size: 12px !important;
+          line-height: 32px !important;
+          border-radius: 999px !important; /* バッジと同系統 */
+        }
+      }
+
+      
+      /* モード見出しとラベルの左余白を整える */
+      #modeBlock { padding-left: 6px; }
+      #modeBlock > div { width: 100%; }
+
+      
+      #condBlock { grid-area: cond; }
+      #modeBlock {
+        grid-area: mode;
+        padding-left: 12px; /* ← 左に寄りすぎ問題を解消 */
+      }
+      #actionBlock { grid-area: actions; }
+    
+      /* 左側：条件設定ブロックを詰める */
+      #condBlock .badge {
+        display: inline-block;
+        margin-top: 6px;
+      }
+    
+      /* 右側：モードは横幅いっぱい */
+      #modeBlock {
+        display: flex;
+        justify-content: flex-start;
+      }
+      #modeBlock > div {
+        width: 100%;
+      }
+      #modeBlock .chkLabel {
         font-size: 13px;
+        line-height: 1.25;
+      }
+    
+      /* 左下：ボタンを小さめに */
+      #actionBlock {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 140px; /* 左列と合わせる */
+      }
+    
+      /* ===== actionBlock ボタンサイズ強制指定 ===== */
+      #actionBlock > button.primary,
+      #actionBlock > button.danger {
+        height: 30px;
+        padding: 0 10px;
+        font-size: 12px;
+        line-height: 30px;
+        border-radius: 10px;
       }
     }
 
-    /* その他既存スタイル（カレンダー、フィールド等）はそのまま維持 */
-    .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
-    /* ... (中略：既存のカレンダースタイル) ... */
+    
   </style>
 </head>
 <body>
 
 <header>
   <div>
-    <div class="title-text" id="headerTitle">食材ストック計算</div>
-    <div class="ver-text">ver 2.3.0</div>
+    <div id="headerTitle" class="title-text">食材ストック計算</div>
+    <div id="headerVer" class="ver-text">ver1.0.4</div>
+  </div>
+
+  <div style="display:flex; align-items:center; gap:10px;">
+    <button id="openDocs"
+      style="background:none; border:none; color:#fff; cursor:pointer; display:flex; align-items:center; gap:6px; padding:6px 8px;">
+      <span style="font-size:18px; line-height:1;">📚</span>
+      <span style="font-size:12px; font-weight:800;">お役立ち資料集</span>
+    </button>
+
+    <button id="openNotice"
+      style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer; padding:6px 8px;">ⓘ</button>
   </div>
 </header>
 
 <main>
   <div id="tab1" class="tab-content active">
-    
-    <div class="card">
+    <section class="card">
       <div class="settingsHeaderRow">
+        <!-- 条件設定 -->
         <div id="condBlock">
-          <div class="sectionTitle">条件設定</div>
-          <div id="summaryBadge" class="badge">0食 / 21食</div>
+          <div class="sectionTitle">
+            条件設定
+          </div>
+          <span class="badge" id="summaryBadge">合計 0食 / 21食</span>
         </div>
-
+      
         <div id="modeBlock">
           <div class="modeInner">
-            <div class="modeTitle" style="font-weight:900; font-size:14px; color:var(--muted); margin-bottom:8px;">モードを選択してください</div>
-            <label class="modeLabel"><input type="radio" name="calcMode" value="mode1" id="calcMode1"> 同じ料理 21食</label>
-            <label class="modeLabel"><input type="radio" name="calcMode" value="mode2" id="calcMode2"> 料理を組み合わせる</label>
-            <label class="modeLabel"><input type="radio" name="calcMode" value="mode3" id="calcMode3"> 3カテゴリ 63食</label>
+            <div class="modeTitle">モードを選択してください</div>
+        
+            <label class="modeLabel">
+              <input type="radio" name="calcMode" id="calcMode1" value="mode1">
+              <span>① 同じレシピを21食作り続ける</span>
+            </label>
+        
+            <label class="modeLabel">
+              <input type="radio" name="calcMode" id="calcMode2" value="mode2">
+              <span>② 2種以上のレシピを組み合わせて21食作る</span>
+            </label>
+        
+            <label class="modeLabel">
+              <input type="radio" name="calcMode" id="calcMode3" value="mode3">
+              <span>③ 別カテゴリーのレシピを組み合わせる</span>
+            </label>
           </div>
         </div>
-
+      
+        <!-- +追加 / クリア -->
         <div id="actionBlock">
-          <button id="calculateBtn" class="primary" onclick="calc()">計算実行</button>
-          <button id="resetBtn" class="danger" onclick="resetAll()">リセット</button>
+          <button id="addRecipe" class="primary">+ 追加</button>
+          <button id="clearAll" class="danger">クリア</button>
         </div>
       </div>
-    </div>
 
-    <div id="recipeList"></div>
     
-    <button id="addRecipe" class="primary" style="width:100%; margin-top:-4px;" onclick="addRecipeRow()">+ 料理を追加</button>
+      <div id="recipeList" style="margin-top:10px;"></div>
+    </section>
 
-    <div id="resultArea" class="result-card" style="display:none;">
-      <div id="resultRecipes"></div> <p id="resultNotice" style="font-size: 11px; color: var(--muted); margin: 16px 0; border-top: 1px solid var(--line); padding-top: 12px; line-height: 1.6;">
-        ※異なるカテゴリーのレシピ間で重複している食材は、各レシピ中で最も多く使われている食材の個数を参照して計算しています
-      </p>
-      
-      <div id="resultTotal"></div> </div>
 
-    <div class="card">
-      <div class="sectionTitle">除外設定</div>
+    <section class="card">
+      <div style="font-weight:900; font-size:14px; margin-bottom:12px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text);">計算から除外</div>
       <div id="excludeGrid" class="grid5"></div>
-    </div>
-    <div class="card">
-      <div class="sectionTitle">1日の獲得量 (NCピカ)</div>
+    </section>
+
+    <section class="card">
+      <div class="row" style="margin-bottom:12px;">
+        <div style="font-weight:900; font-size:14px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text);">
+          1日当たりの獲得量
+        </div>
+
+        <div style="flex:1; display:flex; justify-content:center;">
+          <label class="chkLabel" style="font-size:12px; width:auto; height:auto; justify-content:flex-start;">
+            <input type="checkbox" id="optNcPika">
+            NCピカチュウ獲得分を差し引く
+          </label>
+        </div>
+      </div>
+
       <div id="replenishGrid" class="grid5"></div>
+    </section>
+
+    <section class="result-card">
+      <div class="row" style="justify-content: space-between;">
+        <div style="font-weight:900; font-size:16px; color:var(--main);">計算結果</div>
+        <span class="badge total-badge" id="totalBadge">総合計 0個</span>
+      </div>
+      
+      <!-- ★ 注意書きはここ -->
+      <div id="mode3Note" class="mode3Note">
+        ※異なるカテゴリーのレシピ間で重複している食材は、
+        各レシピ中で最も多く使われている食材の個数を参照して計算しています
+      </div>
+
+    </section>
+
+  </div>
+
+    
+      <div class="resultDivider"></div>
+      <div id="resultGrid" class="grid5"></div>
+    </section>
+  </div>
+
+  <div id="tab2" class="tab-content">
+    <div id="fieldMenu">
+      <section class="card">
+        <div style="font-weight:900; font-size:16px; color:var(--main); margin-bottom:12px; text-align:center;">フィールドを選択</div>
+        <div class="field-grid"></div>
+      </section>
+    </div>
+    <div id="fieldDetail" style="display:none;">
+      <button onclick="backToMenu()" style="margin-bottom:10px; padding:6px 12px; background:none; border:1px solid var(--line); border-radius:8px; font-size:12px; color:var(--muted);">← 戻る</button>
+      <div id="detailContent"></div>
     </div>
   </div>
 
+  <div id="tab3" class="tab-content">
+    <section class="card">
+      <div style="display: flex; gap: 10px; margin-bottom: 10px; font-size: 11px;">
+        <span style="display:flex; align-items:center; gap:4px;"><span style="width:12px; height:12px; background:#add8e6; display:inline-block; border-radius:2px;"></span>Good Sleep Day</span>
+        <span style="display:flex; align-items:center; gap:4px;"><span style="width:12px; height:12px; background:#000080; display:inline-block; border-radius:2px;"></span>New Moon Day</span>
+      </div>
+      <div id="yearCalendar" class="calendar-grid"></div>
+    </section>
+  </div>
+</main>
 
-  
-  </main>
 <nav class="bottom-nav">
   <div class="nav-item active" onclick="switchTab('tab1', this)">
     <span class="nav-icon">🔍</span>
