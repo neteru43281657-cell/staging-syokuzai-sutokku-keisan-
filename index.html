@@ -458,18 +458,18 @@
           <div style="font-weight:900; font-size:15px; color:var(--text); margin-bottom: 4px;">条件設定</div>
           <span class="badge" id="summaryBadge">合計 0食 / 21食</span>
         </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <label class="chkLabel" style="font-size:12px; width:auto; height:auto; justify-content:flex-start;">
+              <input type="checkbox" id="optExpand63">
+              63食に拡張する
+            </label>
+          </div>
         <div class="row">
           <button id="addRecipe" class="primary">+ 追加</button>
           <button id="clearAll" class="danger">クリア</button>
         </div>
       </div>
       <div id="recipeList" style="margin-top:10px;"></div>
-      <div style="margin-top:10px;">
-        <label class="chkLabel" style="font-size:12px;">
-          <input type="checkbox" id="optExpand63">
-          63食に拡張する
-        </label>
-      </div>
     </section>
 
     <section class="card">
@@ -485,18 +485,17 @@
     <section class="result-card">
       <div class="row" style="justify-content: space-between;">
         <div style="font-weight:900; font-size:16px; color:var(--main);">計算結果</div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <label class="chkLabel" style="font-size:12px; width:auto; height:auto; justify-content:flex-start;">
+            <input type="checkbox" id="optMaxOverlap">
+            レシピ間で重複する食材は最大値で計算する
+          </label>
+        </div>
         <span class="badge total-badge" id="totalBadge">総合計 0個</span>
       </div>
       <div style="height:1px; background:var(--main); opacity:0.1; margin:16px 0;"></div>
       <div id="resultGrid" class="grid5"></div>
     </section>
-  </div>
-  
-  <div style="margin-top:10px;">
-    <label class="chkLabel" style="font-size:12px;">
-      <input type="checkbox" id="optMaxOverlap">
-      レシピ間で重複する食材は最大値で計算する
-    </label>
   </div>
   
   <div id="tab2" class="tab-content">
