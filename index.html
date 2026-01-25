@@ -450,7 +450,7 @@
     @media (max-width: 520px) {
       .settingsHeaderRow {
         display: grid;
-        grid-template-columns: 120px 1fr; /* 右(モード)を広くする */
+        grid-template-columns: 140px 1fr; /* 右(モード)を広くする */
         grid-template-areas:
           "cond  mode"
           "actions mode";
@@ -502,12 +502,11 @@
         font-weight: 700;
         color: var(--muted);
       }
-      .resultDivider{
-        height:1px;
-        background:var(--main);
-        opacity:0.1;
-        margin:16px 0;
+      
+      body.mode3 .mode3Note {
+        display: block;
       }
+
       
       /* ===== スマホ：2列レイアウト固定＋ボタンサイズ確定 ===== */
       @media (max-width: 520px) {
@@ -550,7 +549,7 @@
       #condBlock { grid-area: cond; }
       #modeBlock {
         grid-area: mode;
-        padding-left: 12px; /* ← 左に寄りすぎ問題を解消 */
+        padding-left: 16px; /* ← 左に寄りすぎ問題を解消 */
       }
       #actionBlock { grid-area: actions; }
     
@@ -592,7 +591,19 @@
       }
     }
 
-    
+      /* =========================
+         actionBlock ボタン最終確定
+      ========================= */
+      #actionBlock button {
+        width: auto !important;
+        min-width: unset !important;
+        height: 28px !important;
+        padding: 0 12px !important;
+        font-size: 12px !important;
+        line-height: 28px !important;
+        border-radius: 999px !important;
+      }
+          
   </style>
 </head>
 <body>
@@ -684,17 +695,25 @@
 
     <section class="result-card">
       <div class="row" style="justify-content: space-between;">
-        <div style="font-weight:900; font-size:16px; color:var(--main);">計算結果</div>
-        <span class="badge total-badge" id="totalBadge">総合計 0個</span>
+        <div style="font-weight:900; font-size:16px; color:var(--main);">
+          計算結果
+        </div>
+        <span class="badge total-badge" id="totalBadge">
+          総合計 0個
+        </span>
       </div>
-      
-      <!-- ★ 注意書きはここ -->
+    
+      <!-- モード③ 注意書き -->
       <div id="mode3Note" class="mode3Note">
         ※異なるカテゴリーのレシピ間で重複している食材は、
         各レシピ中で最も多く使われている食材の個数を参照して計算しています
       </div>
-
+    
+      <div class="resultDivider"></div>
+    
+      <div id="resultGrid" class="grid5"></div>
     </section>
+
 
   </div>
 
