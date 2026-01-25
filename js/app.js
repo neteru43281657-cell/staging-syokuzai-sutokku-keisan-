@@ -163,18 +163,29 @@ function apply63PresetRows() {
   calc();
 }
 
-// ===== 食数を一括で21にする（表示中の行だけ）=====
-function applyMeals21ToVisibleRows() {
+// ===== 食数を一括で21にする =====
+// mode:
+//  - "firstOnly": 先頭行だけ21
+//  - "all": 全行21
+function applyMeals21(mode = "all") {
+  const rows = [...document.querySelectorAll(".recipeRow")];
+  if (!rows.length) return;
 
-  // state とUIを同期：全行 21
-  state.recipeRows.forEach(row => { row.meals = 21; });
+  const targets = (mode === "firstOnly") ? [rows[0]] : rows;
 
-  document.querySelectorAll(".recipeRow").forEach(wrap => {
+  // DOM側を21に
+  targets.forEach(wrap => {
     const mSel = wrap.querySelector(".mealsSel");
-    if (mSel) mSel.value = "21"; // まずは入れておく（後でupdateAllMealDropdownsで確定）
+    if (mSel) mSel.value = "21";
   });
 
-  // 上限や他行との整合を確実にする
+  // state側を21に（rowIdで同期）
+  const targetIds = new Set(targets.map(w => w.dataset.rowId));
+  state.recipeRows.forEach(r => {
+    if (targetIds.has(r.rowId)) r.meals = 21;
+  });
+
+  // 整合＆再計算
   updateAllMealDropdowns();
   updateAllMealDropdowns();
   calc();
@@ -201,17 +212,31 @@ function bindOptionUI() {
 
   const cb21 = el("optSetMeals21");
   if (cb21) {
-    cb21.onchange = () => {
-      if (!cb21.checked) return;
+    cb21.onclick = (e) => {
+      e.preventDefault();
+      cb21.checked = true;
+      setOptBool(OPT_KEYS.setMeals21, true);
   
-      // ★押した瞬間に実行
-      applyMeals21ToVisibleRows();
+      const cb63 = el("optExpand63");
+      const is63 = cb63 ? cb63.checked : getOptBool(OPT_KEYS.expand63, false);
   
-      // ★“押せた感”が分かるように少しだけON表示してから戻す
-      setTimeout(() => { cb21.checked = false; }, 250);
+      if (is63) {
+        // ★63食ONなら：カテゴリを3つに強制して各21
+        apply63PresetRows();         // ここで3行生成＋各21になる
+        // apply63PresetRowsの中でcalcまで走るので追加で何もしない
+        return;
+      }
   
-      // 保存はしない（ボタン扱い）
-      setOptBool(OPT_KEYS.setMeals21, false);
+      // 63食OFF
+      const rowCount = state.recipeRows.length;
+  
+      if (rowCount >= 2) {
+        // ★2カテゴリ以上なら：先頭行だけ21
+        applyMeals21("firstOnly");
+      } else {
+        // ★1行なら：全行（=その1行）を21
+        applyMeals21("all");
+      }
     };
   }
 
@@ -379,10 +404,17 @@ function addRecipeRow(init) {
   wrap.querySelector(".removeBtn").onclick = () => {
     state.recipeRows = state.recipeRows.filter(r => r.rowId !== rowId);
     wrap.remove();
+  
+    // ×で閉じたら「食数に21食を設定する」はOFFに戻す
+    setOptBool(OPT_KEYS.setMeals21, false);
+    const cb21 = el("optSetMeals21");
+    if (cb21) cb21.checked = false;
+  
     updateAllMealDropdowns();
     checkAddButton();
     calc();
   };
+
 
   cSel.value = rowData.cat;
   updateRecipeList();
