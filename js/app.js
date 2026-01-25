@@ -93,6 +93,7 @@ const MAX_TOTAL_MEALS = 21;
 const OPT_KEYS = {
   expand63: "opt_expand63_meals",
   maxOverlap: "opt_max_overlap_ingredient",
+  setMeals21: "opt_set_meals_21",
 };
 
 function getOptBool(key, def = false) {
@@ -119,6 +120,9 @@ function syncOptionUIFromStorage() {
 
   const cbMax = el("optMaxOverlap");
   if (cbMax) cbMax.checked = getOptBool(OPT_KEYS.maxOverlap, false);
+  
+  const cb21 = el("optSetMeals21");
+  if (cb21) cb21.checked = getOptBool(OPT_KEYS.setMeals21, false);
 }
 
 function setSummaryBadge(totalMeals) {
@@ -155,6 +159,30 @@ function apply63PresetRows() {
   calc();
 }
 
+// ===== 食数を一括で21にする（表示中の行だけ）=====
+function applyMeals21ToVisibleRows() {
+  // 63食がOFFのままだと、3行×21=63 が入らないので、必要なら自動で63食ONにする
+  const cb63 = el("optExpand63");
+  if (cb63 && !cb63.checked) {
+    cb63.checked = true;
+    setOptBool(OPT_KEYS.expand63, true);
+  }
+
+  // state とUIを同期：全行 21
+  state.recipeRows.forEach(row => { row.meals = 21; });
+
+  document.querySelectorAll(".recipeRow").forEach(wrap => {
+    const mSel = wrap.querySelector(".mealsSel");
+    if (mSel) mSel.value = "21"; // まずは入れておく（後でupdateAllMealDropdownsで確定）
+  });
+
+  // 上限や他行との整合を確実にする
+  updateAllMealDropdowns();
+  updateAllMealDropdowns();
+  calc();
+}
+
+
 function bindOptionUI() {
   const cb63 = el("optExpand63");
   if (cb63) {
@@ -169,6 +197,18 @@ function bindOptionUI() {
         updateAllMealDropdowns();
         updateAllMealDropdowns();
         calc();
+      }
+    };
+  }
+
+  const cb21 = el("optSetMeals21");
+  if (cb21) {
+    cb21.onchange = () => {
+      setOptBool(OPT_KEYS.setMeals21, cb21.checked);
+
+      if (cb21.checked) {
+        // ★ ONにした瞬間だけ実行（チェックはそのまま残してOK）
+        applyMeals21ToVisibleRows();
       }
     };
   }
