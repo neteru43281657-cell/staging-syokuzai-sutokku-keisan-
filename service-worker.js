@@ -1,12 +1,18 @@
-const CACHE_NAME = "stockcalc-v1.1.8"; // ★必ず上げること
+// service-worker.js
 
+const CACHE_NAME = "stockcalc-v1.2.0"; // ★更新のたびに必ず上げること
+
+// 事前キャッシュ（最低限）
 const ASSETS = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
+  "./service-worker.js",
+
   "./js/app.js",
   "./js/pokedex.js",
   "./js/calendar.js",
+
   "./data/ingredients.js",
   "./data/recipes.js",
   "./data/fields.js",
@@ -22,29 +28,45 @@ const ASSETS = [
   "./data/ラピスラズリ湖畔.txt",
   "./data/ゴールド旧発電所.txt",
   "./data/アンバー渓谷.txt",
+
+  // 最低限の画像（PWAアイコンなど）
+  "./images/アイコン.png",
 ];
 
 self.addEventListener("install", (e) => {
   self.skipWaiting();
-  e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
+  e.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+  );
 });
 
 self.addEventListener("activate", (e) => {
   e.waitUntil(
-    caches.keys()
-      .then((keys) => Promise.all(keys.map((k) => (k !== CACHE_NAME ? caches.delete(k) : null))))
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(keys.map((k) => (k !== CACHE_NAME ? caches.delete(k) : null)))
+      )
       .then(() => self.clients.claim())
   );
 });
 
+// 基本は「ネットワーク優先」＋「失敗したらキャッシュ」
+// ただし成功時は必ずキャッシュ更新（最新が残る）
 self.addEventListener("fetch", (e) => {
+  const req = e.request;
+
+  // GET以外は触らない
+  if (req.method !== "GET") return;
+
   e.respondWith(
-    fetch(e.request)
+    fetch(req)
       .then((res) => {
+        // 取れたらキャッシュ更新して返す
         const resClone = res.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(e.request, resClone));
+        caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone));
         return res;
       })
-      .catch(() => caches.match(e.request))
+      .catch(() => caches.match(req))
   );
 });
