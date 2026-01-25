@@ -1101,3 +1101,17 @@ window.switchTab = function (tabId, clickedEl) {
   if (tabId === "tab2" && window.PokedexTab?.renderFieldMenu) window.PokedexTab.renderFieldMenu();
   if (tabId === "tab3" && window.CalendarTab?.renderYearCalendar) window.CalendarTab.renderYearCalendar();
 };
+
+// =========================================================
+// タブ切替（HTMLのonclickから呼ばれるのでグローバルに置く）
+// =========================================================
+window.switchTab = window.switchTab || function (tabId, clickedEl) {
+  document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
+  const target = document.getElementById(tabId);
+  if (target) target.classList.add("active");
+
+  document.querySelectorAll(".bottom-nav .nav-item").forEach((n) => n.classList.remove("active"));
+  if (clickedEl) clickedEl.classList.add("active");
+
+  localStorage.setItem("activeTab", tabId);
+};
