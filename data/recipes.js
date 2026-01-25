@@ -42,7 +42,7 @@ const RECIPES = [
   { cat:"サラダ", id:"caesar_salad", name:"ゆきかきシーザーサラダ", ingredients: { milk:10, soymeat:6 } },
   { cat:"デザート・ドリンク", id:"pancake", name:"ドキドキこわいかおパンケーキ", ingredients: { pumpkin:18, egg:24, honey:32, tomato:29 } },
   { cat:"デザート・ドリンク", id:"eclair", name:"ドオーのエクレア", ingredients: { cacao:30, milk:26, coffee:24, honey:22 } },
-  { cat:"デザート・ドリンク", id:"cola", name:"スパイクスパイスコーラ", ingredients: { apple:35, ginger:20, leek:20, coffee:12 } },
+  { cat:"デザート・ドリンク", id:"cola", name:"スパークスパイスコーラ", ingredients: { apple:35, ginger:20, leek:20, coffee:12 } },
   { cat:"デザート・ドリンク", id:"macaron", name:"フラワーギフトマカロン", ingredients: { cacao:25, egg:25, honey:17, milk:10 } },
   { cat:"デザート・ドリンク", id:"scone", name:"おちゃかいコーンスコーン", ingredients: { apple:20, ginger:20, corn:18, milk:9 } },
   { cat:"デザート・ドリンク", id:"smoothie", name:"グラスミキサースムージー", ingredients: { avocado:18, tomato:16, milk:14 } },
