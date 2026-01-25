@@ -681,24 +681,20 @@
       <div id="replenishGrid" class="grid5"></div>
     </section>
 
-    <div class="result-header" style="display:flex; align-items:flex-end; gap:12px; flex-wrap:wrap;">
-      <div class="result-title">計算結果</div>
-    
-      <!-- モード③ 注意書き（赤枠位置） -->
-      <div id="mode3Notice"
-        style="
-          display:none;
-          font-size:11px;
-          color:var(--muted);
-          line-height:1.4;
-          margin-bottom:2px;
-          flex:1;
-        ">
+    <section class="result-card">
+      <div class="row" style="justify-content: space-between;">
+        <div style="font-weight:900; font-size:16px; color:var(--main);">計算結果</div>
+        <span class="badge total-badge" id="totalBadge">総合計 0個</span>
+      </div>
+      <div style="height:1px; background:var(--main); opacity:0.1; margin:16px 0;"></div>
+
+      <div id="mode3Note" style="display:none; font-size:12px; color:var(--muted); font-weight:800; margin-bottom:10px;">
         ※異なるカテゴリーのレシピ間で重複している食材があった場合、各レシピ中で最も多く使われている食材の個数を参照して計算しています
       </div>
-    
-      <div id="totalBadge">総合計 6321個</div>
-    </div>
+
+      <div id="resultGrid" class="grid5"></div>
+    </section>
+  </div>
 
     
       <div class="resultDivider"></div>
