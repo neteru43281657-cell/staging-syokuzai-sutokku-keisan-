@@ -301,6 +301,53 @@
       background-color: rgba(255, 71, 87, 0.1);
       pointer-events: none;
       z-index: 2; }
+    
+    /* =========================
+       共通：セクション見出し（青い縦線）
+    ========================= */
+    .sectionTitle{
+      font-weight:900;
+      font-size:14px;
+      border-left: 5px solid var(--main);
+      padding-left: 10px;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    /* =========================
+       計算結果：ヘッダと注意書き
+    ========================= */
+    .resultHeader{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:nowrap;     /* ★落とさない */
+    }
+    .resultTitle{
+      font-weight:900;
+      font-size:16px;
+      color:var(--main);
+    }
+    .mode3Note{
+      display:none;
+      margin-top:6px;
+      font-size:11px;       /* ★PCでも小さく統一 */
+      font-weight:700;
+      color:var(--muted);
+      line-height:1.35;
+    }
+    
+    /* モード③だけ注意書き表示 */
+    body.mode3 .mode3Note{ display:block; }
+    
+    /* スマホはさらに少しだけ小さく */
+    @media (max-width:520px){
+      .mode3Note{ font-size:10px; }
+    }
+
+    
+    
     @media (max-width: 480px) { .calendar-grid { grid-template-columns: repeat(2, 1fr); } }
 
     /* フィールドメニュー用スタイル */
@@ -507,102 +554,53 @@
         display: block;
       }
 
-      
-      /* ===== スマホ：2列レイアウト固定＋ボタンサイズ確定 ===== */
-      @media (max-width: 520px) {
-        .settingsHeaderRow{
-          display:grid;
-          grid-template-columns: 120px 1fr;
-          grid-template-areas:
-            "cond  mode"
-            "actions mode";
-          gap:12px;
-          align-items:start;
-        }
-        #condBlock{ grid-area:cond; }
-        #modeBlock{ grid-area:mode; padding-left:6px; }
-        #actionBlock{
-          grid-area:actions;
-          display:flex;
-          flex-direction:column;
-          gap:10px;
-          width:120px;            /* ←左列と同じ幅に固定 */
-        }
-      
-        /* ここで必ず小さくする（rowの影響を受けないように） */
-        #actionBlock > button.primary,
-        #actionBlock > button.danger {
-          height: 32px !important;
-          padding: 0 12px !important;
-          font-size: 12px !important;
-          line-height: 32px !important;
-          border-radius: 999px !important; /* バッジと同系統 */
-        }
-      }
-
-      
-      /* モード見出しとラベルの左余白を整える */
-      #modeBlock { padding-left: 6px; }
-      #modeBlock > div { width: 100%; }
-
-      
-      #condBlock { grid-area: cond; }
-      #modeBlock {
-        padding-left: 24px;
-      }
-
-      #actionBlock { grid-area: actions; }
+    /* =========================
+       条件設定ヘッダー：PC共通
+    ========================= */
+    .settingsHeaderRow{
+      display:grid;
+      grid-template-columns: 160px 1fr 140px;
+      grid-template-areas: "cond mode actions";
+      gap:12px;
+      align-items:start;
+    }
+    #condBlock{ grid-area: cond; }
+    #modeBlock{ grid-area: mode; padding-left:24px; }
+    #actionBlock{
+      grid-area: actions;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
     
-      /* 左側：条件設定ブロックを詰める */
-      #condBlock .badge {
-        display: inline-block;
-        margin-top: 6px;
-      }
+      /* ★ここが重要：stretchさせない */
+      align-items: flex-start;
+    }
     
-      /* 右側：モードは横幅いっぱい */
-      #modeBlock {
-        display: flex;
-        justify-content: flex-start;
-      }
-      #modeBlock > div {
-        width: 100%;
-      }
-      #modeBlock .chkLabel {
-        font-size: 13px;
-        line-height: 1.25;
-      }
+    /* ★ボタンは「バッジぐらいの塊」にする */
+    #actionBlock > button{
+      width:auto !important;
+      height:28px !important;
+      padding:0 12px !important;
+      font-size:12px !important;
+      line-height:28px !important;
+      border-radius:999px !important;
+    }
     
-      /* 左下：ボタンを小さめに */
-      #actionBlock {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        width: 140px; /* 左列と合わせる */
+    /* =========================
+       条件設定ヘッダー：スマホ
+    ========================= */
+    @media (max-width: 520px){
+      .settingsHeaderRow{
+        grid-template-columns: 140px 1fr;
+        grid-template-areas:
+          "cond  mode"
+          "actions mode";
       }
-    
-      /* ===== actionBlock ボタンサイズ強制指定 ===== */
-      #actionBlock > button.primary,
-      #actionBlock > button.danger {
-        height: 30px;
-        padding: 0 10px;
-        font-size: 12px;
-        line-height: 30px;
-        border-radius: 10px;
-      }
+      #modeBlock{ padding-left:24px; }
+      #actionBlock{ width:140px; }
     }
 
-      /* =========================
-         actionBlock ボタン最終確定
-      ========================= */
-      #actionBlock button {
-        width: auto !important;
-        min-width: unset !important;
-        height: 28px !important;
-        padding: 0 12px !important;
-        font-size: 12px !important;
-        line-height: 28px !important;
-        border-radius: 999px !important;
-      }
+
           
   </style>
 </head>
@@ -694,23 +692,17 @@
     </section>
 
     <section class="result-card">
-      <div class="row" style="justify-content: space-between;">
-        <div style="font-weight:900; font-size:16px; color:var(--main);">
-          計算結果
-        </div>
-        <span class="badge total-badge" id="totalBadge">
-          総合計 0個
-        </span>
+      <div class="resultHeader">
+        <div class="resultTitle">計算結果</div>
+        <span class="badge total-badge" id="totalBadge">総合計 0個</span>
       </div>
     
-      <!-- モード③ 注意書き -->
+      <!-- ★ 注意書き（モード③のみ表示） -->
       <div id="mode3Note" class="mode3Note">
-        ※異なるカテゴリーのレシピ間で重複している食材は、
-        各レシピ中で最も多く使われている食材の個数を参照して計算しています
+        ※異なるカテゴリーのレシピ間で重複している食材は、各レシピ中で最も多く使われている食材の個数を参照して計算しています
       </div>
     
       <div class="resultDivider"></div>
-    
       <div id="resultGrid" class="grid5"></div>
     </section>
 
