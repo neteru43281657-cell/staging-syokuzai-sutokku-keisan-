@@ -311,8 +311,10 @@ function calc() {
   const exclude = new Set([...document.querySelectorAll(".exChk:checked")].map(c => c.dataset.iid));
   const replenishMap = new Map([...document.querySelectorAll(".repQty")].map(c => [c.dataset.iid, Number(c.value) || 0]));
   const totalMeals = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
+
+  // 21 or 63 の表示
   setSummaryBadge(totalMeals);
-  
+
   const netNeed = new Map();
   const displayOrder = [];
 
@@ -322,21 +324,25 @@ function calc() {
       if (row.meals <= 0) return;
       const r = RECIPES.find(x => x.id === row.recipeId);
       if (!r) return;
+
       const rowDays = row.meals / MEALS_PER_DAY;
+
       Object.entries(r.ingredients).forEach(([iid, qtyPerMeal]) => {
         if (!displayOrder.includes(iid)) displayOrder.push(iid);
+
         const gross = qtyPerMeal * row.meals;
         const rowReplenish = (replenishMap.get(iid) || 0) * rowDays;
+
         netNeed.set(iid, (netNeed.get(iid) || 0) + (gross - rowReplenish));
       });
     });
   } else {
-    // ===== オプション：レシピ間で重複する食材は「最大値」で集計 =====
-    // 料理ごとに必要数を計算し、同一食材は最大値を採用
+    // ===== オプション：レシピ間の重複は「最大値」で集計 =====
     state.recipeRows.forEach(row => {
       if (row.meals <= 0) return;
       const r = RECIPES.find(x => x.id === row.recipeId);
       if (!r) return;
+
       const rowDays = row.meals / MEALS_PER_DAY;
 
       Object.entries(r.ingredients).forEach(([iid, qtyPerMeal]) => {
@@ -344,13 +350,39 @@ function calc() {
 
         const gross = qtyPerMeal * row.meals;
         const rowReplenish = (replenishMap.get(iid) || 0) * rowDays;
-        const need = (gross - rowReplenish);
+        const need = gross - rowReplenish;
 
         const prev = netNeed.has(iid) ? netNeed.get(iid) : -Infinity;
         if (need > prev) netNeed.set(iid, need);
       });
     });
   }
+
+  // ===== 結果描画（既存のまま）=====
+  const resultGrid = el("resultGrid");
+  resultGrid.innerHTML = "";
+  let grandTotal = 0;
+
+  displayOrder.forEach(iid => {
+    if (exclude.has(iid)) return;
+
+    const finalNeed = Math.max(0, Math.ceil(netNeed.get(iid) || 0));
+    if (finalNeed > 0) {
+      grandTotal += finalNeed;
+      const ing = getIng(iid);
+
+      resultGrid.innerHTML += `
+        <div class="tile">
+          <div class="tileName">${ing.name}</div>
+          <img class="icon" src="${imgSrc(ing.file)}">
+          <div style="font-weight:900; font-size:13px;">${finalNeed}個</div>
+        </div>`;
+    }
+  });
+
+  el("totalBadge").textContent = `総合計 ${grandTotal}個`;
+}
+
 
 
 // お役立ち資料：アプリ内ビューアで開く（PWAで戻れなくなる問題を回避）
