@@ -856,69 +856,80 @@ function calcWeeklySubtractByReplenish(displayOrder) {
   return subtract;
 }
 
-// (5) 週必要量の最終計算＆描画
+/* =========================================================
+   週必要量の最終計算＆描画（モード別：グロス＝食材×食数）
+   mode1: 単一レシピ * 21
+   mode2: 各レシピの食材 * そのレシピの食数（例：24*15 + 28*6）
+   mode3: 3カテゴリの重複食材は「1食あたり最大値」* 21
+   subtract: (1日当たり獲得量 + NC分) * 7 を引く（使う食材だけ）
+========================================================= */
 function calc() {
   const exclude = buildExcludeSet();
-  const perDay = buildReplenishPerDayMap(); // NC分はこの中で加算済み（apple/cacao/honey）
+  const perDay = buildReplenishPerDayMap(); // NC分込み（1日あたり）
+  const resultGrid = el("resultGrid");
+  if (!resultGrid) return;
 
-  // mode別に「1食あたり数（基準）」を作る
-  // mode1: 単一レシピ qtyPerMeal
-  // mode2: 選択レシピの qtyPerMeal を単純合算（食数で重み付けしない）
-  // mode3: 3カテゴリで qtyPerMeal の最大値
-  const basePerMeal = new Map(); // iid -> base qtyPerMeal
-  const order = []; // 表示順
+  // 週グロス必要量（レシピ由来）を作る
+  const gross = new Map(); // iid -> weekly gross
+  const order = [];        // 表示順（出現順）
 
   const pushOrder = (iid) => { if (!order.includes(iid)) order.push(iid); };
+  const addGross = (iid, v) => {
+    pushOrder(iid);
+    gross.set(iid, (gross.get(iid) || 0) + v);
+  };
+  const setGrossMax = (iid, v) => {
+    pushOrder(iid);
+    const prev = gross.has(iid) ? gross.get(iid) : -Infinity;
+    if (v > prev) gross.set(iid, v);
+  };
 
   if (state.mode === MODES.ONE) {
     const row = state.recipeRows[0];
     const r = RECIPES.find((x) => x.id === row?.recipeId);
     if (r) {
-      Object.entries(r.ingredients).forEach(([iid, q]) => {
-        basePerMeal.set(iid, q);
-        pushOrder(iid);
+      Object.entries(r.ingredients).forEach(([iid, qtyPerMeal]) => {
+        addGross(iid, qtyPerMeal * WEEK_MEALS); // 1食あたり * 21食
       });
     }
   } else if (state.mode === MODES.MIX) {
+    // ★ここが今回の修正点：qtyPerMeal * meals で積み上げる
     state.recipeRows.forEach((row) => {
+      const meals = Number(row.meals) || 0;
+      if (meals <= 0) return;
+
       const r = RECIPES.find((x) => x.id === row.recipeId);
       if (!r) return;
-      Object.entries(r.ingredients).forEach(([iid, q]) => {
-        basePerMeal.set(iid, (basePerMeal.get(iid) || 0) + q);
-        pushOrder(iid);
+
+      Object.entries(r.ingredients).forEach(([iid, qtyPerMeal]) => {
+        addGross(iid, qtyPerMeal * meals);
       });
     });
   } else if (state.mode === MODES.PRESET63) {
+    // 3カテゴリ：重複は「1食あたり最大値」を採用し、それ * 21
     state.recipeRows.forEach((row) => {
       const r = RECIPES.find((x) => x.id === row.recipeId);
       if (!r) return;
-      Object.entries(r.ingredients).forEach(([iid, q]) => {
-        const prev = basePerMeal.has(iid) ? basePerMeal.get(iid) : -Infinity;
-        if (q > prev) basePerMeal.set(iid, q);
-        pushOrder(iid);
+
+      Object.entries(r.ingredients).forEach(([iid, qtyPerMeal]) => {
+        setGrossMax(iid, qtyPerMeal * WEEK_MEALS);
       });
     });
   }
 
-  const resultGrid = el("resultGrid");
-  if (!resultGrid) return;
-
+  // 描画（除外・獲得量差し引き）
   resultGrid.innerHTML = "";
   let grandTotal = 0;
 
   order.forEach((iid) => {
     if (exclude.has(iid)) return;
 
-    const base = basePerMeal.get(iid) || 0;
-    if (base <= 0) return;
+    const g = gross.get(iid) || 0;
+    if (g <= 0) return;
 
+    // 1日当たり獲得量は「使う食材だけ」対象（grossにある＝使う）
     const pd = perDay.get(iid) || 0;
-
-    // 1日消費 = base * 3、週 = *7
-    const weekly = (base * MEALS_PER_DAY - pd) * 7;
-
-    // 端数は最終で四捨五入、マイナスは0
-    const finalNeed = Math.max(0, Math.round(weekly));
+    const finalNeed = Math.max(0, Math.round(g - pd * WEEK_DAYS));
     if (finalNeed <= 0) return;
 
     grandTotal += finalNeed;
@@ -926,8 +937,8 @@ function calc() {
     const ing = getIng(iid);
     resultGrid.innerHTML += `
       <div class="tile">
-        <div class="tileName">${ing.name}</div>
-        <img class="icon" src="${imgSrc(ing.file)}">
+        <div class="tileName">${ing ? ing.name : iid}</div>
+        <img class="icon" src="${imgSrc(ing ? ing.file : "")}">
         <div style="font-weight:900; font-size:13px;">${finalNeed}個</div>
       </div>
     `;
@@ -936,6 +947,7 @@ function calc() {
   const totalBadge = el("totalBadge");
   if (totalBadge) totalBadge.textContent = `総合計 ${grandTotal}個`;
 }
+
 
 /* =========================================================
    お役立ち資料ビューア
