@@ -211,7 +211,7 @@ function bindOptionUI() {
       setOptBool(OPT_KEYS.expand63, cb63.checked);
 
       if (cb63.checked) {
-        apply63PresetRows();
+        apply63PresetRows(); // 3カテゴリ×各21
       } else {
         updateAllMealDropdowns();
         updateAllMealDropdowns();
@@ -229,29 +229,27 @@ function bindOptionUI() {
     };
   }
 
-  // 食数に21食を設定する（チェックは入りっぱなし／押すたび再適用）
+  // 食数を21食にする（トグル）
   const cb21 = el("optSetMeals21");
   if (cb21) {
-    cb21.addEventListener("click", () => {
-      // クリックでOFFになりかけても、最終的にONに戻す（クリア/×だけOFF）
-      setTimeout(() => {
-        cb21.checked = true;
-      }, 0);
-
-      setOptBool(OPT_KEYS.setMeals21, true);
-
-      const is63 = cb63 ? cb63.checked : getOptBool(OPT_KEYS.expand63, false);
-      if (is63) {
-        // 63ONなら3カテゴリ固定＋各21
-        apply63PresetRows();
+    cb21.onchange = () => {
+      // OFFにしたとき：チェックが外れるだけ（食数は触らない）
+      if (!cb21.checked) {
+        setOptBool(OPT_KEYS.setMeals21, false);
         return;
       }
 
-      // 63OFF：2行以上なら先頭行だけ21、1行ならその行
-      const rowCount = state.recipeRows.length;
-      if (rowCount >= 2) applyMeals21("firstOnly");
-      else applyMeals21("all");
-    });
+      // ONにしたとき：チェックが入る → 先頭行だけ21食 → 21/21 表記
+      setOptBool(OPT_KEYS.setMeals21, true);
+
+      // 「21/21」にしたいので、63食は必ずOFFに戻す
+      if (cb63) cb63.checked = false;
+      setOptBool(OPT_KEYS.expand63, false);
+
+      // 上限を21に戻した上で、先頭行だけ21を入れる
+      updateAllMealDropdowns(); // まず上限(21)で再構築
+      applyMeals21("firstOnly"); // 先頭行だけ21（この中でupdateAllMealDropdowns+calcまで走ります）
+    };
   }
 
   // NCピカ（チェック入れた瞬間/外した瞬間に反映）
@@ -263,6 +261,7 @@ function bindOptionUI() {
     };
   }
 }
+
 
 /* =========================================================
    helper
