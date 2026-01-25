@@ -476,7 +476,7 @@
         font-size:14px;          /* ←少し大きく */
         color:var(--muted);
       }
-      #modeBlock label {
+      #modeBlock .modeLabel {
         display: flex;
         align-items: center;
         gap: 6px;
@@ -529,13 +529,12 @@
       
         /* ここで必ず小さくする（rowの影響を受けないように） */
         #actionBlock > button.primary,
-        #actionBlock > button.danger{
-          height:36px !important;
-          padding:0 10px !important;
-          font-size:12px !important;
-          line-height:36px !important;
-          width:100% !important;
-          border-radius:10px !important;
+        #actionBlock > button.danger {
+          height: 30px !important;
+          padding: 0 10px !important;
+          font-size: 12px !important;
+          line-height: 30px !important;
+          border-radius: 10px !important;
         }
       }
 
@@ -622,25 +621,20 @@
           <span class="badge" id="summaryBadge">合計 0食 / 21食</span>
         </div>
       
-        <!-- モード選択 -->
         <div id="modeBlock">
           <div class="modeInner">
-            #modeBlock .modeTitle {
-              font-size: 16px;
-              font-weight: 900;
-              margin-bottom: 8px;
-            }
-      
+            <div class="modeTitle">モードを選択してください</div>
+        
             <label class="modeLabel">
               <input type="radio" name="calcMode" id="calcMode1" value="mode1">
               <span>① 同じレシピを21食作り続ける</span>
             </label>
-      
+        
             <label class="modeLabel">
               <input type="radio" name="calcMode" id="calcMode2" value="mode2">
               <span>② 2種以上のレシピを組み合わせて21食作る</span>
             </label>
-      
+        
             <label class="modeLabel">
               <input type="radio" name="calcMode" id="calcMode3" value="mode3">
               <span>③ 別カテゴリーのレシピを組み合わせる</span>
