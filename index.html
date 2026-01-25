@@ -5,19 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>食材ストック計算</title>
 
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-GNGLETKNNR"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-GNGLETKNNR');
-  </script>
-
-  <link rel="apple-touch-icon" sizes="180x180" href="images/アイコン.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="images/アイコン.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="images/アイコン.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/ステージング.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/ステージング.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/ステージング.png">
   <link rel="manifest" href="manifest.webmanifest">
 
   <meta name="theme-color" content="#007bff">
@@ -29,829 +19,451 @@
   <style>
     :root {
       --bg: #f5f8fa;
-      --card: #ffffff;
-      --main: #007bff;
-      --main-soft: #eaf4ff;
-      --text: #2c3e50;
-      --muted: #5d6d7e;
-      --line: #d6e0ea;
-      --danger: #e74c3c;
+      --card: #fff;
+      --text: #111;
+      --muted: #6b7280;
+      --line: #e6e8f0;
+      --danger: #b00020;
+      --main: #1d7cff;
+      --main2: #3ba7ff;
+      --shadow: 0 6px 20px rgba(0,0,0,.08);
+      --radius: 18px;
     }
+
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;
       background: var(--bg);
       color: var(--text);
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
+      line-height: 1.4;
     }
 
     header {
-      padding: 10px 20px;
+      padding: 12px 14px;
+      font-weight: 800;
       background: var(--main);
       color: #fff;
       position: sticky;
       top: 0;
-      z-index: 100;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 20;
+      box-shadow: 0 4px 14px rgba(0,0,0,.12);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
     }
-    .title-text { font-weight: 800; letter-spacing: 0.03em; font-size: 18px; }
-    .ver-text { font-size: 11px; font-weight: 400; opacity: 0.8; margin-top: 2px; }
+
+    .title-text { font-size: 22px; font-weight: 900; letter-spacing: .5px; }
+    .ver-text { font-size: 14px; opacity: .95; margin-top: 4px; font-weight: 800; }
 
     main {
       max-width: 980px;
       margin: 0 auto;
-      padding: 16px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      padding-bottom: 100px;
+      gap: 12px;
     }
 
-    .tab-content { display: none; }
-    .tab-content.active {
+    .tabs {
       display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 65px;
+      gap: 10px;
+      justify-content: center;
       background: #fff;
-      border-top: 1px solid var(--line);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      z-index: 1000;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-      padding-bottom: env(safe-area-inset-bottom);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 68px;
+      z-index: 10;
     }
 
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      color: var(--muted);
-      font-size: 10px;
-      font-weight: 700;
+    .tab-btn {
+      border: none;
+      background: transparent;
+      font-weight: 900;
+      font-size: 13px;
+      padding: 9px 14px;
+      border-radius: 999px;
       cursor: pointer;
-      flex: 1;
-      padding: 8px 0;
+      color: var(--muted);
+      white-space: nowrap;
     }
-    .nav-item.active { color: var(--main); }
-    .nav-icon { font-size: 20px; }
+    .tab-btn.active {
+      background: rgba(29,124,255,.12);
+      color: var(--main);
+    }
+
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
 
     .card {
       background: var(--card);
       border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
     }
 
-    .result-card {
-      border: 2px solid var(--main);
-      background: #ffffff;
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 4px 20px rgba(0,123,255,0.1);
-    }
+    .row { display:flex; align-items:center; gap:10px; }
 
-    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    .grid5 {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
-      gap: 8px;
-      width: 100%;
-    }
-
-    label { font-size: 11px; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px; }
-
-    select, input[type="number"] {
-      padding: 10px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      font-size: 14px;
-      width: 100%;
-      background: #fff;
-      color: var(--text);
-    }
-
-    button {
-      padding: 10px 16px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      font-weight: 800;
+    /* ===== 共通ボタン ===== */
+    button { font-family: inherit; }
+    .primary {
+      background: rgba(29,124,255,.18);
+      color: var(--main);
+      border: 1px solid rgba(29,124,255,.25);
+      font-weight: 900;
       cursor: pointer;
-      font-size: 14px;
     }
-    button.primary { background: var(--main); color: #fff; border-color: var(--main); }
-    button.danger { color: var(--danger); border-color: #fadbd8; background: #fff; }
-
-    .badge { font-size: 12px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); font-weight: 700; }
-    #summaryBadge { background: var(--main-soft); color: var(--main); border: 1px solid #cce5ff; }
-    .total-badge { background: var(--main); color: #fff; border: none; padding: 4px 16px; }
-
-    .tile {
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 6px 3px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      background: #fff;
-      align-items: center;
-      text-align: center;
-      min-height: 95px;
-      justify-content: space-between;
-    }
-    .icon { width: 30px; height: 30px; object-fit: contain; }
-    .tileName { font-size: 8px; font-weight: 700; width: 100%; overflow: hidden; text-overflow: clip; white-space: nowrap; }
-
-    .chkLabel {
-      font-size: 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      width: 100%;
-      height: 24px;
-      margin: 0;
-      padding: 0 4px;
-    }
-    .exChk {
-      margin: 0;
-      cursor: pointer;
-      width: 13px;
-      height: 13px;
-    }
-
-    .repInputRow {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 2px;
-      width: 100%;
-      padding: 0 4px;
-    }
-    .repQty {
-      width: 100% !important;
-      height: 24px !important;
-      padding: 0 2px !important;
-      font-size: 14px !important;
-      font-weight: 800 !important;
-      text-align: center;
-      border-radius: 6px !important;
-    }
-
-    .recipeRow {
-      border: 1px solid var(--line);
-      background: #fcfdfe;
-      border-radius: 16px;
-      padding: 16px;
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: flex-end;
-      margin-bottom: 12px;
-      position: relative;
-    }
-    .removeBtn {
-      position: absolute;
-      top: -8px;
-      right: -8px;
-      border: 1px solid var(--line);
-      background: #fff;
+    .danger {
+      background: rgba(176,0,32,.06);
       color: var(--danger);
-      width: 26px;
-      height: 26px;
-      padding: 0;
-      line-height: 24px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border: 1px solid rgba(176,0,32,.22);
+      font-weight: 900;
       cursor: pointer;
     }
 
-    .preview { font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; width: 100%; align-items: center; }
-    .preview span { display: flex; align-items: center; background: var(--main-soft); color: var(--main); padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 1px solid #d0e7ff; }
-
-    /* カレンダー用 */
-    .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
-    .month-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 10px; }
-    .month-name { font-weight: 900; text-align: center; border-bottom: 1px solid var(--line); margin-bottom: 5px; color: var(--text); }
-
-    .days-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 2px;
-      align-items: center;
-      justify-items: center; }
-
-    .day {
-      width: 100%;
-      aspect-ratio: 1/1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 10px;
-      position: relative;
-      border-radius: 4px;
-      transition: background 0.2s;
-      line-height: 1;
-      padding-top: 1px;
-    }
-
-    .gsd { background-color: #add8e6; color: #000; border-radius: 4px; }
-    .nmd { background-color: #000080; color: #fff; border-radius: 4px; }
-
-    .dow {
-      font-size: 8px;
-      margin-bottom: 1px; }
-    .dow:nth-child(6) { color: #007bff !important; }
-    .dow:nth-child(7) { color: #e74c3c !important; }
-    .day-sat { color: #007bff !important; }
-    .day-sun { color: #e74c3c !important; }
-    .day-holiday { color: #ff8c00 !important; font-weight: 900; }
-
-    .day-today::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 16px;
-      height: 16px;
-      border: 1.5px solid #ff4757;
-      border-radius: 4px;
-      background-color: rgba(255, 71, 87, 0.1);
-      pointer-events: none;
-      z-index: 2; }
-    @media (max-width: 480px) { .calendar-grid { grid-template-columns: repeat(2, 1fr); } }
-
-    /* フィールドメニュー用スタイル */
-    .field-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-    .field-item {
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      cursor: pointer;
-      background: #fff;
-      transition: transform 0.1s, box-shadow 0.1s;
-    }
-    .field-item:active {
-      transform: scale(0.98);
-      background: var(--main-soft);
-    }
-    .field-img {
-      width: 60px;
-      height: 60px;
-      object-fit: contain;
-      margin-bottom: 8px;
-    }
-    .field-name {
-      font-size: 11px;
-      font-weight: 800;
-      color: var(--text);
-    }
-    /* ===== 出現ポケモン一覧（tab2 詳細） ===== */
-    .field-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-    .field-header img {
-      width: 56px;
-      height: 56px;
-      object-fit: contain;
-    }
-    .field-title {
-      font-weight: 900;
-      font-size: 16px;
-      color: var(--text);
-    }
-    .energy-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-      margin-top: 8px;
-    }
-    .energy-table th, .energy-table td {
-      border: 1px solid var(--line);
-      padding: 8px;
-      text-align: center;
-    }
-    .energy-table th {
-      background: #f7f9fc;
-      font-weight: 900;
-    }
-
-    .sleep-section {
-      margin-top: 14px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      overflow: hidden;
-      background: #fff;
-    }
-    .sleep-label {
-      padding: 10px 12px;
-      font-weight: 900;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      border-bottom: 1px solid var(--line);
-    }
-    .sleep-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 64px;
-      padding: 6px 10px;
-      border-radius: 10px;
-      font-weight: 900;
-      font-size: 12px;
-      color: #111;
-    }
-    .badge-uto { background: #ffe66a; }
-    .badge-suya { background: #aee7f2; }
-    .badge-gusu { background: #8fb3ff; color: #0b1b3a; }
-
-    .poke-grid {
-      padding: 10px 10px 12px;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
-      gap: 8px;
-    }
-    .poke-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-    .poke-item img {
-      width: 44px;
-      height: 44px;
-      object-fit: contain;
-    }
-    .poke-name {
-      font-size: 9px;
-      font-weight: 800;
-      color: var(--muted);
-      text-align: center;
-      line-height: 1.2;
-      word-break: keep-all;
-    }
-
-    .result-header{
+    /* ===== 条件設定UI（PCベース） ===== */
+    .settingsHeaderRow{
       display:flex;
+      gap:14px;
       align-items:flex-start;
       justify-content:space-between;
-      gap:12px;
-    }
-    
-    .result-left{
-      flex: 1;
-      min-width: 0;
-    }
-    
-    .totalBadge{
-      flex: 0 0 auto;
-      white-space: nowrap;
     }
 
-    
-    /* ============================
-       スマホ：2枚目の配置にする（cond左 / mode右 / actions左下）
-    ============================ */
+    #condLeft{
+      width:140px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    #modeBlock{
+      flex:1;
+      min-width:0;
+    }
+
+    #modeBlock .modeTitle{
+      font-weight:900;
+      font-size:16px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    #modeBlock .modeLabel{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:13px;
+      font-weight:700;
+      color:var(--text);
+      line-height:1.25;
+      margin:10px 0;
+    }
+    #modeBlock .modeLabel input[type="radio"]{
+      transform:none;
+      margin:0;
+    }
+
+    #actionBlock{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      width:140px;
+    }
+    #actionBlock > button.primary,
+    #actionBlock > button.danger{
+      width:100%;
+      height:36px;
+      padding:0 10px;
+      font-size:12px;
+      line-height:36px;
+      border-radius:10px;
+      white-space:nowrap;
+      box-sizing:border-box;
+    }
+
+    /* ===== 計算結果の見た目 ===== */
+    .resultDivider{
+      height:1px;
+      background:var(--main);
+      opacity:0.1;
+      margin:16px 0;
+    }
+    .mode3Note{
+      display:none; /* JSでmode3の時だけ表示 */
+      text-align:center;
+      margin:10px 0 0;
+      font-size:12px;
+      font-weight:800;
+      color:var(--muted);
+    }
+
+    /* ===== レシピ枠 ===== */
+    .recipeItem{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:0 6px 20px rgba(0,0,0,.08);
+      padding:14px;
+      position:relative;
+    }
+
+    .recipeTop{
+      display:grid;
+      grid-template-columns: 1fr 1.8fr 90px;
+      gap:10px;
+      align-items:center;
+    }
+
+    select, input[type="number"]{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px 12px;
+      font-size:16px;
+      background:#fff;
+      outline:none;
+    }
+
+    .chipsRow{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:12px;
+      padding-top:12px;
+      border-top:1px solid rgba(29,124,255,.18);
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:12px;
+      border:1px solid rgba(29,124,255,.2);
+      background: rgba(29,124,255,.08);
+      font-weight:900;
+      color:var(--main);
+      font-size:18px;
+      line-height:1;
+    }
+    .chip small{
+      font-size:12px;
+      font-weight:900;
+      opacity:.85;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:900;
+      border:1px solid rgba(29,124,255,.2);
+      background: rgba(29,124,255,.08);
+      color:var(--main);
+      white-space:nowrap;
+    }
+
+    .total-badge{
+      font-size:13px;
+    }
+
+    .closeBtn{
+      position:absolute;
+      right:-14px;
+      top:40%;
+      transform:translateY(-50%);
+      width:38px;
+      height:38px;
+      border-radius:999px;
+      border:1px solid rgba(0,0,0,.08);
+      background:#fff;
+      box-shadow:0 6px 20px rgba(0,0,0,.12);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      color:#e11d48;
+    }
+
+    /* ===== 結果グリッド ===== */
+    .grid5{
+      display:grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap:10px;
+    }
+
+    /* ===== スマホ最適化 ===== */
     @media (max-width: 520px) {
-      .settingsHeaderRow {
-        display: grid;
-        grid-template-columns: 120px 1fr; /* 右(モード)を広くする */
+      main{ padding:10px; }
+
+      .settingsHeaderRow{
+        display:grid;
+        grid-template-columns:110px 1fr;
         grid-template-areas:
           "cond  mode"
           "actions mode";
-        gap: 12px;
-        align-items: start;
+        gap:12px;
+        align-items:start;
       }
 
-      /* 見出しの共通化（条件設定の青い縦線） */
-      .sectionTitle{
-        font-weight:900;
-        font-size:14px;
-        border-left: 5px solid var(--main);
-        padding-left: 10px;
-        color: var(--text);
-        margin-bottom: 6px;
+      #condLeft{ grid-area:cond; width:auto; }
+      #modeBlock{ grid-area:mode; }
+      #actionBlock{ grid-area:actions; }
+
+      /* 左列 */
+      #condLeft .badge{
+        width:100%;
+        justify-content:center;
+        font-size:18px;
+        padding:8px 10px;
       }
-      
-      /* ===== モードUI（ラジオのズレ解消＆タイトルを大きく） ===== */
-      #modeBlock{ width:100%; display:flex; justify-content:center; }
-      #modeBlock .modeInner{ display:flex; flex-direction:column; align-items:flex-start; gap:10px; width:100%; }
-      #modeBlock .modeTitle{
-        font-weight:900;
-        font-size:14px;          /* ←少し大きく */
-        color:var(--muted);
+
+      /* 追加・クリア：小さめ */
+      #actionBlock{ width:110px !important; }
+      #actionBlock > button.primary,
+      #actionBlock > button.danger{
+        height:30px !important;
+        line-height:30px !important;
+        padding:0 8px !important;
+        font-size:11px !important;
+        border-radius:10px !important;
       }
-      #modeBlock .modeLabel{
-        display:flex;
-        align-items:center;      /* ←ラジオと文字の縦位置を揃える */
+
+      /* 見出し：大きく */
+      #modeBlock .modeTitle{ font-size:16px !important; }
+
+      /* ラジオ縦ズレ防止 */
+      #modeBlock .modeLabel{ align-items:center !important; }
+      #modeBlock .modeLabel input[type="radio"]{ transform:none !important; }
+
+      /* レシピトップ：スマホで崩れにくく */
+      .recipeTop{
+        grid-template-columns: 1fr 1.6fr 78px;
         gap:8px;
-        font-size:13px;
-        font-weight:700;
-        color:var(--text);
-        line-height:1.25;
-      }
-      #modeBlock .modeLabel input[type="radio"]{
-        transform: translateY(1px); /* ←「文字が上に見える」微調整 */
-      }
-      
-      /* ===== 計算結果の見た目（枠・区切り） ===== */
-      .mode3Notice{
-        display:none;            /* ←JSでmode3の時だけ表示 */
-        justify-content:flex-start;
-        width:auto;
-        height:auto;
-        margin:6px 0 0;
-        font-size:12px;
-        font-weight:700;
-        color:var(--muted);
-      }
-      .resultDivider{
-        height:1px;
-        background:var(--main);
-        opacity:0.1;
-        margin:16px 0;
-      }
-      
-      /* ===== スマホ：2列レイアウト固定＋ボタンサイズ確定 ===== */
-      @media (max-width: 520px) {
-        .settingsHeaderRow{
-          display:grid;
-          grid-template-columns: 120px 1fr;
-          grid-template-areas:
-            "cond  mode"
-            "actions mode";
-          gap:12px;
-          align-items:start;
-        }
-        #condBlock{ grid-area:cond; }
-        #modeBlock{ grid-area:mode; padding-left:6px; }
-        #actionBlock{
-          grid-area:actions;
-          display:flex;
-          flex-direction:column;
-          gap:10px;
-          width:120px;            /* ←左列と同じ幅に固定 */
-        }
-      
-        /* ここで必ず小さくする（rowの影響を受けないように） */
-        #actionBlock > button.primary,
-        #actionBlock > button.danger{
-          height:36px !important;
-          padding:0 10px !important;
-          font-size:12px !important;
-          line-height:36px !important;
-          width:100% !important;
-          border-radius:10px !important;
-        }
       }
 
-      
-      /* モード見出しとラベルの左余白を整える */
-      #modeBlock { padding-left: 6px; }
-      #modeBlock > div { width: 100%; }
+      select, input[type="number"]{
+        font-size:16px; /* iOS拡大防止 */
+        padding:12px 10px;
+      }
 
-      
-      #condBlock { grid-area: cond; }
-      #modeBlock { grid-area: mode; }
-      #actionBlock { grid-area: actions; }
-    
-      /* 左側：条件設定ブロックを詰める */
-      #condBlock .badge {
-        display: inline-block;
-        margin-top: 6px;
-      }
-    
-      /* 右側：モードは横幅いっぱい */
-      #modeBlock {
-        display: flex;
-        justify-content: flex-start;
-      }
-      #modeBlock > div {
-        width: 100%;
-      }
-      #modeBlock .chkLabel {
-        font-size: 13px;
-        line-height: 1.25;
-      }
-    
-      /* 左下：ボタンを小さめに */
-      #actionBlock {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        width: 140px; /* 左列と合わせる */
-      }
-    
-      #actionBlock button.primary,
-      #actionBlock button.danger {
-        width: 100% !important;
-        height: 36px !important;     /* ←小さめ */
-        padding: 0 10px !important;
-        font-size: 12px !important;  /* ←小さめ */
-        line-height: 36px !important;
-        white-space: nowrap !important;
-        box-sizing: border-box !important;
-        border-radius: 10px !important;
+      .grid5{
+        grid-template-columns: repeat(2, 1fr);
       }
     }
-
-    
   </style>
 </head>
+
 <body>
-
-<header>
-  <div>
-    <div id="headerTitle" class="title-text">食材ストック計算</div>
-    <div id="headerVer" class="ver-text">ver1.0.4</div>
-  </div>
-
-  <div style="display:flex; align-items:center; gap:10px;">
-    <button id="openDocs"
-      style="background:none; border:none; color:#fff; cursor:pointer; display:flex; align-items:center; gap:6px; padding:6px 8px;">
-      <span style="font-size:18px; line-height:1;">📚</span>
-      <span style="font-size:12px; font-weight:800;">お役立ち資料集</span>
-    </button>
-
-    <button id="openNotice"
-      style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer; padding:6px 8px;">ⓘ</button>
-  </div>
-</header>
-
-<main>
-  <div id="tab1" class="tab-content active">
-    <section class="card">
-      <div class="settingsHeaderRow">
-        <!-- 条件設定 -->
-        <div id="condBlock">
-          <div class="sectionTitle">
-            条件設定
-          </div>
-          <span class="badge" id="summaryBadge">合計 0食 / 21食</span>
-        </div>
-      
-        <!-- モード選択 -->
-        <div id="modeBlock">
-          <div class="modeInner">
-            <div class="modeTitle">モードを選択してください</div>
-      
-            <label class="modeLabel">
-              <input type="radio" name="calcMode" id="calcMode1" value="mode1">
-              <span>① 同じレシピを21食作り続ける</span>
-            </label>
-      
-            <label class="modeLabel">
-              <input type="radio" name="calcMode" id="calcMode2" value="mode2">
-              <span>② 2種以上のレシピを組み合わせて21食作る</span>
-            </label>
-      
-            <label class="modeLabel">
-              <input type="radio" name="calcMode" id="calcMode3" value="mode3">
-              <span>③ 別カテゴリーのレシピを組み合わせる</span>
-            </label>
-          </div>
-        </div>
-      
-        <!-- +追加 / クリア -->
-        <div id="actionBlock">
-          <button id="addRecipe" class="primary">+ 追加</button>
-          <button id="clearAll" class="danger">クリア</button>
-        </div>
-      </div>
-
-    
-      <div id="recipeList" style="margin-top:10px;"></div>
-    </section>
-
-
-    <section class="card">
-      <div style="font-weight:900; font-size:14px; margin-bottom:12px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text);">計算から除外</div>
-      <div id="excludeGrid" class="grid5"></div>
-    </section>
-
-    <section class="card">
-      <div class="row" style="margin-bottom:12px;">
-        <div style="font-weight:900; font-size:14px; border-left: 5px solid var(--main); padding-left: 10px; color: var(--text);">
-          1日当たりの獲得量
-        </div>
-
-        <div style="flex:1; display:flex; justify-content:center;">
-          <label class="chkLabel" style="font-size:12px; width:auto; height:auto; justify-content:flex-start;">
-            <input type="checkbox" id="optNcPika">
-            NCピカチュウ獲得分を差し引く
-          </label>
-        </div>
-      </div>
-
-      <div id="replenishGrid" class="grid5"></div>
-    </section>
-
-    <section class="result-card">
-      <div class="row" style="justify-content: space-between;">
-        <div style="font-weight:900; font-size:16px; color:var(--main);">計算結果</div>
-        <span class="badge total-badge" id="totalBadge">総合計 0個</span>
-      </div>
-      <div style="height:1px; background:var(--main); opacity:0.1; margin:16px 0;"></div>
-
-      <div id="mode3Note" style="display:none; font-size:12px; color:var(--muted); font-weight:800; margin-bottom:10px;">
-        ※異なるカテゴリーのレシピ間で重複している食材があった場合、各レシピ中で最も多く使われている食材の個数を参照して計算しています
-      </div>
-
-      <div id="resultGrid" class="grid5"></div>
-    </section>
-  </div>
-
-    
-      <div class="resultDivider"></div>
-      <div id="resultGrid" class="grid5"></div>
-    </section>
-  </div>
-
-  <div id="tab2" class="tab-content">
-    <div id="fieldMenu">
-      <section class="card">
-        <div style="font-weight:900; font-size:16px; color:var(--main); margin-bottom:12px; text-align:center;">フィールドを選択</div>
-        <div class="field-grid"></div>
-      </section>
-    </div>
-    <div id="fieldDetail" style="display:none;">
-      <button onclick="backToMenu()" style="margin-bottom:10px; padding:6px 12px; background:none; border:1px solid var(--line); border-radius:8px; font-size:12px; color:var(--muted);">← 戻る</button>
-      <div id="detailContent"></div>
-    </div>
-  </div>
-
-  <div id="tab3" class="tab-content">
-    <section class="card">
-      <div style="display: flex; gap: 10px; margin-bottom: 10px; font-size: 11px;">
-        <span style="display:flex; align-items:center; gap:4px;"><span style="width:12px; height:12px; background:#add8e6; display:inline-block; border-radius:2px;"></span>Good Sleep Day</span>
-        <span style="display:flex; align-items:center; gap:4px;"><span style="width:12px; height:12px; background:#000080; display:inline-block; border-radius:2px;"></span>New Moon Day</span>
-      </div>
-      <div id="yearCalendar" class="calendar-grid"></div>
-    </section>
-  </div>
-</main>
-
-<nav class="bottom-nav">
-  <div class="nav-item active" onclick="switchTab('tab1', this)">
-    <span class="nav-icon">🔍</span>
-    <span>食材ストック計算</span>
-  </div>
-  <div class="nav-item" onclick="switchTab('tab2', this)">
-    <span class="nav-icon">🐾</span>
-    <span>出現ポケモン一覧</span>
-  </div>
-  <div class="nav-item" onclick="switchTab('tab3', this)">
-    <span class="nav-icon">📅</span>
-    <span>月齢カレンダー</span>
-  </div>
-</nav>
-
-<!-- お役立ち資料集モーダル -->
-<div id="docsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; padding:20px;">
-  <div class="card" style="max-width:520px; width:100%; position:relative;">
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:12px;">
-      <div style="font-weight:900;">📚 お役立ち資料集</div>
-      <button id="closeDocs" style="background:none; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-weight:800; cursor:pointer;">閉じる</button>
+  <header>
+    <div>
+      <div id="headerTitle" class="title-text">食材ストック計算</div>
+      <div id="headerVer" class="ver-text">ver1.0.4</div>
     </div>
 
-<!-- お役立ち資料：画像ビューア（アプリ内） -->
-<div id="docViewerModal"
-  style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-         background:rgba(0,0,0,0.7); z-index:3000; align-items:center; justify-content:center; padding:14px;">
-  <div class="card" style="max-width:900px; width:100%; max-height:92vh; overflow:auto; position:relative;">
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:12px;">
-      <div id="docViewerTitle" style="font-weight:900;">資料</div>
-      <button id="closeDocViewer"
-        style="background:none; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-weight:800; cursor:pointer;">
-        戻る
+    <div style="display:flex; align-items:center; gap:10px;">
+      <button id="openDocs"
+        style="background:none; border:none; color:#fff; cursor:pointer; display:flex; align-items:center; gap:6px; padding:6px 8px;">
+        <span style="font-size:18px; line-height:1;">📚</span>
+        <span style="font-size:12px; font-weight:800;">お役立ち資料集</span>
       </button>
+
+      <button id="openNotice"
+        style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer; padding:6px 8px;">ⓘ</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="tab1">条件設定</button>
+      <button class="tab-btn" data-tab="tab2">獲得量</button>
     </div>
 
-    <img id="docViewerImg" src="" alt=""
-      style="width:100%; height:auto; border-radius:12px; border:1px solid var(--line); background:#fff;">
-  </div>
-</div>
+    <!-- ===== tab1 ===== -->
+    <div id="tab1" class="tab-content active">
+      <section class="card">
+        <div class="settingsHeaderRow">
+          <div id="condLeft">
+            <div class="row" style="gap:10px;">
+              <div style="width:6px; height:26px; background:var(--main); border-radius:10px;"></div>
+              <div style="font-weight:900; font-size:18px;">条件設定</div>
+            </div>
 
-    <div style="display:flex; flex-direction:column; gap:12px;">
-      <div style="border:1px solid var(--line); border-radius:14px; padding:12px;">
-        <div style="font-weight:900; margin-bottom:8px;">エナジー効率の良いレシピ一覧</div>
-        <div class="row">
-          <button class="primary" type="button" onclick="openDoc('エナジー効率の良いレシピ一覧.png')">開く</button>
-          <a href="images/エナジー効率の良いレシピ一覧.png" download style="text-decoration:none;">
-            <button type="button">保存</button>
-          </a>
+            <span class="badge" id="presetBadge">63食 / 63食</span>
+          </div>
+
+          <div id="actionBlock">
+            <button class="primary" id="addRecipeBtn">＋ 追加</button>
+            <button class="danger" id="clearAllBtn">クリア</button>
+          </div>
+
+          <div id="modeBlock">
+            <div class="modeTitle">モードを選択してください</div>
+            <label class="modeLabel"><input type="radio" name="mode" value="same21"> ① 同じレシピを21食作り続ける</label>
+            <label class="modeLabel"><input type="radio" name="mode" value="mix21"> ② 2種以上のレシピを組み合わせて21食作る</label>
+            <label class="modeLabel"><input type="radio" name="mode" value="preset63"> ③ 別カテゴリーのレシピを組み合わせる</label>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div style="border:1px solid var(--line); border-radius:14px; padding:12px;">
-        <div style="font-weight:900; margin-bottom:8px;">きのみタイプ強さランキング</div>
-        <div class="row">
-          <button class="primary" type="button" onclick="openDoc('きのみタイプ強さランキング.png')">開く</button>
-          <a href="images/きのみタイプ強さランキング.png" download style="text-decoration:none;">
-            <button type="button">保存</button>
-          </a>
-        </div>
-      </div>
+      <div id="recipeList" style="display:flex; flex-direction:column; gap:12px;"></div>
 
-      <div style="border:1px solid var(--line); border-radius:14px; padding:12px;">
-        <div style="font-weight:900; margin-bottom:8px;">お香で呼べるポケモンかけらランキング</div>
-        <div class="row">
-          <button class="primary" type="button" onclick="openDoc('お香で呼べるポケモンかけらランキング.png')">開く</button>
-          <a href="images/お香で呼べるポケモンかけらランキング.png" download style="text-decoration:none;">
-            <button type="button">保存</button>
-          </a>
-        </div>
+      <div class="card result-card">
+        <section class="result-card">
+          <div class="row" style="justify-content: space-between; align-items:flex-start;">
+            <div style="font-weight:900; font-size:16px; color:var(--main);">計算結果</div>
+            <span class="badge total-badge" id="totalBadge">総合計 0個</span>
+          </div>
+
+          <div id="mode3Note" class="mode3Note">
+            ※異なるカテゴリーのレシピ間で重複している食材があった場合、各レシピ中で最も多く使われている食材の個数を参照して計算しています
+          </div>
+
+          <div class="resultDivider"></div>
+
+          <div id="resultGrid" class="grid5"></div>
+        </section>
       </div>
     </div>
-  </div>
-</div>
 
-<div id="noticeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; padding:20px;">
-  <div class="card" style="max-width:400px; width:100%; position:relative;">
-
-    <div style="font-weight:900; margin-bottom:12px; border-bottom:1px solid var(--line); padding-bottom:8px;">
-      ご利用上の注意
+    <!-- ===== tab2 ===== -->
+    <div id="tab2" class="tab-content">
+      <div id="fieldMenu">
+        <section class="card">
+          <div style="font-weight:900; font-size:16px; color:var(--main); margin-bottom:10px;">1日当たりの獲得量</div>
+          <div class="row" style="gap:10px; flex-wrap:wrap;">
+            <label style="font-weight:900; color:var(--muted);">トマト</label>
+            <input id="gainTomato" type="number" min="0" value="0" style="width:120px;">
+            <label style="font-weight:900; color:var(--muted);">カカオ</label>
+            <input id="gainCacao" type="number" min="0" value="0" style="width:120px;">
+          </div>
+        </section>
+      </div>
     </div>
+  </main>
 
-    <p style="font-size:13px; color:var(--text); line-height:1.6; margin-bottom:14px;">
-      このアプリは非公式であり、
-      <strong>ﾈﾃﾙ.exe（@suiminloop.bsky.social）</strong>が個人で作ったものです。<br>
-      ご利用いただく際は自己責任でお願いします🙇
-    </p>
+  <script src="js/app.js"></script>
 
-    <div style="font-size:13px; color:var(--text); line-height:1.6; margin-bottom:20px;">
-      <div style="font-weight:900; margin-bottom:6px;">出典：</div>
-      <ul style="margin:0 0 0 18px; padding:0;">
-        <li>Pokémon Sleep 公式サイト</li>
-        <li>RaenonXポケスリ攻略ツール</li>
-        <li>ポケモンスリープ攻略・検証 Wiki*</li>
-      </ul>
-    </div>
-
-    <button id="closeNotice" class="primary" style="width:100%;">閉じる</button>
-  </div>
-</div>
-
-<script>
-(function(){
-  function box(){
-    let b=document.getElementById("bootDiag");
-    if(!b){
-      b=document.createElement("div");
-      b.id="bootDiag";
-      b.style.cssText="position:fixed;left:10px;right:10px;bottom:70px;z-index:99999;background:#fff;border:2px solid #d00;border-radius:12px;padding:10px;font-size:12px;white-space:pre-wrap;display:none";
-      document.addEventListener("DOMContentLoaded",()=>document.body.appendChild(b));
-    }
-    return b;
-  }
-  function show(t){const b=box(); b.textContent=t; b.style.display="block";}
-  window.addEventListener("error",e=>show("[JS Error]\n"+(e.message||"")+"\n"+(e.filename||"")+":"+e.lineno+":"+e.colno));
-  window.addEventListener("unhandledrejection",e=>show("[Promise Rejection]\n"+(e.reason&& (e.reason.stack||e.reason.message))||String(e.reason)));
-  window.__BOOT_DIAG__ = "OK";
-})();
-</script>
-
-<script src="data/ingredients.js"></script>
-<script src="data/recipes.js"></script>
-<script src="data/fields.js"></script>
-
-<script src="js/calendar.js"></script>
-<script src="js/pokedex.js"></script>
-<script src="js/app.js"></script>
+  <script>
+    // タブ切替
+    document.querySelectorAll(".tab-btn").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        const tab = btn.dataset.tab;
+        document.querySelectorAll(".tab-content").forEach(c=>c.classList.remove("active"));
+        document.getElementById(tab).classList.add("active");
+      });
+    });
+  </script>
 </body>
 </html>
