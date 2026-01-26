@@ -507,46 +507,40 @@
       opacity: .18;
     }
     
-   /* =========================================================
-     PC：計算結果カードを「1日当たりの獲得量」と同寸に寄せる（微調整版）
+  /* =========================================================
+     計算結果：PCでも他タブと「完全に同じカード寸法」に固定
+     （= .grid5 / .tile のベース定義へ戻す）
   ========================================================= */
-  @media (min-width: 700px){
-  
-    /* 横幅がデカい原因：minmaxが大きい → ここを下げる */
-    .result-card .grid5{
-      grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
-      gap: 10px;
-    }
-  
-    /* 高さが低い原因：縦余白不足 → ここを少し足す */
-    .result-card .tile{
-      padding: 7px 6px;
-      min-height: 78px;
-      border-radius: 12px;
-    }
-  
-    /* 中身の見た目も獲得量寄せ */
-    .result-card .icon{
-      width: 28px;
-      height: 28px;
-    }
-  
-    .result-card .tileName{
-      font-size: 10px;
-      line-height: 1.2;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-  
-    .result-card .tile strong{
-      font-size: 14px;
-      font-weight: 900;
-    }
+  .result-card .grid5{
+    grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+    gap: 8px;
   }
-
-
   
+  .result-card .tile{
+    padding: 6px 3px;
+    min-height: 95px;
+    border-radius: 12px;
+  }
+  
+  .result-card .icon{
+    width: 30px;
+    height: 30px;
+  }
+  
+  .result-card .tileName{
+    font-size: 8px;
+    font-weight: 700;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: clip;
+    white-space: nowrap;
+  }
+  
+  /* 注意書き：消えたように見えないよう、中央寄せ＆余白 */
+  .result-card .mode3Note{
+    text-align: center;
+    margin-top: 10px;
+  }
 
     
   </style>
