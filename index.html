@@ -503,9 +503,16 @@
           "cond  mode"
           "actions mode";
       }
-      #modeBlock{ padding-left: 24px; }
+      #modeBlock{ padding-left: 8px; } 
       #actionBlock{ width: 140px; }
+      
+      /* モード文言：スマホでは1行固定にする */
+      .modeLabel{
+        white-space: nowrap;          /* 折り返し禁止 */
+        font-size: 12px;              /* ②③が2行になるのを防ぐため少し小さく */
+      }
 
+      
       /* スマホは少しだけ押しやすく */
       #actionBlock > button{
         height: 36px !important;
