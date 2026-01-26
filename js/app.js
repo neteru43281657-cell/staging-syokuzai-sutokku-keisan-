@@ -421,6 +421,38 @@ function addRecipeRow(init) {
   const cSel = wrap.querySelector(".catSel");
   const rSel = wrap.querySelector(".recipeSel");
   const mSel = wrap.querySelector(".mealsSel");
+  // ---- 強調（触れるプルダウンだけ目立たせる）
+  // ルール：
+  // ①：カテゴリ + 料理
+  // ②：カテゴリ(先頭行だけ) + 料理 + 食数
+  // ③：料理
+  function setEmph(sel, on) {
+    if (!sel) return;
+    const lab = sel.previousElementSibling; // <label>が直前にある前提
+    sel.classList.toggle("emphSelect", !!on);
+    if (lab && lab.tagName === "LABEL") lab.classList.toggle("emphLabel", !!on);
+  }
+
+  const isMode1 = state.mode === MODES.ONE;
+  const isMode2 = state.mode === MODES.MIX;
+  const isMode3 = state.mode === MODES.PRESET63;
+
+  // いったん全部OFF（再描画・再計算時のズレ防止）
+  setEmph(cSel, false);
+  setEmph(rSel, false);
+  setEmph(mSel, false);
+
+  if (isMode1) {
+    setEmph(cSel, !cSel.disabled);
+    setEmph(rSel, !rSel.disabled);
+  } else if (isMode2) {
+    // ②は先頭行だけカテゴリ触れる（= disabledで判定してOK）
+    setEmph(cSel, !cSel.disabled);
+    setEmph(rSel, !rSel.disabled);
+    setEmph(mSel, !mSel.disabled);
+  } else if (isMode3) {
+    setEmph(rSel, !rSel.disabled);
+  }
   const pre = wrap.querySelector(".preview");
 
   // ---- カテゴリ制約（②は「先頭行のカテゴリに統一」）
