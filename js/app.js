@@ -208,6 +208,7 @@ function renderGrids() {
 function syncModeUIFromStorage() {
   const saved = getOptStr(OPT_KEYS.mode, MODES.ONE);
   const mode = Object.values(MODES).includes(saved) ? saved : MODES.ONE;
+
   const r1 = el("calcMode1");
   const r2 = el("calcMode2");
   const r3 = el("calcMode3");
@@ -216,7 +217,8 @@ function syncModeUIFromStorage() {
   if (r3) r3.checked = mode === MODES.PRESET63;
 
   state.mode = mode;
-  document.body.classList.toggle("mode3", mode === MODES.PRESET63); 
+
+  document.body.classList.toggle("mode3", mode === MODES.PRESET63);
 }
 
 function bindModeUI() {
@@ -240,8 +242,9 @@ function setMode(mode) {
       : MODES.ONE;
 
   state.mode = next;
-    document.body.classList.toggle("mode3", next === MODES.PRESET63);
 
+  document.body.classList.toggle("mode3", next === MODES.PRESET63);
+   
   setOptStr(OPT_KEYS.mode, next);
 
   // ラジオ表示も合わせる（ズレ防止）
