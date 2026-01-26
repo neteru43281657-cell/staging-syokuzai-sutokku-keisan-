@@ -507,39 +507,47 @@
       opacity: .18;
     }
     
-  /* =========================
-     PCだけ：計算結果の食材カードを大きくしすぎない
-     （食材名は1行固定のまま）
-  ========================= */
+  /* =========================================================
+     PC：計算結果の食材カードを
+     「1日当たりの獲得量」と完全に同じサイズに揃える
+  ========================================================= */
   @media (min-width: 700px){
+  
+    /* グリッド密度を獲得量と同等に */
     .result-card .grid5{
-      /* ここを小さくするほどカードが小さくなる */
-      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
       gap: 10px;
     }
   
+    /* カード本体：高さ・余白を抑える */
     .result-card .tile{
-      min-height: 102px;   /* ここが大きいとカードが縦にデカくなる */
-      padding: 8px 6px;
+      min-height: auto;          /* ← 高さ固定を解除 */
+      padding: 6px 6px;
+      border-radius: 12px;
     }
   
+    /* アイコン：獲得量カードと同寸 */
     .result-card .icon{
-      width: 34px;
-      height: 34px;
+      width: 28px;
+      height: 28px;
     }
   
+    /* 食材名：1行固定（そのまま） */
     .result-card .tileName{
       font-size: 10px;
-      white-space: nowrap;       /* 折り返し無し */
+      line-height: 1.2;
+      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
   
-    /* 数字も少しだけ抑える（大きすぎる場合だけ） */
+    /* 数字：獲得量と同じ主張に */
     .result-card .tile strong{
-      font-size: 18px;
+      font-size: 14px;
+      font-weight: 800;
     }
   }
+
   
 
     
