@@ -263,16 +263,28 @@ function setMode(mode) {
   if (state.mode === MODES.ONE) {
     addRecipeRow({
       cat: "カレー・シチュー",
-      recipeId: getFirstRecipeIdByCat("カレー・シチュー"),
+      
       meals: WEEK_MEALS,
     });
   } else if (state.mode === MODES.MIX) {
+    const cat = "カレー・シチュー";
+    const rid = getFirstRecipeIdByCat(cat);
+
+    // 初期2行（最後の行で残りを自動調整）
     addRecipeRow({
-      cat: "カレー・シチュー",
-      recipeId: getFirstRecipeIdByCat("カレー・シチュー"),
+      cat,
+      recipeId: rid,
       meals: 0,
     });
+    addRecipeRow({
+      cat,
+      recipeId: rid,
+      meals: 0,
+    });
+
+    applyAutoAdjustFlagAndBalance();
   } else if (state.mode === MODES.PRESET63) {
+
     CATS_3.forEach((cat) => {
       addRecipeRow({
         cat,
@@ -460,7 +472,11 @@ function addRecipeRow(init) {
   // ②：先頭行だけ変更OK、2行目以降は選択不可（先頭に追従）
   // ③：カテゴリ固定（選択不可）
   const rowIndex = state.recipeRows.findIndex((r) => r.rowId === rowId);
-
+  if (state.mode === MODES.MIX && rowIndex !== 0) {
+    wrap.classList.add("catLocked");
+  } else {
+    wrap.classList.remove("catLocked");
+  }
   if (state.mode === MODES.PRESET63) {
     cSel.disabled = true;
   } else if (state.mode === MODES.MIX) {
