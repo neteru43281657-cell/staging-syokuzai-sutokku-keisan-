@@ -384,6 +384,34 @@
       margin-bottom: 6px;
     }
 
+    /* =========================================================
+       1日当たりの獲得量：見出し行を「条件設定」と同じ列幅で揃える
+       - 左：見出し（160px）
+       - 中：NCピカ（1fr） ← ここに置くことで「モード」とX位置が揃う
+       - 右：空（160px）
+    ========================================================= */
+    .replenishHeaderRow{
+      display: grid;
+      grid-template-columns: 160px 1fr 160px;
+      gap: 12px;
+      align-items: start;
+    }
+    
+    /* スマホ時：条件設定と同じく 140px / 1fr に */
+    @media (max-width: 520px){
+      .replenishHeaderRow{
+        grid-template-columns: 140px 1fr;
+      }
+    }
+    
+    /* NCピカ行：中央寄せをやめて、自然な左寄せにする */
+    .ncPikaOpt{
+      justify-content: flex-start !important;
+      height: auto !important;
+      padding: 0 !important;
+      margin-top: 6px;
+    }
+    
     /* 条件設定ヘッダー（cond / mode / actions）共通 */
     .settingsHeaderRow{
       display:grid;
@@ -635,24 +663,27 @@
     </section>
 
     <section class="card">
-      <div class="settingsHeaderRow">
-        <!-- 左列：条件系 -->
-        <div id="condBlock">
+      <div class="replenishHeaderRow">
+        <!-- 左：見出し -->
+        <div>
           <div class="sectionTitle">1日当たりの獲得量</div>
+        </div>
     
+        <!-- 中：NCピカ（「モード」列と同じX位置に揃う） -->
+        <div>
           <label class="chkLabel ncPikaOpt">
             <input type="checkbox" id="optNcPika">
-            NCピカチュウ獲得分を差し引く
+            GO++ピカチュウ獲得分を差し引く
           </label>
         </div>
     
-        <!-- 右は空でOK -->
-        <div></div>
+        <!-- 右：空（PCのみ。スマホではgridが2列になるので自然に無視されます） -->
         <div></div>
       </div>
     
       <div id="replenishGrid" class="grid5"></div>
     </section>
+
 
 
     <!-- ✅ 計算結果：HTML構造を正常化（枠ズレ/下寄り/注意書き消え対策） -->
