@@ -507,41 +507,40 @@
       opacity: .18;
     }
     
-    /* ====== PC向け：タイル（食材カード）を見やすいサイズに ====== */
-    @media (min-width: 700px){
-      .result-card .grid5{
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 12px;
-      }
-    
-      .result-card .tile{
-        min-height: 128px;
-        padding: 10px 8px;
-        border-radius: 14px;
-      }
-    
-      .result-card .tileName{
-        font-size: 12px;
-        font-weight: 800;
-        white-space: normal;         /* PCは折り返してOK */
-        line-height: 1.2;
-        min-height: 2.4em;           /* 2行ぶん確保して揃える */
-      }
-    
-      .result-card .icon{
-        width: 42px;
-        height: 42px;
-      }
-    
-      /* 個数の数字を少し強調して読みやすく */
-      .result-card .tile strong,
-      .result-card .tile .count,
-      .result-card .tile .qty{
-        font-size: 20px;
-        font-weight: 900;
-      }
+  /* =========================
+     PCだけ：計算結果の食材カードを大きくしすぎない
+     （食材名は1行固定のまま）
+  ========================= */
+  @media (min-width: 700px){
+    .result-card .grid5{
+      /* ここを小さくするほどカードが小さくなる */
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 10px;
     }
-
+  
+    .result-card .tile{
+      min-height: 102px;   /* ここが大きいとカードが縦にデカくなる */
+      padding: 8px 6px;
+    }
+  
+    .result-card .icon{
+      width: 34px;
+      height: 34px;
+    }
+  
+    .result-card .tileName{
+      font-size: 10px;
+      white-space: nowrap;       /* 折り返し無し */
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  
+    /* 数字も少しだけ抑える（大きすぎる場合だけ） */
+    .result-card .tile strong{
+      font-size: 18px;
+    }
+  }
+  
 
     
   </style>
