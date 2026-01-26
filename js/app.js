@@ -216,6 +216,7 @@ function syncModeUIFromStorage() {
   if (r3) r3.checked = mode === MODES.PRESET63;
 
   state.mode = mode;
+  document.body.classList.toggle("mode3", mode === MODES.PRESET63); 
 }
 
 function bindModeUI() {
@@ -241,7 +242,7 @@ function setMode(mode) {
   state.mode = next;
     document.body.classList.toggle("mode3", next === MODES.PRESET63);
 
-  setOptStr(OPT_KEYS.mode, next); // ★ここで必ず同期
+  setOptStr(OPT_KEYS.mode, next);
 
   // ラジオ表示も合わせる（ズレ防止）
   const r1 = el("calcMode1");
