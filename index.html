@@ -394,7 +394,7 @@
       display: grid;
       grid-template-columns: 160px 1fr 160px;
       gap: 12px;
-      align-items: start;
+      align-items: center; /* ← start → center に変更（高さ揃え） */
     }
     
     /* スマホ時：条件設定と同じく 140px / 1fr に */
@@ -404,12 +404,11 @@
       }
     }
     
-    /* NCピカ行：中央寄せをやめて、自然な左寄せにする */
     .ncPikaOpt{
       justify-content: flex-start !important;
       height: auto !important;
       padding: 0 !important;
-      margin-top: 6px;
+      margin-top: 0;       /* ← 6px を消す（下がる原因） */
     }
     
     /* 条件設定ヘッダー（cond / mode / actions）共通 */
@@ -673,7 +672,7 @@
         <div>
           <label class="chkLabel ncPikaOpt">
             <input type="checkbox" id="optNcPika">
-            GO++ピカチュウ獲得分を差し引く
+            GO++ピカチュウの獲得分を差し引く
           </label>
         </div>
     
