@@ -270,7 +270,7 @@ function setMode(mode) {
     const cat = "カレー・シチュー";
     const rid = getFirstRecipeIdByCat(cat);
 
-    // 初期2行（最後の行で残りを自動調整）
+    // 初期2行：両方 0食（自由配分）
     addRecipeRow({
       cat,
       recipeId: rid,
@@ -281,8 +281,6 @@ function setMode(mode) {
       recipeId: rid,
       meals: 0,
     });
-
-    applyAutoAdjustFlagAndBalance();
   } else if (state.mode === MODES.PRESET63) {
 
     CATS_3.forEach((cat) => {
