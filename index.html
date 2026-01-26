@@ -168,6 +168,15 @@
       box-shadow: none !important;
       font-weight: 400 !important;
     }
+
+    select:disabled{
+      background: #f3f6fa !important;   /* ← catLocked と同じ */
+      border-color: #e3eaf2 !important;
+      color: #8a97a6 !important;
+      box-shadow: none !important;
+      font-weight: 400 !important;      /* 通常の字体 */
+      opacity: 1 !important;            /* ブラウザ既定の薄さを無効化 */
+    }
     
     label.emphLabel{
       font-weight: 900;
