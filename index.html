@@ -209,6 +209,17 @@
       height: 13px;
     }
 
+    /* NCピカチュウオプション：条件列に自然に馴染ませる */
+    .ncPikaOpt{
+      margin-top: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
     .repInputRow {
       display: flex;
       align-items: center;
@@ -624,19 +635,25 @@
     </section>
 
     <section class="card">
-      <div class="row" style="margin-bottom:12px;">
-        <div class="sectionTitle" style="margin-bottom:0;">1日当たりの獲得量</div>
-
-        <div style="flex:1; display:flex; justify-content:center;">
-          <label class="chkLabel" style="font-size:12px; width:auto; height:auto; justify-content:flex-start;">
+      <div class="settingsHeaderRow">
+        <!-- 左列：条件系 -->
+        <div id="condBlock">
+          <div class="sectionTitle">1日当たりの獲得量</div>
+    
+          <label class="chkLabel ncPikaOpt">
             <input type="checkbox" id="optNcPika">
             NCピカチュウ獲得分を差し引く
           </label>
         </div>
+    
+        <!-- 右は空でOK -->
+        <div></div>
+        <div></div>
       </div>
-
+    
       <div id="replenishGrid" class="grid5"></div>
     </section>
+
 
     <!-- ✅ 計算結果：HTML構造を正常化（枠ズレ/下寄り/注意書き消え対策） -->
     <section class="result-card">
