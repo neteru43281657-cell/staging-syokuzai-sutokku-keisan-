@@ -432,21 +432,17 @@
 
     /* 注意書き：PC/スマホで小さめ統一（でも極端に小さくしない） */
     .mode3Note{
-      display:none;
-      margin-top: 6px;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--muted);
-      line-height: 1.35;
+      white-space: normal;
+      word-break: break-word;
     }
-    body.mode3 .mode3Note{ display:block; }
+    
+    @media (max-width: 520px){
+      .mode3Note{
+        font-size: 9px;
+        line-height: 1.25;
+      }
+    }
 
-    .resultDivider{
-      height: 1px;
-      background: var(--main);
-      opacity: 0.12;
-      margin: 14px 0 12px;
-    }
 
     /* スマホ：cond左 / mode右 / actions左下 */
     @media (max-width: 520px){
@@ -607,31 +603,23 @@
   </div>
 </nav>
 
-<!-- お役立ち資料集モーダル -->
-<div id="docsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; padding:20px;">
-  <div class="card" style="max-width:520px; width:100%; position:relative;">
+<!-- お役立ち資料：画像ビューア（アプリ内） -->
+<div id="docViewerModal"
+  style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+         background:rgba(0,0,0,0.7); z-index:3000; align-items:center; justify-content:center; padding:14px;">
+  <div class="card" style="max-width:900px; width:100%; max-height:92vh; overflow:auto; position:relative;">
     <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:12px;">
-      <div style="font-weight:900;">📚 お役立ち資料集</div>
-      <button id="closeDocs" style="background:none; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-weight:800; cursor:pointer;">閉じる</button>
+      <div id="docViewerTitle" style="font-weight:900;">資料</div>
+      <button id="closeDocViewer"
+        style="background:none; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-weight:800; cursor:pointer;">
+        戻る
+      </button>
     </div>
 
-    <!-- お役立ち資料：画像ビューア（アプリ内） -->
-    <div id="docViewerModal"
-      style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-             background:rgba(0,0,0,0.7); z-index:3000; align-items:center; justify-content:center; padding:14px;">
-      <div class="card" style="max-width:900px; width:100%; max-height:92vh; overflow:auto; position:relative;">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:12px;">
-          <div id="docViewerTitle" style="font-weight:900;">資料</div>
-          <button id="closeDocViewer"
-            style="background:none; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-weight:800; cursor:pointer;">
-            戻る
-          </button>
-        </div>
-
-        <img id="docViewerImg" src="" alt=""
-          style="width:100%; height:auto; border-radius:12px; border:1px solid var(--line); background:#fff;">
-      </div>
-    </div>
+    <img id="docViewerImg" src="" alt=""
+      style="width:100%; height:auto; border-radius:12px; border:1px solid var(--line); background:#fff;">
+  </div>
+</div>
 
     <div style="display:flex; flex-direction:column; gap:12px;">
       <div style="border:1px solid var(--line); border-radius:14px; padding:12px;">
@@ -654,10 +642,45 @@
         </div>
       </div>
 
-      <!-- （以下、あなたの元の資料リストが続く想定：ここはそのまま残してください） -->
+      <div style="border:1px solid var(--line); border-radius:14px; padding:12px;">
+        <div style="font-weight:900; margin-bottom:8px;">お香で呼べるポケモンかけらランキング</div>
+        <div class="row">
+          <button class="primary" type="button" onclick="openDoc('お香で呼べるポケモンかけらランキング.png')">開く</button>
+          <a href="images/お香で呼べるポケモンかけらランキング.png" download style="text-decoration:none;">
+            <button type="button">保存</button>
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 </div>
+
+<div id="noticeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; padding:20px;">
+  <div class="card" style="max-width:400px; width:100%; position:relative;">
+
+    <div style="font-weight:900; margin-bottom:12px; border-bottom:1px solid var(--line); padding-bottom:8px;">
+      ご利用上の注意
+    </div>
+
+    <p style="font-size:13px; color:var(--text); line-height:1.6; margin-bottom:14px;">
+      このアプリは非公式であり、
+      <strong>ﾈﾃﾙ.exe（@suiminloop.bsky.social）</strong>が個人で作ったものです。<br>
+      ご利用いただく際は自己責任でお願いします🙇
+    </p>
+
+    <div style="font-size:13px; color:var(--text); line-height:1.6; margin-bottom:20px;">
+      <div style="font-weight:900; margin-bottom:6px;">出典：</div>
+      <ul style="margin:0 0 0 18px; padding:0;">
+        <li>Pokémon Sleep 公式サイト</li>
+        <li>RaenonXポケスリ攻略ツール</li>
+        <li>ポケモンスリープ攻略・検証 Wiki*</li>
+      </ul>
+    </div>
+
+    <button id="closeNotice" class="primary" style="width:100%;">閉じる</button>
+  </div>
+</div>
+
 
 <!-- JS 読み込み（あなたの構成に合わせて） -->
 <script src="data/ingredients.js"></script>
