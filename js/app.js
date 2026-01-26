@@ -997,8 +997,23 @@ function calc() {
     if (g <= 0) return;
 
     // 1日当たり獲得量は「使う食材だけ」対象（grossにある＝使う）
-    const pd = perDay.get(iid) || 0;
-    const finalNeed = Math.max(0, Math.round(g - pd * WEEK_DAYS));
+   const pd = perDay.get(iid) || 0;
+   
+   // ===============================
+   // モード②のみ：入力済み食数に比例して差し引く
+   // ===============================
+   let subtractAmt = pd * WEEK_DAYS; // デフォルト：7日分（①・③）
+   
+   if (state.mode === MODES.MIX) {
+     const totalMeals = state.recipeRows.reduce(
+       (sum, r) => sum + (Number(r.meals) || 0),
+       0
+     );
+     subtractAmt = pd * (totalMeals / MEALS_PER_DAY); // 食数 ÷ 3 日分
+   }
+   
+   const finalNeed = Math.max(0, Math.round(g - subtractAmt));
+
     if (finalNeed <= 0) return;
 
     grandTotal += finalNeed;
