@@ -464,6 +464,86 @@
       }
       .mode3Note{ font-size: 10px; }
     }
+
+    /* =========================================================
+       PC見栄え：計算結果カードをまとめて整える（他には影響しない）
+    ========================================================= */
+    
+    /* 計算結果カード全体 */
+    .result-card{
+      padding: 18px;
+    }
+    
+    /* ヘッダー（計算結果 / 総合計） */
+    .result-card .resultHeader{
+      align-items: center;
+      gap: 14px;
+    }
+    
+    .result-card .resultTitle{
+      font-size: 18px;
+      letter-spacing: .02em;
+    }
+    
+    .result-card .total-badge{
+      font-size: 13px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    
+    /* 注意書き：PCでは“補足”に見えるように */
+    .result-card .mode3Note{
+      font-size: 12px;
+      font-weight: 600;
+      color: #6b7a8a;
+      line-height: 1.45;
+      margin-top: 8px;
+    }
+    
+    /* 区切り線：少し上品に */
+    .result-card .resultDivider{
+      margin: 14px 0 14px;
+      opacity: .18;
+    }
+    
+    /* ====== PC向け：タイル（食材カード）を見やすいサイズに ====== */
+    @media (min-width: 700px){
+      .result-card .grid5{
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 12px;
+      }
+    
+      .result-card .tile{
+        min-height: 128px;
+        padding: 10px 8px;
+        border-radius: 14px;
+      }
+    
+      .result-card .tileName{
+        font-size: 12px;
+        font-weight: 800;
+        white-space: normal;         /* PCは折り返してOK */
+        line-height: 1.2;
+        min-height: 2.4em;           /* 2行ぶん確保して揃える */
+      }
+    
+      .result-card .icon{
+        width: 42px;
+        height: 42px;
+      }
+    
+      /* 個数の数字を少し強調して読みやすく */
+      .result-card .tile strong,
+      .result-card .tile .count,
+      .result-card .tile .qty{
+        font-size: 20px;
+        font-weight: 900;
+      }
+    }
+
+
+    
   </style>
 </head>
 
