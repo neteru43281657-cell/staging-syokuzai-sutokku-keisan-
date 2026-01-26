@@ -350,7 +350,7 @@ function rebuildRecipeRowsForMode() {
     const cat = "カレー・シチュー";
     const rid = getFirstRecipeIdByCat(cat);
 
-    // 初期2行（最後の行で残りを自動調整）
+    // 初期2行：両方 0食（自動調整はしない）
     addRecipeRow({
       cat,
       recipeId: rid,
@@ -367,7 +367,11 @@ function rebuildRecipeRowsForMode() {
       showRemove: true,
       showMeals: true,
     });
-    applyAutoAdjustFlagAndBalance();
+
+    state.recipeRows.forEach((r) => (r.autoAdjust = false));
+    document
+      .querySelectorAll("#recipeList .recipeRow .mealsSel")
+      .forEach((sel) => (sel.disabled = false));
   } else if (state.mode === MODES.PRESET63) {
     CATS_3.forEach((cat) => {
       addRecipeRow({
