@@ -1,5 +1,15 @@
 "use strict";
 
+function toNum(v) {
+  if (v === null || v === undefined) return 0;
+  const s = String(v).trim();
+  if (!s) return 0;
+  // "1,032" → "1032"
+  const cleaned = s.replace(/,/g, "");
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : 0;
+}
+
 (function () {
   // =========================
   // 設定（仕様確定版）
@@ -50,36 +60,80 @@
   let expTable = null;   // nextLevel -> exp (base)
   let shardTable = null; // level -> shard per candy
 
-  async function loadTablesOnce() {
-    if (expTable && shardTable) return;
+async function loadTablesOnce() {
+  if (expTable && shardTable) return;
 
-    const [expTxt, shardTxt] = await Promise.all([
-      fetch("./data/exp_table.txt", { cache: "no-store" }).then((r) => r.text()),
-      fetch("./data/shard_table.txt", { cache: "no-store" }).then((r) => r.text()),
-    ]);
+  const [expTxt, shardTxt] = await Promise.all([
+    fetch("./data/exp_table.txt", { cache: "no-store" }).then((r) => r.text()),
+    fetch("./data/shard_table.txt", { cache: "no-store" }).then((r) => r.text()),
+  ]);
 
-    expTable = parseTwoColTable(expTxt);     // "2 54" 形式
-    shardTable = parseTwoColTable(shardTxt); // "1 14" 形式
-  }
+  // EXP table は「5列」前提で読む（Lv / normal / 600 / semi / legend）
+  expTable = parseExpTable(expTxt);
 
-  function parseTwoColTable(txt) {
-    const map = new Map();
-    txt.split(/\r?\n/).forEach((line) => {
-      const s = line.trim();
-      if (!s) return;
-      // コメント・ヘッダっぽい行は捨てる
-      if (s.startsWith("#")) return;
-      const parts = s.split(/\s+/);
-      if (parts.length < 2) return;
+  // shard table は「2列」(Lv / shard) で読む
+  shardTable = parseTwoColTable(shardTxt);
+}
 
-      const k = Number(parts[0]);
-      const v = Number(parts[1]);
-      if (!Number.isFinite(k) || !Number.isFinite(v)) return;
+// 2列テーブル (key value) 用：カンマ対応
+function parseTwoColTable(txt) {
+  const map = new Map();
+  txt.split(/\r?\n/).forEach((line) => {
+    const s = line.trim();
+    if (!s) return;
+    if (s.startsWith("#")) return;
 
-      map.set(k, v);
-    });
-    return map;
-  }
+    const parts = s.split(/\s+/);
+    if (parts.length < 2) return;
+
+    const k = Number(parts[0]);
+    const v = toNum(parts[1]); // ★カンマ対応
+
+    if (!Number.isFinite(k) || !Number.isFinite(v)) return;
+    map.set(k, v);
+  });
+  return map;
+}
+
+// EXP table (Lv, normal, 600, semi, legend) 用：カンマ対応
+function parseExpTable(txt) {
+  const map = new Map();
+
+  txt.split(/\r?\n/).forEach((line) => {
+    const s = line.trim();
+    if (!s) return;
+    if (s.startsWith("#")) return;
+
+    // タブ区切り/スペース区切り両対応
+    const parts = s.split(/\s+/);
+    if (parts.length < 2) return;
+
+    const lv = Number(parts[0]);
+    if (!Number.isFinite(lv)) return;
+
+    // 形式A：2列（もし将来2列で来ても動くように）
+    // lv exp
+    if (parts.length === 2) {
+      const v = toNum(parts[1]);
+      if (Number.isFinite(v)) map.set(lv, v);
+      return;
+    }
+
+    // 形式B：5列（Lv / normal / 600 / semi / legend）
+    // 例：47 1,015 1,522 1,827 2,233
+    const normal = toNum(parts[1]);
+    const t600   = toNum(parts[2]);
+    const semi   = toNum(parts[3]);
+    const legend = toNum(parts[4]);
+
+    // どれかが取れればOK（全部0は弾く）
+    if (!(Number.isFinite(normal) && Number.isFinite(t600) && Number.isFinite(semi) && Number.isFinite(legend))) return;
+
+    map.set(lv, { normal, "600": t600, semi, legend });
+  });
+
+  return map;
+}
 
   // =========================
   // 計算コア
@@ -101,11 +155,16 @@
     let sum = 0;
 
     for (let to = lvNow + 1; to <= lvTarget; to++) {
-      const base = expTable.get(to);
-      if (!base) {
-        throw new Error(`EXP tableにLv${to}が見つかりません`);
-      }
-      sum += base * mult;
+      const row = expTable.get(to);
+      if (!row) throw new Error(`EXP tableにLv${to}が見つかりません`);
+      
+      const baseExp =
+        typeof row === "number"
+          ? row
+          : (row[typeKey] ?? row.normal);
+      
+      sum += baseExp; // ★ここでは倍率を掛けない（表がタイプ別に分かれているため）
+
     }
     return Math.round(sum);
   }
@@ -136,8 +195,13 @@
     for (let lv = lvNow; lv < lvTarget; lv++) {
       const nextLv = lv + 1;
 
-      let stepNeed = (expTable.get(nextLv) || 0) * mult;
-      stepNeed = Math.round(stepNeed);
+      const row = expTable.get(nextLv);
+      if (!row) throw new Error(`EXP tableにLv${nextLv}が見つかりません`);
+      
+      let stepNeed =
+        typeof row === "number"
+          ? Math.round(row * mult)   // もし2列版だった場合の保険
+          : Math.round((row[typeKey] ?? row.normal));
 
       // 最初の1段だけ「次Lvまでの溜まりEXP」を差し引く
       if (lv === lvNow && progressExp > 0) {
@@ -236,7 +300,7 @@
     if (!lvTarget) errs.push("目標レベルを入力してください");
     if (lvTarget <= lvNow) errs.push("目標レベルは「今のレベル」より大きくしてください");
 
-    if (boost > 0 && mini > 0) errs.push("ミニアメブースト と アメブースト は同時に入力できません");
+    if (boost > 0 && mini > 0) errs.push("アメブースト と ミニアメブースト は同時に入力できません");
 
     if (errs.length) {
       showResult(`<div class="lvResTitle">入力エラー</div><div class="lvlWarn">${errs.join("<br>")}</div>`);
@@ -334,3 +398,4 @@
     },
   };
 })();
+
