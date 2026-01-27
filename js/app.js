@@ -396,7 +396,7 @@ function addRecipeRow(init) {
   // ② は最大6行
   if (state.mode === MODES.MIX && state.recipeRows.length >= MAX_ROWS_MODE2) return;
 
-  const rowId = crypto.randomUUID();
+  const rowId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ("rid_" + Date.now() + "_" + Math.random().toString(16).slice(2));
   const rowData = {
     rowId,
     cat: init?.cat || "カレー・シチュー",
