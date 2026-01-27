@@ -396,7 +396,7 @@ function addRecipeRow(init) {
   // ② は最大6行
   if (state.mode === MODES.MIX && state.recipeRows.length >= MAX_ROWS_MODE2) return;
 
-  const rowId = crypto.randomUUID();
+  const rowId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ("rid_" + Date.now() + "_" + Math.random().toString(16).slice(2));
   const rowData = {
     rowId,
     cat: init?.cat || "カレー・シチュー",
@@ -1093,7 +1093,8 @@ window.openDoc = function (fileName) {
    onload
 ========================================================= */
 window.onload = () => {
-  console.log("app.js onload fired", window.__APP_JS_LOADED__);
+  try {
+    console.log("app.js onload fired", window.__APP_JS_LOADED__);
 
   resetSWAndCacheOnce();
   registerSW();
@@ -1237,7 +1238,13 @@ window.onload = () => {
   // 初回描画
   updateAllMealDropdowns();
   calc();
-};
+
+  } catch (e) {
+    // 画面に確実に出す
+    alert("onloadでエラー: " + (e && (e.stack || e.message) || e));
+    throw e;
+  }
+};     
 
 // =========================================================
 // タブ切替（index.html の onclick から呼ばれる）
