@@ -1090,26 +1090,28 @@ window.openDoc = function (fileName) {
 };
 
 /* =========================================================
-   onload
+   init（ボタン死を防ぐため、onload依存をやめる）
 ========================================================= */
-window.onload = () => {
-  try {
-    console.log("app.js onload fired", window.__APP_JS_LOADED__);
+function initApp() {
+  console.log("initApp fired");
 
-  resetSWAndCacheOnce();
+  // まずはUIを確実に動かす（SWリセットで途中リロードされる事故を避ける）
+  // ※安定したら再度有効化してOK
+  // resetSWAndCacheOnce();
+
   registerSW();
 
   renderGrids();
 
-  const nc = document.getElementById("optNcPika");
-   document.querySelectorAll(".repQty").forEach((inp) => {
-     inp.addEventListener("input", () => calc());
-   });
+  // 入力イベント
+  document.querySelectorAll(".repQty").forEach((inp) => {
+    inp.addEventListener("input", () => calc());
+  });
 
-   
+  const nc = document.getElementById("optNcPika");
   if (nc) nc.addEventListener("change", () => calc());
 
-   
+  // 他タブ初期描画（存在する時だけ）
   if (window.CalendarTab && typeof window.CalendarTab.renderYearCalendar === "function") {
     window.CalendarTab.renderYearCalendar();
   }
@@ -1117,86 +1119,99 @@ window.onload = () => {
     window.PokedexTab.renderFieldMenu();
   }
 
+  // 保存タブ復元
   const savedTab = localStorage.getItem("activeTab") || "tab1";
   window.switchTab(savedTab, null);
-   
-   const addBtn = el("addRecipe");
-   if (addBtn) {
-     addBtn.onclick = () => {
-       // ②：先頭カテゴリを複製
-       if (state.mode === MODES.MIX) {
-         const head = state.recipeRows[0];
-         const headCat = head?.cat || "カレー・シチュー";
-   
-         addRecipeRow({
-           cat: headCat,
-           recipeId: getFirstRecipeIdByCat(headCat),
-           meals: 0,
-         });
-   
-         updateAllMealDropdowns();
-         checkAddButton();
-         calc();
-         return;
-       }
-   
-       // ③：欠けているカテゴリを21食で復活
-       if (state.mode === MODES.PRESET63) {
-         const existing = new Set(state.recipeRows.map((r) => r.cat));
-         const missing = CATS_3.filter((c) => !existing.has(c));
-         if (missing.length === 0) return;
-   
-         const cat = missing[0]; // 先頭の欠けカテゴリを復活
-         addRecipeRow({
-           cat,
-           recipeId: getFirstRecipeIdByCat(cat),
-           meals: WEEK_MEALS, // 21固定
-         });
-   
-         updateAllMealDropdowns();
-         checkAddButton();
-         updateMode3Notice?.();
-         calc();
-         return;
-       }
-   
-       // ①：何もしない
-     };
-   }
 
-   
-   // モードUI：保存状態を先に反映 → イベント接続 → そのモードで初期構築
-   syncModeUIFromStorage();
-   bindModeUI();
-   setMode(state.mode);
+  // Tab1 ボタン
+  const addBtn = el("addRecipe");
+  if (addBtn) {
+    addBtn.onclick = () => {
+      if (state.mode === MODES.MIX) {
+        const head = state.recipeRows[0];
+        const headCat = head?.cat || "カレー・シチュー";
 
+        addRecipeRow({
+          cat: headCat,
+          recipeId: getFirstRecipeIdByCat(headCat),
+          meals: 0,
+        });
 
+        updateAllMealDropdowns();
+        checkAddButton();
+        calc();
+        return;
+      }
 
-  // クリア
+      if (state.mode === MODES.PRESET63) {
+        const existing = new Set(state.recipeRows.map((r) => r.cat));
+        const missing = CATS_3.filter((c) => !existing.has(c));
+        if (missing.length === 0) return;
+
+        const cat = missing[0];
+        addRecipeRow({
+          cat,
+          recipeId: getFirstRecipeIdByCat(cat),
+          meals: WEEK_MEALS,
+        });
+
+        updateAllMealDropdowns();
+        checkAddButton();
+        updateMode3Notice?.();
+        calc();
+        return;
+      }
+      // mode1は何もしない
+    };
+  }
+
   const clearBtn = el("clearAll");
   if (clearBtn) {
     clearBtn.onclick = () => {
       const list = el("recipeList");
       if (list) list.innerHTML = "";
       state.recipeRows = [];
-
-      document.querySelectorAll(".exChk").forEach((chk) => (chk.checked = false));
-      document.querySelectorAll(".repQty").forEach((input) => (input.value = ""));
-
-      // モードは初期に戻す
-      state.mode = MODES.ONE;
-
-      // 初期行を作る（前半の setMode などがある想定）
-      if (typeof setMode === "function") {
-        setMode(MODES.ONE);
-      } else {
-        // フォールバック：とりあえず1行作る
-        addRecipeRow({ meals: WEEK_MEALS });
-        updateAllMealDropdowns();
-        calc();
-      }
+      renderGrids();
+      calc();
     };
   }
+
+  // モードUI
+  syncModeUIFromStorage();
+  bindModeUI();
+  setMode(state.mode);
+
+  // モーダル系
+  const docsModal = el("docsModal");
+  const openDocs = el("openDocs");
+  const closeDocs = el("closeDocs");
+  if (openDocs && docsModal) openDocs.onclick = () => (docsModal.style.display = "flex");
+  if (closeDocs && docsModal) closeDocs.onclick = () => (docsModal.style.display = "none");
+
+  const noticeModal = el("noticeModal");
+  const openNotice = el("openNotice");
+  const closeNotice = el("closeNotice");
+  if (openNotice && noticeModal) openNotice.onclick = () => (noticeModal.style.display = "flex");
+  if (closeNotice && noticeModal) closeNotice.onclick = () => (noticeModal.style.display = "none");
+
+  const docViewer = el("docViewerModal");
+  const closeDocViewer = el("closeDocViewer");
+  if (closeDocViewer && docViewer) closeDocViewer.onclick = () => (docViewer.style.display = "none");
+
+  window.onclick = (e) => {
+    if (noticeModal && e.target === noticeModal) noticeModal.style.display = "none";
+    if (docsModal && e.target === docsModal) docsModal.style.display = "none";
+    if (docViewer && e.target === docViewer) docViewer.style.display = "none";
+  };
+
+  updateMode3Notice();
+  updateAllMealDropdowns();
+  calc();
+}
+
+// ★ここが肝：loadではなくDOMContentLoadedで確実に発火させる
+document.addEventListener("DOMContentLoaded", initApp);
+
 
   // 初期行がなければ1行追加（前半でモード初期化済み前提）
   if (state.recipeRows.length === 0) {
