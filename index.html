@@ -653,7 +653,100 @@
     margin-top: 10px;
   }
 
-    
+  /* =========================
+     レベルシミュレーター用
+  ========================= */
+  .lvlForm{ display:flex; flex-direction:column; gap:14px; }
+  
+  .lvlRow{
+    display:grid;
+    grid-template-columns: 1fr 260px;
+    gap: 12px;
+    align-items: center;
+  }
+  
+  @media (max-width: 520px){
+    .lvlRow{ grid-template-columns: 1fr; }
+  }
+  
+  .lvlLabel{
+    font-weight: 900;
+    font-size: 18px;
+    color: #111;
+    line-height: 1.15;
+  }
+  .lvlReq{ color:#e74c3c; margin-right:6px; }
+  .lvlNote{ font-size:12px; font-weight:700; color: var(--muted); }
+  
+  .lvlInput{ display:flex; gap:10px; align-items:center; justify-content:flex-end; flex-wrap:wrap; }
+  .lvlInput input{ max-width: 220px; }
+  .lvlUnit{ font-weight:900; color:#111; }
+  
+  .lvlQuick{ display:flex; gap:6px; }
+  .lvlQuickBtn{
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: #fff;
+    font-weight: 900;
+    cursor: pointer;
+  }
+  .lvlInputRight{ display:flex; gap:10px; align-items:center; }
+  
+  .lvlDivider{ height:2px; background: rgba(0,0,0,0.18); border-radius: 999px; margin: 8px 0; }
+  
+  .lvlRadios{ display:flex; gap:18px; flex-wrap:wrap; align-items:center; justify-content:flex-start; }
+  .lvlRadio{ font-weight: 900; color:#111; display:flex; align-items:center; gap:8px; }
+  .lvlRadio input{ width:16px; height:16px; }
+  
+  .lvUp{ color:#e74c3c; }
+  .lvDown{ color:#1f4fff; }
+  
+  .lvlButtons{
+    display:flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 10px;
+  }
+  .lvlBigBtn{
+    width: 46%;
+    height: 64px;
+    border-radius: 22px;
+    font-size: 34px;
+    font-weight: 900;
+  }
+  .lvlClearBtn{
+    background:#fff;
+    border: 4px solid #e74c3c;
+    color: #e74c3c;
+  }
+  
+  .lvlResult{
+    margin-top: 14px;
+    border: 2px solid var(--main);
+    background: #fff;
+    border-radius: 16px;
+    padding: 14px;
+    font-size: 14px;
+  }
+  .lvlResult .lvResTitle{
+    font-weight: 900;
+    font-size: 15px;
+    margin-bottom: 8px;
+    color: var(--main);
+  }
+  .lvlResult .lvResRow{
+    display:flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+  }
+  .lvlResult .lvResRow:last-child{ border-bottom:none; }
+  .lvlResult .lvResKey{ font-weight: 900; color:#111; }
+  .lvlResult .lvResVal{ font-weight: 900; color:#111; white-space: nowrap; }
+  .lvlWarn{ color:#e74c3c; font-weight:900; margin-top:10px; }
+
   </style>
 </head>
 
@@ -777,6 +870,133 @@
   </div>
 
   <div id="tab3" class="tab-content">
+    <section class="card" id="levelCard">
+  
+      <div style="font-weight:900; font-size:16px; color:var(--main); margin-bottom:12px; text-align:center;">
+        レベルシミュレーター
+      </div>
+  
+      <!-- 入力エリア -->
+      <div class="lvlForm">
+  
+        <!-- 今のレベル -->
+        <div class="lvlRow">
+          <div class="lvlLabel">
+            <span class="lvlReq">*</span> 今のレベル
+          </div>
+          <div class="lvlInput">
+            <input id="lvNow" type="number" min="1" max="65" placeholder="1〜65">
+            <span class="lvlUnit">レベル</span>
+          </div>
+        </div>
+  
+        <!-- 目標レベル -->
+        <div class="lvlRow">
+          <div class="lvlLabel">
+            <span class="lvlReq">*</span> 目標のレベル
+          </div>
+          <div class="lvlInput">
+            <div class="lvlQuick">
+              <button type="button" class="lvlQuickBtn" data-lv="25">25</button>
+              <button type="button" class="lvlQuickBtn" data-lv="30">30</button>
+              <button type="button" class="lvlQuickBtn" data-lv="50">50</button>
+              <button type="button" class="lvlQuickBtn" data-lv="60">60</button>
+            </div>
+            <div class="lvlInputRight">
+              <input id="lvTarget" type="number" min="2" max="65" placeholder="2〜65">
+              <span class="lvlUnit">レベル</span>
+            </div>
+          </div>
+        </div>
+  
+        <!-- 次のレベルまでの経験値 -->
+        <div class="lvlRow">
+          <div class="lvlLabel">
+            次のレベルまでの経験値<br><span class="lvlNote">※任意</span>
+          </div>
+          <div class="lvlInput">
+            <input id="lvProgressExp" type="number" min="0" max="9999" placeholder="0〜9999">
+            <span class="lvlUnit">EXP</span>
+          </div>
+        </div>
+  
+        <div class="lvlDivider"></div>
+  
+        <!-- 性格 -->
+        <div class="lvlRow">
+          <div class="lvlLabel">
+            <span class="lvlReq">*</span> 性格
+          </div>
+          <div class="lvlRadios">
+            <label class="lvlRadio"><input type="radio" name="lvNature" value="none" checked> 無補正</label>
+            <label class="lvlRadio"><input type="radio" name="lvNature" value="up"> <span class="lvUp">EXP↑</span></label>
+            <label class="lvlRadio"><input type="radio" name="lvNature" value="down"> <span class="lvDown">EXP↓</span></label>
+          </div>
+        </div>
+  
+        <!-- 経験値タイプ -->
+        <div class="lvlRow">
+          <div class="lvlLabel">
+            <span class="lvlReq">*</span> 経験値タイプ
+          </div>
+          <div class="lvlRadios">
+            <label class="lvlRadio"><input type="radio" name="lvType" value="normal" checked> ふつう</label>
+            <label class="lvlRadio"><input type="radio" name="lvType" value="600"> 600族</label>
+            <label class="lvlRadio"><input type="radio" name="lvType" value="semi"> 準伝説</label>
+            <label class="lvlRadio"><input type="radio" name="lvType" value="legend"> 伝説 / 幻</label>
+          </div>
+        </div>
+  
+        <div class="lvlDivider"></div>
+  
+        <!-- アメ所持数 -->
+        <div class="lvlRow">
+          <div class="lvlLabel">
+            ポケモンのアメ所持数<br><span class="lvlNote">※任意</span>
+          </div>
+          <div class="lvlInput">
+            <input id="lvCandyOwned" type="number" min="0" max="9999" placeholder="0〜9999">
+            <span class="lvlUnit">個</span>
+          </div>
+        </div>
+  
+        <!-- アメブースト -->
+        <div class="lvlRow">
+          <div class="lvlLabel">
+            アメブースト<br><span class="lvlNote">※任意</span>
+          </div>
+          <div class="lvlInput">
+            <input id="lvBoost" type="number" min="0" max="999" placeholder="0〜999">
+            <span class="lvlUnit">個　使用</span>
+          </div>
+        </div>
+  
+        <!-- ミニアメブースト -->
+        <div class="lvlRow">
+          <div class="lvlLabel">
+            ミニアメブースト<br><span class="lvlNote">※任意</span>
+          </div>
+          <div class="lvlInput">
+            <input id="lvMiniBoost" type="number" min="0" max="999" placeholder="0〜999">
+            <span class="lvlUnit">個　使用</span>
+          </div>
+        </div>
+  
+        <!-- ボタン -->
+        <div class="lvlButtons">
+          <button id="lvCalc" class="primary lvlBigBtn">計算</button>
+          <button id="lvClear" class="lvlBigBtn lvlClearBtn">クリア</button>
+        </div>
+  
+        <!-- 結果 -->
+        <div id="lvResult" class="lvlResult" style="display:none;"></div>
+  
+      </div>
+    </section>
+  </div>
+
+  
+  <div id="tab4" class="tab-content">
     <section class="card">
       <div style="display: flex; gap: 10px; margin-bottom: 10px; font-size: 11px;">
         <span style="display:flex; align-items:center; gap:4px;"><span style="width:12px; height:12px; background:#add8e6; display:inline-block; border-radius:2px;"></span>Good Sleep Day</span>
@@ -792,15 +1012,23 @@
     <span class="nav-icon">🔍</span>
     <span>食材ストック計算</span>
   </div>
+
   <div class="nav-item" onclick="switchTab('tab2', this)">
     <span class="nav-icon">🐾</span>
     <span>出現ポケモン一覧</span>
   </div>
+
   <div class="nav-item" onclick="switchTab('tab3', this)">
-    <span class="nav-icon">📅</span>
+    <span class="nav-icon">🧮</span>
+    <span>レベルシミュレーター</span>
+  </div>
+
+  <div class="nav-item" onclick="switchTab('tab4', this)">
+    <span class="nav-icon">🌕</span>
     <span>月齢カレンダー</span>
   </div>
 </nav>
+
 
 <!-- お役立ち資料集モーダル -->
 <div id="docsModal"
@@ -906,6 +1134,7 @@
 <script src="data/ingredients.js"></script>
 <script src="data/recipes.js"></script>
 <script src="data/fields.js"></script>
+<script src="js/level.js"></script>
 <script src="js/calendar.js"></script>
 <script src="js/pokedex.js"></script>
 <script src="js/app.js"></script>
