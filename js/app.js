@@ -1254,7 +1254,7 @@ window.switchTab = function (tabId, clickedEl) {
     clickedEl.classList.add("active");
   } else {
     // 復元時：tabIdからactiveを推定
-    const map = { tab1: 0, tab2: 1, tab3: 2 };
+    const map = { tab1: 0, tab2: 1, tab3: 2, tab4: 3 };
     const idx = map[tabId] ?? 0;
     const items = document.querySelectorAll(".bottom-nav .nav-item");
     items.forEach((n) => n.classList.remove("active"));
@@ -1263,19 +1263,23 @@ window.switchTab = function (tabId, clickedEl) {
 
   // ヘッダタイトル
   const headerTitle = document.getElementById("headerTitle");
-  if (headerTitle) {
-    headerTitle.textContent =
-      tabId === "tab2" ? "出現ポケモン一覧" :
-      tabId === "tab3" ? "月齢カレンダー" :
-      "食材ストック計算";
+   if (headerTitle) {
+      headerTitle.textContent =
+         tabId === "tab2" ? "出現ポケモン一覧" :
+         tabId === "tab3" ? "レベルシミュレーター" :
+         tabId === "tab4" ? "月齢カレンダー" :
+         "食材ストック計算";
+
   }
 
   // 保存
   localStorage.setItem("activeTab", tabId);
 
   // タブ固有の初期描画
-  if (tabId === "tab2" && window.PokedexTab?.renderFieldMenu) window.PokedexTab.renderFieldMenu();
-  if (tabId === "tab3" && window.CalendarTab?.renderYearCalendar) window.CalendarTab.renderYearCalendar();
+   if (tabId === "tab2" && window.PokedexTab?.renderFieldMenu) window.PokedexTab.renderFieldMenu();
+   if (tabId === "tab3" && window.LevelTab?.init) window.LevelTab.init();
+   if (tabId === "tab4" && window.CalendarTab?.renderYearCalendar) window.CalendarTab.renderYearCalendar();
+
 };
 
 // =========================================================
