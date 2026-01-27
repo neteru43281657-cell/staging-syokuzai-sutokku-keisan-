@@ -1275,7 +1275,9 @@ window.switchTab = function (tabId, clickedEl) {
   localStorage.setItem("activeTab", tabId);
 
   // タブ固有の初期描画
-  if (tabId === "tab2" && window.PokedexTab?.renderFieldMenu) window.PokedexTab.renderFieldMenu();
+   if (tabId === "tab2" && window.PokedexTab?.renderFieldMenu) window.PokedexTab.renderFieldMenu();
+   if (tabId === "tab3" && window.LevelTab?.init) window.LevelTab.init();
+   if (tabId === "tab4" && window.CalendarTab?.renderYearCalendar) window.CalendarTab.renderYearCalendar();
 
   // ★レベル：初期化（ボタンにclickが付く）
   if (tabId === "tab3" && window.LevelTab?.init) window.LevelTab.init();
