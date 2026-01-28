@@ -959,10 +959,6 @@
   <div id="tab3" class="tab-content">
     <section class="card" id="levelCard">
   
-      <div style="font-weight:900; font-size:16px; color:var(--main); margin-bottom:12px; text-align:center;">
-        レベルシミュレーター
-      </div>
-  
       <!-- 入力エリア -->
       <div class="lvlForm">
       
@@ -1090,121 +1086,6 @@
         <!-- 結果 -->
         <div id="lvResult" class="lvlResult" style="display:none;"></div>
       
-      </div>
-
-  
-        <!-- 今のレベル -->
-        <div class="lvlRow">
-          <div class="lvlLabel">
-            <span class="lvlReq">*</span> 今のレベル
-          </div>
-          <div class="lvlInput">
-            <input id="lvNow" type="number" min="1" max="64" placeholder="1〜64">
-            <span class="lvlUnit">レベル</span>
-          </div>
-        </div>
-  
-        <!-- 目標レベル -->
-        <div class="lvlRow">
-          <div class="lvlLabel">
-            <span class="lvlReq">*</span> 目標のレベル
-          </div>
-          <div class="lvlInput">
-            <div class="lvlQuick">
-              <button type="button" class="lvlQuickBtn" data-lv="25">25</button>
-              <button type="button" class="lvlQuickBtn" data-lv="30">30</button>
-              <button type="button" class="lvlQuickBtn" data-lv="50">50</button>
-              <button type="button" class="lvlQuickBtn" data-lv="60">60</button>
-            </div>
-            <div class="lvlInputRight">
-              <input id="lvTarget" type="number" min="2" max="65" placeholder="2〜65">
-              <span class="lvlUnit">レベル</span>
-            </div>
-          </div>
-        </div>
-  
-        <!-- 次のレベルまでの経験値 -->
-        <div class="lvlRow">
-          <div class="lvlLabel">
-            次のレベルまでの経験値<br><span class="lvlNote">※任意</span>
-          </div>
-          <div class="lvlInput">
-            <input id="lvProgressExp" type="number" min="1" max="9999" placeholder="1〜9999">
-            <span class="lvlUnit">EXP</span>
-          </div>
-        </div>
-  
-        <div class="lvlDivider"></div>
-  
-        <!-- 性格 -->
-        <div class="lvlRow">
-          <div class="lvlLabel">
-            <span class="lvlReq">*</span> 性格
-          </div>
-          <div class="lvlRadios">
-            <label class="lvlRadio"><input type="radio" name="lvNature" value="none" checked> 無補正</label>
-            <label class="lvlRadio"><input type="radio" name="lvNature" value="up"> <span class="lvUp">EXP↑</span></label>
-            <label class="lvlRadio"><input type="radio" name="lvNature" value="down"> <span class="lvDown">EXP↓</span></label>
-          </div>
-        </div>
-  
-        <!-- 経験値タイプ -->
-        <div class="lvlRow">
-          <div class="lvlLabel">
-            <span class="lvlReq">*</span> 経験値タイプ
-          </div>
-          <div class="lvlRadios">
-            <label class="lvlRadio"><input type="radio" name="lvType" value="normal" checked> ふつう</label>
-            <label class="lvlRadio"><input type="radio" name="lvType" value="600"> 600族</label>
-            <label class="lvlRadio"><input type="radio" name="lvType" value="semi"> 準伝説</label>
-            <label class="lvlRadio"><input type="radio" name="lvType" value="legend"> 伝説 / 幻</label>
-          </div>
-        </div>
-  
-        <div class="lvlDivider"></div>
-  
-        <!-- アメ所持数 -->
-        <div class="lvlRow">
-          <div class="lvlLabel">
-            ポケモンのアメ所持数<br><span class="lvlNote">※任意</span>
-          </div>
-          <div class="lvlInput">
-            <input id="lvCandyOwned" type="number" min="1" max="9999" placeholder="1〜9999">
-            <span class="lvlUnit">個</span>
-          </div>
-        </div>
-  
-        <!-- アメブースト -->
-        <div class="lvlRow">
-          <div class="lvlLabel">
-            アメブースト<br><span class="lvlNote">※任意</span>
-          </div>
-          <div class="lvlInput">
-            <input id="lvBoost" type="number" min="1" max="999" placeholder="1〜999">
-            <span class="lvlUnit">個　使用</span>
-          </div>
-        </div>
-  
-        <!-- ミニアメブースト -->
-        <div class="lvlRow">
-          <div class="lvlLabel">
-            ミニアメブースト<br><span class="lvlNote">※任意</span>
-          </div>
-          <div class="lvlInput">
-            <input id="lvMiniBoost" type="number" min="1" max="999" placeholder="1〜999">
-            <span class="lvlUnit">個　使用</span>
-          </div>
-        </div>
-  
-        <!-- ボタン -->
-        <div class="lvlButtons">
-          <button id="lvCalc" class="primary lvlBigBtn">計算</button>
-          <button id="lvClear" class="lvlBigBtn lvlClearBtn">クリア</button>
-        </div>
-  
-        <!-- 結果 -->
-        <div id="lvResult" class="lvlResult" style="display:none;"></div>
-  
       </div>
     </section>
   </div>
