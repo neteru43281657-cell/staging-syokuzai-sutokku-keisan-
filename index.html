@@ -731,95 +731,73 @@
     display:block;
   }
   
-  /* 入力側：左=クイック/クリア、右=入力＋単位 */
-  .lvlInput{
-    display:grid;
-    grid-template-columns: 1fr auto;
-    column-gap: 10px;
-    align-items: start;
-    justify-content: end;
-  }
-  
-  /* 小クリアを入力欄に寄せる（位置ズレ対策） */
-  .lvlInput > .lvlMiniClear{ justify-self: end; }
-  
-  /* 入力＋単位：入力欄の左端を揃える（紫ライン対策） */
-  .lvlInputRight{
-    display:grid;
-    grid-template-columns: 1fr auto; /* input | unit */
-    gap: 8px;
-    align-items:center;
-    justify-content:end;
-    width: 150px;        /* ここが基準幅：全行の入力位置が揃う */
-    white-space: nowrap;
-  }
+/* 入力側：左=クイック/クリア、右=入力＋単位（右列を固定して縦ラインを揃える） */
+.lvlInput{
+  display:grid;
+  grid-template-columns: 1fr 150px; /* ←右列固定 */
+  column-gap: 10px;
+  align-items: start;
+}
 
-  /* 小クリアをこの中に入れる行用（後述のHTML変更で使う） */
-  .lvlInputRight.hasClear{
-    grid-template-columns: auto 1fr auto; /* clear | input | unit */
-    width: 210px;
-  }
-  .lvlInputRight.hasClear .lvlMiniClear{
-    height: 28px;
-    padding: 0 10px;
-    border-radius: 10px;
-  }
-  
-  .lvlInput input{
-    border: 2px solid rgba(0,0,0,0.12);
-    border-radius: 10px;
-    padding: 6px 8px;
-    font-weight: 900;
-    outline: none;
-  
-    width: auto !important; /* width:100% を打ち消す */
-    flex: 0 0 auto;
-    max-width: none;
-  }
-  .lvlInput input:focus{ border-color: rgba(0,0,0,0.25); }
-  
-  .lvlUnit{
-    font-weight: 900;
-    color:#111;
-    white-space: nowrap;
-  }
-  
-  /* 入力欄サイズ：さらにコンパクトに */
-  .lvlIn2{ width: 40px; text-align:center; }     /* 今のレベル/目標レベル */
-  .lvlIn4{ width: 96px; text-align:right; }      /* 次LvEXP/所持数 */
-  .lvlInBoost{ width: 72px; text-align:right; }  /* ブースト個数 */
-  
-  /* クイック（通常：ブースト等） */
-  .lvlQuick{
-    display:flex;
-    gap:6px;
-    flex-wrap:wrap;
-    justify-content:flex-end;
-    max-width: 150px;
-  }
+/* 入力＋単位（右列）：常に同じ幅＝縦ラインが揃う */
+.lvlInputRight{
+  display:grid;
+  grid-template-columns: 1fr auto; /* input | unit */
+  gap: 8px;
+  align-items:center;
+  justify-content:end;
+  width: 150px;
+  white-space: nowrap;
+}
 
-  /* レベル用：3列固定（横3×縦2） */
-  .lvlQuickLv{
-    display:grid;
-    grid-template-columns: repeat(3, 36px);
-    gap: 6px;
-    justify-content:end;
-    max-width: none;
-  }
+/* 単位：小さめに */
+.lvlUnit{
+  font-weight: 900;
+  color:#111;
+  white-space: nowrap;
+  font-size: 11px;     /* ←小さめ */
+  opacity: .85;        /* ←少し控えめ */
+}
 
-  .lvlQuickBtn{
-    width: 32px;
-    height: 26px;
-    border-radius: 6px;
-    border: 2px solid rgba(0,0,0,0.16);
-    background: #fff;
-    font-weight: 900;
-    font-size: 12px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 0;
-  }
-  .lvlQuickBtn:active{ transform: translateY(1px); }
+/* クイック（通常：ブースト等） */
+.lvlQuick{
+  display:flex;
+  gap:4px;             /* ←隙間を詰める */
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  max-width: 160px;
+}
+
+/* レベル用：3列固定（横3×縦2） */
+.lvlQuickLv{
+  display:grid;
+  grid-template-columns: repeat(3, 34px); /* ←ボタン幅に合わせる */
+  gap: 4px;                                /* ←隙間を詰める */
+  justify-content:end;
+  max-width: none;
+}
+
+/* クイックボタン：全用途で同一サイズ（形崩れ防止） */
+.lvlQuickBtn{
+  width: 34px;
+  height: 28px;
+  border-radius: 8px;
+  border: 2px solid rgba(0,0,0,0.16);
+  background: #fff;
+  font-weight: 900;
+  font-size: 12px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+.lvlQuickBtn:active{ transform: translateY(1px); }
+
+/* スマホ微調整 */
+@media (max-width: 520px){
+  .lvlInput{ grid-template-columns: 1fr 150px; }
+  .lvlQuick{ max-width: 150px; }
+}
+
   
   /* ラジオ：1行固定（入らない端末は横スクロール） */
   .lvlRadios{
@@ -1122,12 +1100,12 @@
       
         <!-- ===== 任意（下側）===== -->
       
-        <!-- 次のレベルまでの経験値（1〜9999）＋ 任意だけ消すクリア -->
         <div class="lvlRow">
           <div class="lvlLabel">次のレベルまでの経験値</div>
           <div class="lvlInput">
-            <div class="lvlInputRight hasClear">
-              <button id="lvClearOptional" type="button" class="lvlMiniClear">クリア</button>
+            <button id="lvClearOptional" type="button" class="lvlMiniClear" style="justify-self:end;">クリア</button>
+        
+            <div class="lvlInputRight">
               <input id="lvProgressExp" class="lvlIn4" type="number" min="1" max="9999" inputmode="numeric">
               <span class="lvlUnit">EXP</span>
             </div>
