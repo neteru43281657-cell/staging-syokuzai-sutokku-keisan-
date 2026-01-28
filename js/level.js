@@ -151,19 +151,22 @@ function parseExpTable(txt) {
 
   // 「今のLv→目標Lv」までの累計必要EXP（タイプ倍率込み）
   function calcTotalNeedExp(lvNow, lvTarget, typeKey) {
+    const mult = EXP_TYPE_MULT[typeKey] ?? 1.0;
     let sum = 0;
   
     for (let to = lvNow + 1; to <= lvTarget; to++) {
       const row = expTable.get(to);
       if (!row) throw new Error(`EXP tableにLv${to}が見つかりません`);
   
-      const baseExp =
-        typeof row === "number"
-          ? row
-          : (row[typeKey] ?? row.normal);
+      // expTableは {normal, 600, semi, legend} を入れているが、
+      // 正しい計算に合わせて「normal列」だけを基準にする
+      const baseNormal = (typeof row === "number") ? row : (row.normal ?? 0);
   
-      sum += baseExp;
+      // レベルごとに ceil をかける
+      const step = (mult === 1.0) ? baseNormal : Math.ceil(baseNormal * mult);
+      sum += step;
     }
+  
     return Math.round(sum);
   }
 
@@ -199,11 +202,13 @@ function parseExpTable(txt) {
       // このレベル→次レベルに必要なEXP（タイプ別の列を直接使う）
       const row = expTable.get(nextLv);
       if (!row) throw new Error(`EXP tableにLv${nextLv}が見つかりません`);
-  
-      const needStep =
-        typeof row === "number"
-          ? row
-          : (row[typeKey] ?? row.normal);
+      
+      const mult = EXP_TYPE_MULT[typeKey] ?? 1.0;
+      const baseNormal = (typeof row === "number") ? row : (row.normal ?? 0);
+      
+      // レベルごとに ceil をかける
+      const needStep = (mult === 1.0) ? baseNormal : Math.ceil(baseNormal * mult);
+      ;
   
       // すでに貯まっている分を差し引いた「残り」
       let remain = needStep - expIntoNext;
@@ -399,5 +404,6 @@ function parseExpTable(txt) {
     },
   };
 })();
+
 
 
