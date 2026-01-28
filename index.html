@@ -732,18 +732,18 @@
     white-space: nowrap; /* レベル/EXP/個 が縦に割れない */
   }
   
-  /* 入力欄サイズ */
-  .lvlIn2{ width: 36px; text-align:center; }     /* 今のレベル/目標レベル */
-  .lvlIn4{ width: 48px; text-align:right; }     /* 次LvEXP/所持数 */
-  .lvlInBoost{ width: 48px; text-align:right; }  /* ブースト個数 */
+  /* 入力欄サイズ：今のだいたい2/3に寄せる（少し小さめ） */
+  .lvlIn2{ width: 56px; text-align:center; }     /* 今のレベル/目標レベル */
+  .lvlIn4{ width: 120px; text-align:right; }     /* 次LvEXP/所持数 */
+  .lvlInBoost{ width: 92px; text-align:right; }  /* ブースト個数 */
   
-  /* クイックボタン */
+  /* クイックボタン（2枚目のように「入力の左に整列」） */
   .lvlQuick{
     display:flex;
-    gap:4px;
+    gap:6px;
     flex-wrap:wrap;
     justify-content:flex-end;
-    max-width: 250px; 
+    max-width: 150px; /* 2段レイアウトを作りやすい */
   }
   .lvlQuickBtn{
     width: 36px;
@@ -858,6 +858,7 @@
   .lvlResult .lvResKey{ font-weight: 900; color:#111; }
   .lvlResult .lvResVal{ font-weight: 900; color:#111; white-space: nowrap; }
   .lvlWarn{ color:#e74c3c; font-weight:900; margin-top:10px; }
+
       
   </style>
 </head>
