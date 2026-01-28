@@ -1,18 +1,16 @@
 "use strict";
 
 /* =========================
- * 共通ユーティリティ
+ * Utilities
  * ========================= */
 function toNum(v) {
-  if (v === null || v === undefined) return 0;
-  const s = String(v).trim();
-  if (!s) return 0;
-  const cleaned = s.replace(/,/g, "");
-  const n = Number(cleaned);
+  if (v == null) return 0;
+  const s = String(v).trim().replace(/,/g, "");
+  const n = Number(s);
   return Number.isFinite(n) ? n : 0;
 }
 
-// EXP倍率用：四捨五入（0.5切り上げ）
+// 四捨五入（0.5切り上げ）
 function roundHalfUp(x) {
   return Math.floor(x + 0.5);
 }
@@ -20,7 +18,7 @@ function roundHalfUp(x) {
 (function () {
 
   /* =========================
-   * 定数・設定
+   * Constants
    * ========================= */
   const LV_MIN = 1;
   const LV_MAX = 65;
@@ -33,7 +31,7 @@ function roundHalfUp(x) {
   };
 
   /* =========================
-   * アメ1個あたりEXP（性格は表で完結）
+   * Candy EXP per 1 candy
    * ========================= */
   function baseCandyExp(level, nature) {
     let band;
@@ -51,7 +49,7 @@ function roundHalfUp(x) {
   }
 
   /* =========================
-   * テーブル読み込み
+   * Tables
    * ========================= */
   let expTable = null;
   let shardTable = null;
@@ -77,9 +75,7 @@ function roundHalfUp(x) {
       if (p.length < 2) return;
       const k = Number(p[0]);
       const v = toNum(p[1]);
-      if (Number.isFinite(k) && Number.isFinite(v)) {
-        map.set(k, v);
-      }
+      if (Number.isFinite(k) && Number.isFinite(v)) map.set(k, v);
     });
     return map;
   }
@@ -111,7 +107,7 @@ function roundHalfUp(x) {
   }
 
   /* =========================
-   * 計算コア
+   * Core calculations
    * ========================= */
   function clampInt(n, min, max) {
     n = Number(n);
@@ -127,11 +123,8 @@ function roundHalfUp(x) {
       const row = expTable.get(to);
       if (!row) throw new Error(`EXP tableにLv${to}が見つかりません`);
 
-      const baseNormal = (typeof row === "number") ? row : row.normal;
-      const step = (mult === 1.0)
-        ? baseNormal
-        : roundHalfUp(baseNormal * mult);
-
+      const base = typeof row === "number" ? row : row.normal;
+      const step = mult === 1.0 ? base : roundHalfUp(base * mult);
       sum += step;
     }
     return sum;
@@ -160,10 +153,8 @@ function roundHalfUp(x) {
       if (!row) throw new Error(`EXP tableにLv${nextLv}が見つかりません`);
 
       const mult = EXP_TYPE_MULT[typeKey] ?? 1.0;
-      const baseNormal = (typeof row === "number") ? row : row.normal;
-      const needStep = (mult === 1.0)
-        ? baseNormal
-        : roundHalfUp(baseNormal * mult);
+      const base = typeof row === "number" ? row : row.normal;
+      const needStep = mult === 1.0 ? base : roundHalfUp(base * mult);
 
       let remain = needStep - expCarry;
 
@@ -174,7 +165,7 @@ function roundHalfUp(x) {
       }
 
       const perCandy = baseCandyExp(lv, natureKey);
-      const useBoost = (boostRemain > 0 && boostKind !== "none");
+      const useBoost = boostRemain > 0 && boostKind !== "none";
 
       let gain = perCandy * (useBoost ? boostExpMul : 1);
       gain = Math.floor(gain);
@@ -183,7 +174,7 @@ function roundHalfUp(x) {
       const shardPer = shardTable.get(nextLv) || 0;
       const shardCost = shardPer * (useBoost ? boostShardMul : 1);
 
-      candies += 1;
+      candies++;
       shards += shardCost;
       expCarry += gain;
 
@@ -217,7 +208,7 @@ function roundHalfUp(x) {
     box.innerHTML = "";
   }
 
-  function buildRow(k, v) {
+  function row(k, v) {
     return `<div class="lvResRow"><div class="lvResKey">${k}</div><div class="lvResVal">${v}</div></div>`;
   }
 
@@ -248,14 +239,12 @@ function roundHalfUp(x) {
       boostCount: mini || boost || 0,
     });
 
-    const html = [
+    showResult([
       `<div class="lvResTitle">計算結果</div>`,
-      buildRow("必要経験値", `${totalExp.toLocaleString()} EXP`),
-      buildRow("必要なアメ", `${Math.max(0, sim.candiesTotal - candyOwned).toLocaleString()} 個`),
-      buildRow("必要なゆめのかけら", `${sim.shardsTotal.toLocaleString()} 個`),
-    ].join("");
-
-    showResult(html);
+      row("必要経験値", `${totalExp.toLocaleString()} EXP`),
+      row("必要なアメの数", `${Math.max(0, sim.candiesTotal - candyOwned).toLocaleString()} 個`),
+      row("必要なゆめのかけら", `${sim.shardsTotal.toLocaleString()} 個`),
+    ].join(""));
   }
 
   function bindOnce() {
@@ -270,4 +259,5 @@ function roundHalfUp(x) {
       bindOnce();
     },
   };
+
 })();
