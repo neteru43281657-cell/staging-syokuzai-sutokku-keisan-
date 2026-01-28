@@ -731,137 +731,171 @@
     display:block;
   }
   
-/* 入力側：左=クイック/補助、右=入力＋単位（右列を固定して縦ラインを揃える） */
-.lvlInput{
-  display:grid;
-  grid-template-columns: 1fr 120px;   /* ←入力列を小さく */
-  column-gap: 10px;
-  align-items: start;
-}
-
-/* 入力＋単位（右列）：常に同じ幅＝縦ラインが揃う */
-.lvlInputRight{
-  display:grid;
-  grid-template-columns: 1fr auto;    /* input | unit */
-  gap: 6px;
-  align-items:center;
-  justify-content:end;
-  width: 120px;                       /* ←上と一致 */
-  white-space: nowrap;
-}
-
-/* 単位：小さめに */
-.lvlUnit{
-  font-weight: 900;
-  color:#111;
-  white-space: nowrap;
-  font-size: 10px;
-  opacity: .85;
-}
-
-/* 入力欄（サイズ指定） */
-.lvlInput input{
-  border: 2px solid rgba(0,0,0,0.12);
-  border-radius: 10px;
-  padding: 4px 6px;
-  font-weight: 900;
-  outline: none;
-  width: auto !important; /* width:100% を打ち消す */
-}
-
-/* レベル入力：いまの1/3くらい */
-.lvlIn2{ width: 26px; text-align:center; }    /* 今のレベル/目標レベル */
-
-/* 下段の入力：いまの1/2くらい */
-.lvlIn4{ width: 72px; text-align:right; }     /* 次LvEXP/所持数 */
-.lvlInBoost{ width: 56px; text-align:right; } /* ブースト個数 */
-
-/* クイック（通常：ブースト等） */
-.lvlQuick{
-  display:flex;
-  gap: 4px;
-  flex-wrap:wrap;
-  justify-content:flex-start;
-  max-width: none;
-}
-
-/* レベル用：3列固定（横3×縦2） */
-.lvlQuickLv{
-  display:grid;
-  grid-template-columns: repeat(3, 30px);
-  gap: 3px;
-  justify-content:start;
-  max-width: none;
-}
-
-/* クイックボタン：全用途で同一サイズ（形崩れ防止） */
-.lvlQuickBtn{
-  width: 30px;
-  height: 24px;
-  border-radius: 8px;
-  border: 2px solid rgba(0,0,0,0.16);
-  background: #fff;
-  font-weight: 900;
-  font-size: 12px;
-  cursor: pointer;
-  line-height: 1;
-  padding: 0;
-}
-.lvlQuickBtn:active{ transform: translateY(1px); }
-
-/* ブースト行：縦積み時の見た目を安定させる（全端末で有効） */
-.lvlInputStack{
-  grid-template-columns: 1fr !important;
-  row-gap: 8px;
-}
-.lvlInputStack .lvlQuick{
-  justify-content:flex-start;
-}
-.lvlInputStack .lvlInputRight{
-  justify-self: end; /* 入力欄は右寄せ */
-}
-
-/* スマホ：右カラム(230px)に収める調整 */
-@media (max-width: 520px){
-  .lvlRow{ grid-template-columns: 1fr 230px; }
-
+  /* =========================================================
+     レベルシミュレーター：入力/ラジオ/小クリア/クイック（完成形）
+     - ① 入力欄を「横長すぎ」解消（親の固定幅を撤廃してコンパクト化）
+     - ② ラジオの●位置を +2px 下げる
+     - ③ 小クリアをタブ①の .danger と完全一致
+     - ④ ブースト/ミニのクイックを「横3マス」グリッドに統一
+  ========================================================= */
+  
+  /* 入力側：左=クイック、右=入力＋単位（右列を固定しないで自然幅に） */
   .lvlInput{
-    grid-template-columns: 1fr 110px;
-    column-gap: 8px;
+    display: grid;
+    grid-template-columns: 1fr auto;   /* ← 旧: 1fr 120px をやめる */
+    column-gap: 10px;
+    align-items: start;
   }
+  
+  /* 入力＋単位（右列）：自然幅 + 右寄せ（縦ラインは揃う） */
   .lvlInputRight{
-    width: 110px;
+    display: inline-grid;
+    grid-template-columns: auto auto;  /* input | unit */
     gap: 6px;
+    align-items: center;
+    justify-content: end;
+    white-space: nowrap;
   }
-
-  .lvlUnit{ font-size: 10px; }
-
+  
+  /* 単位（EXP/個/レベル） */
+  .lvlUnit{
+    font-weight: 900;
+    color:#111;
+    white-space: nowrap;
+    font-size: 10px;
+    opacity: .85;
+  }
+  
+  /* 入力欄（共通） */
+  .lvlInput input{
+    border: 2px solid rgba(0,0,0,0.12);
+    border-radius: 10px;
+    padding: 4px 6px;
+    font-weight: 900;
+    outline: none;
+    width: auto !important; /* ベースの width:100% を打ち消す */
+  }
+  
+  /* ① 入力幅：要件どおり “半分くらい” の見た目に寄せる */
+  .lvlIn2{   width: 38px; text-align:center; } /* 「レベル」：2桁が入る */
+  .lvlIn4{   width: 64px; text-align:right; }  /* 「EXP」「個」：4桁が入る */
+  .lvlInBoost{ width: 64px; text-align:right; }/* ブースト個数：4桁想定で統一 */
+  
+  /* クイック（通常） */
+  .lvlQuick{
+    display:flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    max-width: none;
+  }
+  
+  /* レベル用：3列固定（横3×縦2） */
   .lvlQuickLv{
-    grid-template-columns: repeat(3, 28px);
+    display: grid;
+    grid-template-columns: repeat(3, 30px);
     gap: 3px;
+    justify-content: start;
+    max-width: none;
   }
+  
+  /* ④ ブースト/ミニ：クイックを “横3マス” グリッドに統一（はみ出し防止）
+     ※ Chrome/Android でOKな :has() を使用 */
+  .lvlQuick:has(.lvlQuickBtn[data-boost]),
+  .lvlQuick:has(.lvlQuickBtn[data-mini]){
+    display: grid;
+    grid-template-columns: repeat(3, 30px);
+    gap: 3px;
+    justify-content: start;
+    max-width: none;
+  }
+  
+  /* クイックボタン：全用途で同一サイズ */
   .lvlQuickBtn{
-    width: 28px;
+    width: 30px;
     height: 24px;
     border-radius: 8px;
+    border: 2px solid rgba(0,0,0,0.16);
+    background: #fff;
+    font-weight: 900;
     font-size: 12px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
   }
-}
-
-/* 小さいクリア：タブ①の「クリア(danger)」と同じ見た目 */
-.lvlMiniClear{
-  height: 34px;               /* #actionBlock > button と同じ系 */
-  padding: 0 16px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: #fff;
-  color: var(--danger);
-  font-weight: 800;
-  font-size: 13px;
-  cursor: pointer;
-  line-height: 34px;
-}
-.lvlMiniClear:active{ transform: translateY(1px); }
+  .lvlQuickBtn:active{ transform: translateY(1px); }
+  
+  /* ブースト行：縦積み（クイック上、入力下） */
+  .lvlInputStack{
+    grid-template-columns: 1fr !important;
+    row-gap: 8px;
+  }
+  .lvlInputStack .lvlQuick{
+    justify-content:flex-start;
+  }
+  .lvlInputStack .lvlInputRight{
+    justify-self: end; /* 入力欄は右寄せ */
+  }
+  
+  /* ② 性格/経験値タイプ：ラジオの●を +2px 下へ */
+  .lvlRadios{
+    display:flex;
+    gap:18px;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    -webkit-overflow-scrolling: touch;
+    align-items:center;   /* まず中心に揃える */
+    justify-content:flex-start;
+  }
+  .lvlRadios::-webkit-scrollbar{ display:none; }
+  .lvlRadio{ white-space: nowrap; }
+  .lvlRadio input[type="radio"]{
+    margin: 0 6px 0 0;
+    transform: translateY(2px); /* ★ここが2px補正 */
+  }
+  
+  /* ③ 小さいクリア：タブ①の button.danger と完全一致 */
+  .lvlMiniClear{
+    padding: 10px 16px;          /* button と同じ */
+    border: 1px solid #fadbd8;   /* danger の border-color と同じ */
+    border-radius: 10px;         /* button と同じ */
+    font-weight: 800;            /* button と同じ */
+    font-size: 14px;             /* button と同じ */
+    background: #fff;            /* danger と同じ */
+    color: var(--danger);        /* danger と同じ */
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;              /* 文字の縦ズレ防止 */
+  }
+  .lvlMiniClear:active{ transform: translateY(1px); }
+  
+  /* スマホ微調整（右列をさらに詰める & グリッド幅も少し縮める） */
+  @media (max-width: 520px){
+    .lvlInput{ column-gap: 8px; }
+    .lvlInputRight{ gap: 6px; }
+  
+    .lvlQuickLv{
+      grid-template-columns: repeat(3, 28px);
+      gap: 3px;
+    }
+    .lvlQuick:has(.lvlQuickBtn[data-boost]),
+    .lvlQuick:has(.lvlQuickBtn[data-mini]){
+      grid-template-columns: repeat(3, 28px);
+      gap: 3px;
+    }
+  
+    .lvlQuickBtn{
+      width: 28px;
+      height: 24px;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+  
+    .lvlIn2{ width: 36px; }
+    .lvlIn4, .lvlInBoost{ width: 60px; }
+  }
 
   
   /* 計算/クリア：大きすぎ＆文字の縦ズレ対策 */
@@ -875,7 +909,7 @@
     width: 46%;
     height: 62px;
     border-radius: 22px;
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 900;
     display:flex;
     align-items:center;
