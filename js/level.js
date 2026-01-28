@@ -25,7 +25,7 @@ function toNum(v) {
   };
 
   // アメ1個あたりの基礎EXP（レベル帯 × 性格）
-  // ※ここは「表の値」を使い、さらに性格の追加係数を掛ける（ユーザー指定）
+  // ※ここは「表の値」を使い、さらに性格の追加係数を掛ける
   function baseCandyExp(level, nature) {
     // レベル帯
     // Lv1〜25 / Lv25〜30 / Lv30以上
@@ -87,7 +87,7 @@ function parseTwoColTable(txt) {
     if (parts.length < 2) return;
 
     const k = Number(parts[0]);
-    const v = toNum(parts[1]); // ★カンマ対応
+    const v = toNum(parts[1]); // カンマ対応
 
     if (!Number.isFinite(k) || !Number.isFinite(v)) return;
     map.set(k, v);
@@ -151,26 +151,25 @@ function parseExpTable(txt) {
 
   // 「今のLv→目標Lv」までの累計必要EXP（タイプ倍率込み）
   function calcTotalNeedExp(lvNow, lvTarget, typeKey) {
-    const mult = EXP_TYPE_MULT[typeKey] ?? 1.0;
     let sum = 0;
-
+  
     for (let to = lvNow + 1; to <= lvTarget; to++) {
       const row = expTable.get(to);
       if (!row) throw new Error(`EXP tableにLv${to}が見つかりません`);
-      
+  
       const baseExp =
         typeof row === "number"
           ? row
           : (row[typeKey] ?? row.normal);
-      
-      sum += baseExp; // ★ここでは倍率を掛けない（表がタイプ別に分かれているため）
-
+  
+      sum += baseExp;
     }
     return Math.round(sum);
   }
 
+
   // レベルアップを「低レベルから順に」シミュレートして、
-  // 必要アメ数と必要かけらを出す（ブースト対応）
+  // 必要アメ数と必要かけらを出す（ブースト対応・EXP持ち越し対応・かけら参照レベル修正）
   function simulateCandiesAndShards(opts) {
     const {
       lvNow,
@@ -179,76 +178,78 @@ function parseExpTable(txt) {
       natureKey,
       progressExp,     // 今Lv→次Lv に貯まっているEXP
       boostKind,       // "none" | "mini" | "full"
-      boostCount,      // ブースト対象アメ数（最初から順に使う）
+      boostCount,      // ブースト対象アメ数（低レベルから順に消費）
     } = opts;
-
-    const mult = EXP_TYPE_MULT[typeKey] ?? 1.0;
-
+  
     let candiesTotal = 0;
     let shardsTotal = 0;
-
+  
+    // 重要：現在レベルの「次Lvまでに貯まっているEXP」を初期値として持つ
+    let expIntoNext = Math.max(0, Number(progressExp) || 0);
+  
+    let lv = lvNow;
     let boostRemain = Math.max(0, Number(boostCount) || 0);
-
-    const boostExpMul = boostKind === "mini" || boostKind === "full" ? 2 : 1;
+  
+    const boostExpMul = (boostKind === "mini" || boostKind === "full") ? 2 : 1;
     const boostShardMul = boostKind === "mini" ? 4 : (boostKind === "full" ? 5 : 1);
-
-    for (let lv = lvNow; lv < lvTarget; lv++) {
+  
+    while (lv < lvTarget) {
       const nextLv = lv + 1;
-
+  
+      // このレベル→次レベルに必要なEXP（タイプ別の列を直接使う）
       const row = expTable.get(nextLv);
       if (!row) throw new Error(`EXP tableにLv${nextLv}が見つかりません`);
-      
-      let stepNeed =
+  
+      const needStep =
         typeof row === "number"
-          ? Math.round(row * mult)   // もし2列版だった場合の保険
-          : Math.round((row[typeKey] ?? row.normal));
-
-      // 最初の1段だけ「次Lvまでの溜まりEXP」を差し引く
-      if (lv === lvNow && progressExp > 0) {
-        stepNeed = Math.max(0, stepNeed - progressExp);
+          ? row
+          : (row[typeKey] ?? row.normal);
+  
+      // すでに貯まっている分を差し引いた「残り」
+      let remain = needStep - expIntoNext;
+  
+      // 既に超えていたら、余りEXPを持ち越してレベルアップ
+      if (remain <= 0) {
+        lv = nextLv;
+        expIntoNext = -remain; // 余りを次の段に持ち越し
+        continue;
       }
-
-      if (stepNeed <= 0) continue;
-
-      // このレベルでの「通常アメ1個あたりEXP」
-      const perCandy = baseCandyExp(lv, natureKey);
-
-      // このレベルでの「アメ1個あたりかけら」
-      const shardPer = shardTable.get(lv) || 0;
-
-      let remainExp = stepNeed;
-
-      // まずブースト分を可能なら使う（低レベルから順）
-      if (boostRemain > 0 && boostKind !== "none") {
-        const perBoostCandyExp = perCandy * boostExpMul;
-
-        // この段をブーストだけで満たすなら何個必要か
-        const needBoostCandies = ceilDiv(remainExp, perBoostCandyExp);
-
-        const useBoost = Math.min(boostRemain, needBoostCandies);
-
-        candiesTotal += useBoost;
-        shardsTotal += useBoost * shardPer * boostShardMul;
-
-        remainExp -= useBoost * perBoostCandyExp;
-        boostRemain -= useBoost;
-      }
-
-      // 残りは通常アメで満たす
-      if (remainExp > 0) {
-        const needNormal = ceilDiv(remainExp, perCandy);
-        candiesTotal += needNormal;
-        shardsTotal += needNormal * shardPer; // 通常倍率
-
-        remainExp = 0;
-      }
+  
+      // 1個あたりEXP（レベル帯×性格×追加補正）
+      // ※小数が出るので、ゲーム寄りに「アメ1個ごとに切り捨て」で扱う
+      let perCandy = baseCandyExp(lv, natureKey);
+  
+      // ここが重要：ブーストは「アメ個数ぶん」だけ先に使う（低レベルから順）
+      const isBoost = (boostRemain > 0 && boostKind !== "none");
+      if (isBoost) boostRemain--;
+  
+      // 1個ぶんの獲得EXP（ブースト含む）
+      let gain = perCandy * (isBoost ? boostExpMul : 1);
+  
+      // 丸め：アメ1個ごとに切り捨て（小数EXPは出ない想定に寄せる）
+      gain = Math.floor(gain);
+      if (gain <= 0) gain = 1; // 念のため
+  
+      // かけら単価は「到達レベル側」を参照（LvX→X+1なら shard[X+1]）
+      const shardPer = shardTable.get(nextLv) || 0;
+  
+      // かけら（ブースト倍率）
+      const shardCost = shardPer * (isBoost ? boostShardMul : 1);
+  
+      // アメ1個使う
+      candiesTotal += 1;
+      shardsTotal += shardCost;
+      expIntoNext += gain;
+  
+      // 次のループで remain<=0 になれば自動でLvUP＆余り持ち越しされます
     }
-
+  
     return {
       candiesTotal: Math.trunc(candiesTotal),
       shardsTotal: Math.trunc(Math.round(shardsTotal)),
     };
   }
+
 
   // =========================
   // UI
@@ -398,4 +399,5 @@ function parseExpTable(txt) {
     },
   };
 })();
+
 
