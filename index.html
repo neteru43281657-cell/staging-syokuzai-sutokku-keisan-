@@ -792,11 +792,51 @@
 }
 .lvlQuickBtn:active{ transform: translateY(1px); }
 
-/* スマホ微調整 */
+/* スマホ：右カラム(230px)に収める調整 */
 @media (max-width: 520px){
-  .lvlInput{ grid-template-columns: 1fr 150px; }
-  .lvlQuick{ max-width: 150px; }
+
+  /* 右カラム230px内に「クイック＋入力」を同居させるため縮小 */
+  .lvlRow{ grid-template-columns: 1fr 230px; }
+
+  /* 横並び（レベル・経験値・所持数など） */
+  .lvlInput{
+    grid-template-columns: 1fr 118px; /* ←入力列を縮小 */
+    column-gap: 8px;
+  }
+  .lvlInputRight{
+    width: 118px;                     /* ←入力列と一致させる */
+    gap: 6px;
+  }
+
+  /* 単位をさらに小さめに */
+  .lvlUnit{ font-size: 10px; }
+
+  /* レベル用クイック：3列の“1個あたり幅”と隙間を縮めて230px内に収める */
+  .lvlQuickLv{
+    grid-template-columns: repeat(3, 32px);
+    gap: 3px;
+  }
+  .lvlQuickBtn{
+    width: 32px;
+    height: 26px;
+    border-radius: 8px;
+    font-size: 12px;
+  }
+
+  /* ブースト系は「縦積み」にして 1列化を防ぐ（クイック→入力の順） */
+  .lvlInputStack{
+    grid-template-columns: 1fr !important;
+    row-gap: 8px;
+  }
+  .lvlInputStack .lvlQuick{
+    max-width: none;
+    justify-content: flex-start; /* 左寄せで横に並びやすく */
+  }
+  .lvlInputStack .lvlInputRight{
+    justify-self: end;  /* 入力欄は右寄せ */
+  }
 }
+
 
   
   /* ラジオ：1行固定（入らない端末は横スクロール） */
@@ -1100,17 +1140,27 @@
       
         <!-- ===== 任意（下側）===== -->
       
+        <!-- 小クリア：専用の1段（右側に置く） -->
+        <div class="lvlRow">
+          <div class="lvlLabel"></div>
+          <div class="lvlInput" style="grid-template-columns: 1fr 118px; column-gap:8px;">
+            <div></div>
+            <button id="lvClearOptional" type="button" class="lvlMiniClear" style="justify-self:end;">クリア</button>
+          </div>
+        </div>
+        
+        <!-- 次のレベルまでの経験値：入力だけの段（縦ラインが安定する） -->
         <div class="lvlRow">
           <div class="lvlLabel">次のレベルまでの経験値</div>
           <div class="lvlInput">
-            <button id="lvClearOptional" type="button" class="lvlMiniClear" style="justify-self:end;">クリア</button>
-        
+            <div></div>
             <div class="lvlInputRight">
               <input id="lvProgressExp" class="lvlIn4" type="number" min="1" max="9999" inputmode="numeric">
               <span class="lvlUnit">EXP</span>
             </div>
           </div>
         </div>
+
 
       
         <!-- アメ所持数（1〜9999） -->
@@ -1127,7 +1177,7 @@
         <!-- アメブースト（0〜9999）＋クイックボタン -->
         <div class="lvlRow">
           <div class="lvlLabel">アメブースト</div>
-          <div class="lvlInput">
+          <div class="lvlInput lvlInputStack">
             <div class="lvlQuick">
               <button type="button" class="lvlQuickBtn" data-boost="100">100</button>
               <button type="button" class="lvlQuickBtn" data-boost="150">150</button>
@@ -1150,7 +1200,7 @@
         <!-- ミニアメブースト（0〜9999）＋クイックボタン -->
         <div class="lvlRow">
           <div class="lvlLabel">ミニアメブースト</div>
-          <div class="lvlInput">
+          <div class="lvlInput lvlInputStack">
             <div class="lvlQuick">
               <button type="button" class="lvlQuickBtn" data-mini="100">100</button>
               <button type="button" class="lvlQuickBtn" data-mini="150">150</button>
