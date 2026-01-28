@@ -777,9 +777,9 @@
   }
   
   /* ① 入力幅：要件どおり “半分くらい” の見た目に寄せる */
-  .lvlIn2{   width: 38px; text-align:center; } /* 「レベル」：2桁が入る */
-  .lvlIn4{   width: 64px; text-align:right; }  /* 「EXP」「個」：4桁が入る */
-  .lvlInBoost{ width: 64px; text-align:right; }/* ブースト個数：4桁想定で統一 */
+  .lvlIn2{   width: 24px; text-align:center; } /* 「レベル」：2桁が入る */
+  .lvlIn4{   width: 48px; text-align:right; }  /* 「EXP」「個」：4桁が入る */
+  .lvlInBoost{ width: 48px; text-align:right; }/* ブースト個数：4桁想定で統一 */
   
   /* クイック（通常） */
   .lvlQuick{
@@ -837,7 +837,7 @@
     justify-self: end; /* 入力欄は右寄せ */
   }
   
-  /* ② 性格/経験値タイプ：ラジオの●を +2px 下へ */
+  /* ② 性格/経験値タイプ：ラジオの●を +3px 下へ */
   .lvlRadios{
     display:flex;
     gap:18px;
@@ -851,7 +851,7 @@
   .lvlRadio{ white-space: nowrap; }
   .lvlRadio input[type="radio"]{
     margin: 0 6px 0 0;
-    transform: translateY(2px); /* ★ここが2px補正 */
+    transform: translateY(3px); /* ★ここがpx補正 */
   }
   
   /* ③ 小さいクリア：タブ①の button.danger と完全一致 */
