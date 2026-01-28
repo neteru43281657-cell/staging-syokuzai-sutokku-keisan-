@@ -191,7 +191,7 @@ function roundHalfUp(x) {
     };
   }
 
-  /* =========================
+   /* =========================
    * UI
    * ========================= */
   const el = id => document.getElementById(id);
@@ -215,125 +215,60 @@ function roundHalfUp(x) {
   function row(k, v) {
     return `<div class="lvResRow"><div class="lvResKey">${k}</div><div class="lvResVal">${v}</div></div>`;
   }
-
   function subTitle(t) {
     return `<div class="lvResSubTitle">${t}</div>`;
   }
 
-  function setBoostUI(kind) {
-    const boostOn = el("lvBoostOn");
-    const miniOn = el("lvMiniBoostOn");
-    const boostCount = el("lvBoostCount");
-    const miniCount = el("lvMiniBoostCount");
+  function bindQuickButtons() {
+    // 今のレベル用
+    document.querySelectorAll(".lvlQuickBtn[data-now]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const v = Number(btn.getAttribute("data-now") || 0);
+        const now = el("lvNow");
+        if (!now) return;
+        if (Number.isFinite(v) && v >= 1 && v <= 64) now.value = String(v);
+      });
+    });
 
-    if (!boostOn || !miniOn || !boostCount || !miniCount) return;
-
-    if (kind === "full") {
-      boostOn.checked = true;
-      miniOn.checked = false;
-
-      boostCount.disabled = false;
-      miniCount.disabled = true;
-      miniCount.value = "";
-    } else if (kind === "mini") {
-      boostOn.checked = false;
-      miniOn.checked = true;
-
-      boostCount.disabled = true;
-      miniCount.disabled = false;
-      boostCount.value = "";
-    } else {
-      boostOn.checked = false;
-      miniOn.checked = false;
-
-      boostCount.disabled = true;
-      miniCount.disabled = true;
-      boostCount.value = "";
-      miniCount.value = "";
-    }
+    // 目標レベル用
+    document.querySelectorAll(".lvlQuickBtn[data-target]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const v = Number(btn.getAttribute("data-target") || 0);
+        const target = el("lvTarget");
+        if (!target) return;
+        if (Number.isFinite(v) && v >= 2 && v <= 65) target.value = String(v);
+      });
+    });
   }
 
   function bindBoostExclusive() {
     const boostOn = el("lvBoostOn");
     const miniOn = el("lvMiniBoostOn");
-    const boostCount = el("lvBoostCount");
-    const miniCount = el("lvMiniBoostCount");
-
-    if (!boostOn || !miniOn || !boostCount || !miniCount) return;
-
-    // 初期はOFF
-    setBoostUI("none");
+    if (!boostOn || !miniOn) return;
 
     boostOn.addEventListener("change", () => {
-      if (boostOn.checked) {
-        setBoostUI("full");
-        // ONにしたら入力しやすいようにカーソル
-        boostCount.focus();
-      } else {
-        setBoostUI("none");
-      }
+      if (boostOn.checked) miniOn.checked = false;
     });
-
     miniOn.addEventListener("change", () => {
-      if (miniOn.checked) {
-        setBoostUI("mini");
-        miniCount.focus();
-      } else {
-        setBoostUI("none");
-      }
-    });
-
-    // 数値入力が0ならOFF扱いに寄せたい場合（任意）
-    boostCount.addEventListener("input", () => {
-      if (!boostOn.checked) return;
-      const n = clampInt(boostCount.value || 0, 0, 999);
-      if (n === 0) {
-        // 0のまま計算すると分かりづらいので、ここではOFFに戻す
-        // 0も許容したいなら、この3行を消してください
-        setBoostUI("none");
-      }
-    });
-
-    miniCount.addEventListener("input", () => {
-      if (!miniOn.checked) return;
-      const n = clampInt(miniCount.value || 0, 0, 999);
-      if (n === 0) {
-        setBoostUI("none");
-      }
-    });
-  }
-
-  function bindQuickButtons() {
-    document.querySelectorAll(".lvlQuickBtn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const v = Number(btn.getAttribute("data-lv") || 0);
-        const target = el("lvTarget");
-        if (!target) return;
-        if (Number.isFinite(v) && v >= 2 && v <= LV_MAX) {
-          target.value = String(v);
-        }
-      });
+      if (miniOn.checked) boostOn.checked = false;
     });
   }
 
   function clearAll() {
-    // 入力
     if (el("lvNow")) el("lvNow").value = "";
     if (el("lvTarget")) el("lvTarget").value = "";
     if (el("lvProgressExp")) el("lvProgressExp").value = "";
     if (el("lvCandyOwned")) el("lvCandyOwned").value = "";
 
-    // ラジオ（初期値に戻す）
     const natureNone = document.querySelector(`input[name="lvNature"][value="none"]`);
     if (natureNone) natureNone.checked = true;
 
     const typeNormal = document.querySelector(`input[name="lvType"][value="normal"]`);
     if (typeNormal) typeNormal.checked = true;
 
-    // ブーストOFF
-    setBoostUI("none");
+    if (el("lvBoostOn")) el("lvBoostOn").checked = false;
+    if (el("lvMiniBoostOn")) el("lvMiniBoostOn").checked = false;
 
-    // 結果
     hideResult();
   }
 
@@ -360,23 +295,11 @@ function roundHalfUp(x) {
       return;
     }
     if (lvTarget <= lvNow) {
-      showResult(`<div class="lvlWarn">「目標のレベル」は「今のレベル」より大きい数にしてください</div>`);
+      showResult(`<div class="lvlWarn">「目標のレベル」は「今のレベル」より大きい値にしてください</div>`);
       return;
     }
     if (boostOn && miniOn) {
       showResult(`<div class="lvlWarn">ブーストは「アメブースト / ミニアメブースト」のどちらか一方のみONにできます</div>`);
-      return;
-    }
-
-    const boostCount = boostOn ? clampInt(el("lvBoostCount")?.value || 0, 0, 999) : 0;
-    const miniCount = miniOn ? clampInt(el("lvMiniBoostCount")?.value || 0, 0, 999) : 0;
-
-    if (boostOn && boostCount <= 0) {
-      showResult(`<div class="lvlWarn">アメブーストをONにした場合は、使用する個数（1〜999）を入力してください</div>`);
-      return;
-    }
-    if (miniOn && miniCount <= 0) {
-      showResult(`<div class="lvlWarn">ミニアメブーストをONにした場合は、使用する個数（1〜999）を入力してください</div>`);
       return;
     }
 
@@ -385,7 +308,7 @@ function roundHalfUp(x) {
     // 必要経験値（ブーストに関係なし）
     const totalExp = calcTotalNeedExp(lvNow, lvTarget, typeKey);
 
-    // 通常（ブーストなし）
+    // 通常
     const simNormal = simulateCandiesAndShards({
       lvNow, lvTarget, typeKey, natureKey,
       progressExp,
@@ -393,36 +316,34 @@ function roundHalfUp(x) {
       boostCount: 0,
     });
 
-    // 結果（通常）
     const html = [];
     html.push(`<div class="lvResTitle">計算結果</div>`);
     html.push(row("必要経験値", `${totalExp.toLocaleString()} EXP`));
     html.push(row("必要なアメの数", `${Math.max(0, simNormal.candiesTotal - candyOwned).toLocaleString()} 個`));
     html.push(row("必要なゆめのかけら量", `${simNormal.shardsTotal.toLocaleString()} 個`));
 
-    // アメブースト時（ONのときだけ）
+    // 無限ブースト：boostCountを十分大きくして「最後までブーストが効く」扱いにする
+    const INF = 1_000_000;
+
     if (boostOn) {
       const simBoost = simulateCandiesAndShards({
         lvNow, lvTarget, typeKey, natureKey,
         progressExp,
-        boostKind: "full",   // EXP×2 / かけら×5
-        boostCount: boostCount,
+        boostKind: "full",     // EXP×2 / かけら×5
+        boostCount: INF,
       });
-
       html.push(subTitle(`アメブースト時（EXP×2 / かけら×5）`));
       html.push(row("必要なアメの数", `${Math.max(0, simBoost.candiesTotal - candyOwned).toLocaleString()} 個`));
       html.push(row("必要なゆめのかけら量", `${simBoost.shardsTotal.toLocaleString()} 個`));
     }
 
-    // ミニアメブースト時（ONのときだけ）
     if (miniOn) {
       const simMini = simulateCandiesAndShards({
         lvNow, lvTarget, typeKey, natureKey,
         progressExp,
-        boostKind: "mini",   // EXP×2 / かけら×4
-        boostCount: miniCount,
+        boostKind: "mini",     // EXP×2 / かけら×4
+        boostCount: INF,
       });
-
       html.push(subTitle(`ミニアメブースト時（EXP×2 / かけら×4）`));
       html.push(row("必要なアメの数", `${Math.max(0, simMini.candiesTotal - candyOwned).toLocaleString()} 個`));
       html.push(row("必要なゆめのかけら量", `${simMini.shardsTotal.toLocaleString()} 個`));
@@ -448,6 +369,3 @@ function roundHalfUp(x) {
   };
 
 })();
-
-
-
