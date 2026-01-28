@@ -367,7 +367,7 @@ function roundHalfUp(x) {
 
     const html = [];
     html.push(`<div class="lvResTitle">計算結果</div>`);
-    html.push(row("必要経験値", `${totalExp.toLocaleString()} EXP`));
+    html.push(row("必要経験値", `${totalExp.toLocaleString()} `));
     html.push(row("必要なアメの数", `${Math.max(0, simNormal.candiesTotal - candyOwned).toLocaleString()} 個`));
     html.push(row("必要なゆめのかけら量", `${simNormal.shardsTotal.toLocaleString()} `));
 
@@ -427,4 +427,5 @@ function roundHalfUp(x) {
   };
 
 })();
+
 
