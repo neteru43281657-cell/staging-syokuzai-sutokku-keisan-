@@ -191,7 +191,7 @@ function roundHalfUp(x) {
     };
   }
 
-   /* =========================
+  /* =========================
    * UI
    * ========================= */
   const el = id => document.getElementById(id);
@@ -219,8 +219,19 @@ function roundHalfUp(x) {
     return `<div class="lvResSubTitle">${t}</div>`;
   }
 
+  function clampIntoInput(inputEl, min, max) {
+    if (!inputEl) return;
+    inputEl.addEventListener("input", () => {
+      if (inputEl.value === "") return; // 空は許す（未入力）
+      const n = Number(inputEl.value);
+      if (!Number.isFinite(n)) return;
+      const v = Math.min(max, Math.max(min, Math.trunc(n)));
+      if (String(v) !== inputEl.value) inputEl.value = String(v);
+    });
+  }
+
   function bindQuickButtons() {
-    // 今のレベル用
+    // 今のレベル
     document.querySelectorAll(".lvlQuickBtn[data-now]").forEach(btn => {
       btn.addEventListener("click", () => {
         const v = Number(btn.getAttribute("data-now") || 0);
@@ -230,7 +241,7 @@ function roundHalfUp(x) {
       });
     });
 
-    // 目標レベル用
+    // 目標レベル
     document.querySelectorAll(".lvlQuickBtn[data-target]").forEach(btn => {
       btn.addEventListener("click", () => {
         const v = Number(btn.getAttribute("data-target") || 0);
@@ -239,53 +250,91 @@ function roundHalfUp(x) {
         if (Number.isFinite(v) && v >= 2 && v <= 65) target.value = String(v);
       });
     });
+
+    // アメブースト（入力したらミニは0にする：択一）
+    document.querySelectorAll(".lvlQuickBtn[data-boost]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const v = Number(btn.getAttribute("data-boost") || 0);
+        const boost = el("lvBoostCount");
+        const mini = el("lvMiniBoostCount");
+        if (!boost || !mini) return;
+        if (Number.isFinite(v) && v >= 0 && v <= 9999) {
+          boost.value = String(v);
+          if (v > 0) mini.value = "0";
+        }
+      });
+    });
+
+    // ミニアメブースト（入力したらアメブーストは0にする：択一）
+    document.querySelectorAll(".lvlQuickBtn[data-mini]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const v = Number(btn.getAttribute("data-mini") || 0);
+        const boost = el("lvBoostCount");
+        const mini = el("lvMiniBoostCount");
+        if (!boost || !mini) return;
+        if (Number.isFinite(v) && v >= 0 && v <= 9999) {
+          mini.value = String(v);
+          if (v > 0) boost.value = "0";
+        }
+      });
+    });
   }
 
-  function bindBoostExclusive() {
-    const boostOn = el("lvBoostOn");
-    const miniOn = el("lvMiniBoostOn");
-    if (!boostOn || !miniOn) return;
+  function bindExclusiveInputs() {
+    const boost = el("lvBoostCount");
+    const mini = el("lvMiniBoostCount");
+    if (!boost || !mini) return;
 
-    boostOn.addEventListener("change", () => {
-      if (boostOn.checked) miniOn.checked = false;
+    boost.addEventListener("input", () => {
+      const v = Number(boost.value || 0);
+      if (Number.isFinite(v) && v > 0) mini.value = "0";
     });
-    miniOn.addEventListener("change", () => {
-      if (miniOn.checked) boostOn.checked = false;
+
+    mini.addEventListener("input", () => {
+      const v = Number(mini.value || 0);
+      if (Number.isFinite(v) && v > 0) boost.value = "0";
     });
+  }
+
+  function clearOptionalOnly() {
+    if (el("lvProgressExp")) el("lvProgressExp").value = "";
+    if (el("lvCandyOwned")) el("lvCandyOwned").value = "";
+    if (el("lvBoostCount")) el("lvBoostCount").value = "0";
+    if (el("lvMiniBoostCount")) el("lvMiniBoostCount").value = "0";
+    hideResult();
   }
 
   function clearAll() {
     if (el("lvNow")) el("lvNow").value = "";
     if (el("lvTarget")) el("lvTarget").value = "";
-    if (el("lvProgressExp")) el("lvProgressExp").value = "";
-    if (el("lvCandyOwned")) el("lvCandyOwned").value = "";
+    clearOptionalOnly();
 
     const natureNone = document.querySelector(`input[name="lvNature"][value="none"]`);
     if (natureNone) natureNone.checked = true;
 
     const typeNormal = document.querySelector(`input[name="lvType"][value="normal"]`);
     if (typeNormal) typeNormal.checked = true;
-
-    if (el("lvBoostOn")) el("lvBoostOn").checked = false;
-    if (el("lvMiniBoostOn")) el("lvMiniBoostOn").checked = false;
-
-    hideResult();
   }
 
   async function onCalc() {
     hideResult();
 
-    const lvNow = clampInt(el("lvNow")?.value, LV_MIN, LV_MAX);
-    const lvTarget = clampInt(el("lvTarget")?.value, 2, LV_MAX);
+    const lvNow = clampInt(el("lvNow")?.value, LV_MIN, LV_MAX);      // 1〜64
+    const lvTarget = clampInt(el("lvTarget")?.value, 2, LV_MAX);     // 2〜65
     const natureKey = getRadio("lvNature") || "none";
     const typeKey = getRadio("lvType") || "normal";
 
-    const progressExp = clampInt(el("lvProgressExp")?.value || 0, 0, 9999);
-    const candyOwned = clampInt(el("lvCandyOwned")?.value || 0, 0, 9999);
+    // 任意入力：未入力は0扱い
+    const progressExpRaw = el("lvProgressExp")?.value;
+    const candyOwnedRaw = el("lvCandyOwned")?.value;
 
-    const boostOn = !!el("lvBoostOn")?.checked;
-    const miniOn = !!el("lvMiniBoostOn")?.checked;
+    const progressExp = progressExpRaw ? clampInt(progressExpRaw, 1, 9999) : 0;
+    const candyOwned = candyOwnedRaw ? clampInt(candyOwnedRaw, 1, 9999) : 0;
 
+    const boostCount = clampInt(el("lvBoostCount")?.value || 0, 0, 9999);
+    const miniCount  = clampInt(el("lvMiniBoostCount")?.value || 0, 0, 9999);
+
+    // 入力チェック
     if (lvNow < 1 || lvNow > 64) {
       showResult(`<div class="lvlWarn">「今のレベル」は 1〜64 で入力してください</div>`);
       return;
@@ -298,8 +347,8 @@ function roundHalfUp(x) {
       showResult(`<div class="lvlWarn">「目標のレベル」は「今のレベル」より大きい値にしてください</div>`);
       return;
     }
-    if (boostOn && miniOn) {
-      showResult(`<div class="lvlWarn">ブーストは「アメブースト / ミニアメブースト」のどちらか一方のみONにできます</div>`);
+    if (boostCount > 0 && miniCount > 0) {
+      showResult(`<div class="lvlWarn">ブーストは「アメブースト / ミニアメブースト」のどちらか一方のみ入力してください</div>`);
       return;
     }
 
@@ -308,7 +357,7 @@ function roundHalfUp(x) {
     // 必要経験値（ブーストに関係なし）
     const totalExp = calcTotalNeedExp(lvNow, lvTarget, typeKey);
 
-    // 通常
+    // 通常（ブーストなし）
     const simNormal = simulateCandiesAndShards({
       lvNow, lvTarget, typeKey, natureKey,
       progressExp,
@@ -322,27 +371,26 @@ function roundHalfUp(x) {
     html.push(row("必要なアメの数", `${Math.max(0, simNormal.candiesTotal - candyOwned).toLocaleString()} 個`));
     html.push(row("必要なゆめのかけら量", `${simNormal.shardsTotal.toLocaleString()} 個`));
 
-    // 無限ブースト：boostCountを十分大きくして「最後までブーストが効く」扱いにする
-    const INF = 1_000_000;
-
-    if (boostOn) {
+    // アメブースト時（入力されている時だけ表示）
+    if (boostCount > 0) {
       const simBoost = simulateCandiesAndShards({
         lvNow, lvTarget, typeKey, natureKey,
         progressExp,
-        boostKind: "full",     // EXP×2 / かけら×5
-        boostCount: INF,
+        boostKind: "full",      // EXP×2 / かけら×5
+        boostCount: boostCount,
       });
       html.push(subTitle(`アメブースト時（EXP×2 / かけら×5）`));
       html.push(row("必要なアメの数", `${Math.max(0, simBoost.candiesTotal - candyOwned).toLocaleString()} 個`));
       html.push(row("必要なゆめのかけら量", `${simBoost.shardsTotal.toLocaleString()} 個`));
     }
 
-    if (miniOn) {
+    // ミニアメブースト時（入力されている時だけ表示）
+    if (miniCount > 0) {
       const simMini = simulateCandiesAndShards({
         lvNow, lvTarget, typeKey, natureKey,
         progressExp,
-        boostKind: "mini",     // EXP×2 / かけら×4
-        boostCount: INF,
+        boostKind: "mini",      // EXP×2 / かけら×4
+        boostCount: miniCount,
       });
       html.push(subTitle(`ミニアメブースト時（EXP×2 / かけら×4）`));
       html.push(row("必要なアメの数", `${Math.max(0, simMini.candiesTotal - candyOwned).toLocaleString()} 個`));
@@ -356,8 +404,18 @@ function roundHalfUp(x) {
     el("lvCalc")?.addEventListener("click", onCalc);
     el("lvClear")?.addEventListener("click", clearAll);
 
+    // 任意だけ消すクリア
+    el("lvClearOptional")?.addEventListener("click", clearOptionalOnly);
+
     bindQuickButtons();
-    bindBoostExclusive();
+    bindExclusiveInputs();
+
+    // 入力欄を範囲内に寄せる（入力中の暴走防止）
+    clampIntoInput(el("lvNow"), 1, 64);
+    clampIntoInput(el("lvTarget"), 2, 65);
+    // 任意は「空=未入力」を許すので、ここでは強制clampしない（min=1が邪魔になるため）
+    clampIntoInput(el("lvBoostCount"), 0, 9999);
+    clampIntoInput(el("lvMiniBoostCount"), 0, 9999);
   }
 
   window.LevelTab = {
