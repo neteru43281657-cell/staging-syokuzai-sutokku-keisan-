@@ -731,10 +731,10 @@
     display:block;
   }
   
-/* 入力側：左=クイック/クリア、右=入力＋単位（右列を固定して縦ラインを揃える） */
+/* 入力側：左=クイック/補助、右=入力＋単位（右列を固定して縦ラインを揃える） */
 .lvlInput{
   display:grid;
-  grid-template-columns: 1fr 150px; /* ←右列固定 */
+  grid-template-columns: 1fr 120px;   /* ←入力列を小さく */
   column-gap: 10px;
   align-items: start;
 }
@@ -742,11 +742,11 @@
 /* 入力＋単位（右列）：常に同じ幅＝縦ラインが揃う */
 .lvlInputRight{
   display:grid;
-  grid-template-columns: 1fr auto; /* input | unit */
-  gap: 8px;
+  grid-template-columns: 1fr auto;    /* input | unit */
+  gap: 6px;
   align-items:center;
   justify-content:end;
-  width: 150px;
+  width: 120px;                       /* ←上と一致 */
   white-space: nowrap;
 }
 
@@ -755,32 +755,49 @@
   font-weight: 900;
   color:#111;
   white-space: nowrap;
-  font-size: 11px;     /* ←小さめ */
-  opacity: .85;        /* ←少し控えめ */
+  font-size: 10px;
+  opacity: .85;
 }
+
+/* 入力欄（サイズ指定） */
+.lvlInput input{
+  border: 2px solid rgba(0,0,0,0.12);
+  border-radius: 10px;
+  padding: 4px 6px;
+  font-weight: 900;
+  outline: none;
+  width: auto !important; /* width:100% を打ち消す */
+}
+
+/* レベル入力：いまの1/3くらい */
+.lvlIn2{ width: 26px; text-align:center; }    /* 今のレベル/目標レベル */
+
+/* 下段の入力：いまの1/2くらい */
+.lvlIn4{ width: 72px; text-align:right; }     /* 次LvEXP/所持数 */
+.lvlInBoost{ width: 56px; text-align:right; } /* ブースト個数 */
 
 /* クイック（通常：ブースト等） */
 .lvlQuick{
   display:flex;
-  gap:4px;             /* ←隙間を詰める */
+  gap: 4px;
   flex-wrap:wrap;
-  justify-content:flex-end;
-  max-width: 160px;
+  justify-content:flex-start;
+  max-width: none;
 }
 
 /* レベル用：3列固定（横3×縦2） */
 .lvlQuickLv{
   display:grid;
-  grid-template-columns: repeat(3, 34px); /* ←ボタン幅に合わせる */
-  gap: 4px;                                /* ←隙間を詰める */
-  justify-content:end;
+  grid-template-columns: repeat(3, 30px);
+  gap: 3px;
+  justify-content:start;
   max-width: none;
 }
 
 /* クイックボタン：全用途で同一サイズ（形崩れ防止） */
 .lvlQuickBtn{
-  width: 34px;
-  height: 28px;
+  width: 30px;
+  height: 24px;
   border-radius: 8px;
   border: 2px solid rgba(0,0,0,0.16);
   background: #fff;
@@ -792,98 +809,60 @@
 }
 .lvlQuickBtn:active{ transform: translateY(1px); }
 
+/* ブースト行：縦積み時の見た目を安定させる（全端末で有効） */
+.lvlInputStack{
+  grid-template-columns: 1fr !important;
+  row-gap: 8px;
+}
+.lvlInputStack .lvlQuick{
+  justify-content:flex-start;
+}
+.lvlInputStack .lvlInputRight{
+  justify-self: end; /* 入力欄は右寄せ */
+}
+
 /* スマホ：右カラム(230px)に収める調整 */
 @media (max-width: 520px){
-
-  /* 右カラム230px内に「クイック＋入力」を同居させるため縮小 */
   .lvlRow{ grid-template-columns: 1fr 230px; }
 
-  /* 横並び（レベル・経験値・所持数など） */
   .lvlInput{
-    grid-template-columns: 1fr 118px; /* ←入力列を縮小 */
+    grid-template-columns: 1fr 110px;
     column-gap: 8px;
   }
   .lvlInputRight{
-    width: 118px;                     /* ←入力列と一致させる */
+    width: 110px;
     gap: 6px;
   }
 
-  /* 単位をさらに小さめに */
   .lvlUnit{ font-size: 10px; }
 
-  /* レベル用クイック：3列の“1個あたり幅”と隙間を縮めて230px内に収める */
   .lvlQuickLv{
-    grid-template-columns: repeat(3, 32px);
+    grid-template-columns: repeat(3, 28px);
     gap: 3px;
   }
   .lvlQuickBtn{
-    width: 32px;
-    height: 26px;
+    width: 28px;
+    height: 24px;
     border-radius: 8px;
     font-size: 12px;
   }
-
-  /* ブースト系は「縦積み」にして 1列化を防ぐ（クイック→入力の順） */
-  .lvlInputStack{
-    grid-template-columns: 1fr !important;
-    row-gap: 8px;
-  }
-  .lvlInputStack .lvlQuick{
-    max-width: none;
-    justify-content: flex-start; /* 左寄せで横に並びやすく */
-  }
-  .lvlInputStack .lvlInputRight{
-    justify-self: end;  /* 入力欄は右寄せ */
-  }
 }
 
+/* 小さいクリア：タブ①の「クリア(danger)」と同じ見た目 */
+.lvlMiniClear{
+  height: 34px;               /* #actionBlock > button と同じ系 */
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--danger);
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  line-height: 34px;
+}
+.lvlMiniClear:active{ transform: translateY(1px); }
 
-  
-  /* ラジオ：1行固定（入らない端末は横スクロール） */
-  .lvlRadios{
-    display:flex;
-    gap:14px;
-    flex-wrap:nowrap;
-    overflow-x:auto;
-    -webkit-overflow-scrolling: touch;
-    align-items:center;
-    justify-content:flex-start;
-  }
-  .lvlRadios::-webkit-scrollbar{ display:none; }
-  .lvlRadio{
-    font-weight: 900;
-    color:#111;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    line-height: 1;
-  }
-  .lvlRadio input{
-    width:16px;
-    height:16px;
-    position: relative;
-    top: -1px;
-  }
-  
-  .lvUp{ color:#e74c3c; }
-  .lvDown{ color:#1f4fff; }
-  
-  /* ミニクリア：タブ①風 */
-  .lvlMiniClear{
-    height: 30px;
-    padding: 0 12px;
-    border-radius: 10px;
-    border: 2px solid #e74c3c;
-    background: #fff;
-    color: #e74c3c;
-    font-weight: 900;
-    cursor: pointer;
-    line-height: 1;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-  .lvlMiniClear:active{ transform: translateY(1px); }
   
   /* 計算/クリア：大きすぎ＆文字の縦ズレ対策 */
   .lvlButtons{
@@ -1167,12 +1146,14 @@
         <div class="lvlRow">
           <div class="lvlLabel">ポケモンのアメ所持数</div>
           <div class="lvlInput">
+            <div></div>
             <div class="lvlInputRight">
               <input id="lvCandyOwned" class="lvlIn4" type="number" min="1" max="9999" inputmode="numeric">
               <span class="lvlUnit">個</span>
             </div>
           </div>
         </div>
+
       
         <!-- アメブースト（0〜9999）＋クイックボタン -->
         <div class="lvlRow">
