@@ -35,18 +35,22 @@ function roundHalfUp(x) {
    * ========================= */
   function baseCandyExp(level, nature) {
     let band;
-    if (level < 25) band = "1_25";
-    else if (level < 30) band = "25_30";
+  
+    // 仕様通り：Lv1～25 / Lv25～30 / Lv30以上
+    // ※境界を「含む」にするため <= を使う
+    if (level <= 25) band = "1_25";
+    else if (level <= 30) band = "25_30";
     else band = "30_plus";
-
+  
     const table = {
       "1_25": { none: 35, up: 41, down: 29 },
       "25_30": { none: 30, up: 35, down: 25 },
       "30_plus": { none: 25, up: 30, down: 21 },
     };
-
+  
     return table[band][nature] ?? table[band].none;
   }
+
 
   /* =========================
    * Tables
@@ -261,3 +265,4 @@ function roundHalfUp(x) {
   };
 
 })();
+
