@@ -732,22 +732,22 @@
   }
   
   /* =========================================================
-     レベルシミュレーター：入力/ラジオ/小クリア/クイック（完成形）
-     - ① 入力欄を「横長すぎ」解消（親の固定幅を撤廃してコンパクト化）
-     - ② ラジオの●位置を +2px 下げる
-     - ③ 小クリアをタブ①の .danger と完全一致
-     - ④ ブースト/ミニのクイックを「横3マス」グリッドに統一
+     レベルシミュレーター：入力/ラジオ/小クリア/クイック（最新版）
+     ① クリア形状：タブ①のクリア（pill）に統一。大ボタンも同形状
+     ② クイック：全て 1.2倍
+     ③ EXP表記は pt（※HTML/JS側も変更あり）
+     ④ 入力欄：思い切って全て “半分” へ（短く）
   ========================================================= */
   
-  /* 入力側：左=クイック、右=入力＋単位（右列を固定しないで自然幅に） */
+  /* 入力側：左=クイック、右=入力＋単位 */
   .lvlInput{
     display: grid;
-    grid-template-columns: 1fr auto;   /* ← 旧: 1fr 120px をやめる */
+    grid-template-columns: 1fr auto;   /* 右側は内容幅 */
     column-gap: 10px;
     align-items: start;
   }
   
-  /* 入力＋単位（右列）：自然幅 + 右寄せ（縦ラインは揃う） */
+  /* 入力＋単位（右列）：自然幅 + 右寄せ */
   .lvlInputRight{
     display: inline-grid;
     grid-template-columns: auto auto;  /* input | unit */
@@ -757,7 +757,7 @@
     white-space: nowrap;
   }
   
-  /* 単位（EXP/個/レベル） */
+  /* 単位（pt/個/レベル） */
   .lvlUnit{
     font-weight: 900;
     color:#111;
@@ -773,13 +773,28 @@
     padding: 4px 6px;
     font-weight: 900;
     outline: none;
-    width: auto !important; /* ベースの width:100% を打ち消す */
+    width: auto !important;
   }
   
-  /* ① 入力幅：要件どおり “半分くらい” の見た目に寄せる */
-  .lvlIn2{   width: 24px; text-align:center; } /* 「レベル」：2桁が入る */
-  .lvlIn4{   width: 48px; text-align:right; }  /* 「EXP」「個」：4桁が入る */
-  .lvlInBoost{ width: 48px; text-align:right; }/* ブースト個数：4桁想定で統一 */
+  /* ④ 入力幅：全部 “半分” へ（短く） */
+  .lvlIn2{      width: 24px; text-align:center; }  /* レベル：2桁 */
+  .lvlIn4{      width: 40px; text-align:right; }   /* pt / 個：4桁想定でも短く */
+  .lvlInBoost{  width: 40px; text-align:right; }   /* ブースト：短く */
+  
+  /* ② クイックボタン：全用途で 1.2倍 */
+  .lvlQuickBtn{
+    width: 36px;                 /* 30px → 36px */
+    height: 29px;                /* 24px → 29px */
+    border-radius: 10px;
+    border: 2px solid rgba(0,0,0,0.16);
+    background: #fff;
+    font-weight: 900;
+    font-size: 13px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+  .lvlQuickBtn:active{ transform: translateY(1px); }
   
   /* クイック（通常） */
   .lvlQuick{
@@ -793,8 +808,8 @@
   /* レベル用：3列固定（横3×縦2） */
   .lvlQuickLv{
     display: grid;
-    grid-template-columns: repeat(3, 30px);
-    gap: 3px;
+    grid-template-columns: repeat(3, 36px);
+    gap: 4px;
     justify-content: start;
     max-width: none;
   }
@@ -804,97 +819,100 @@
   .lvlQuick:has(.lvlQuickBtn[data-boost]),
   .lvlQuick:has(.lvlQuickBtn[data-mini]){
     display: grid;
-    grid-template-columns: repeat(3, 30px);
-    gap: 3px;
+    grid-template-columns: repeat(3, 36px);
+    gap: 4px;
     justify-content: start;
     max-width: none;
   }
   
-  /* クイックボタン：全用途で同一サイズ */
-  .lvlQuickBtn{
-    width: 30px;
-    height: 24px;
-    border-radius: 8px;
-    border: 2px solid rgba(0,0,0,0.16);
-    background: #fff;
-    font-weight: 900;
-    font-size: 12px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 0;
-  }
-  .lvlQuickBtn:active{ transform: translateY(1px); }
-  
   /* ブースト行：縦積み（クイック上、入力下） */
   .lvlInputStack{
     grid-template-columns: 1fr !important;
-    row-gap: 8px;
-  }
-  .lvlInputStack .lvlQuick{
-    justify-content:flex-start;
+    row-gap: 10px;
   }
   .lvlInputStack .lvlInputRight{
-    justify-self: end; /* 入力欄は右寄せ */
+    justify-self: end;
   }
   
-  /* ② 性格/経験値タイプ：ラジオの●を +3px 下へ */
+  /* ② 性格/経験値タイプ：ラジオの●を +2px 下へ */
   .lvlRadios{
     display:flex;
     gap:18px;
     flex-wrap:nowrap;
     overflow-x:auto;
     -webkit-overflow-scrolling: touch;
-    align-items:center;   /* まず中心に揃える */
+    align-items:center;
     justify-content:flex-start;
   }
   .lvlRadios::-webkit-scrollbar{ display:none; }
   .lvlRadio{ white-space: nowrap; }
   .lvlRadio input[type="radio"]{
     margin: 0 6px 0 0;
-    transform: translateY(3px); /* ★ここがpx補正 */
+    transform: translateY(2px);
   }
   
-  /* ③ 小さいクリア：タブ①の button.danger と完全一致 */
+  /* ① 小さいクリア：タブ①の「クリア(danger)」と同形状（pill）へ */
   .lvlMiniClear{
-    padding: 10px 16px;          /* button と同じ */
-    border: 1px solid #fadbd8;   /* danger の border-color と同じ */
-    border-radius: 10px;         /* button と同じ */
-    font-weight: 800;            /* button と同じ */
-    font-size: 14px;             /* button と同じ */
-    background: #fff;            /* danger と同じ */
-    color: var(--danger);        /* danger と同じ */
+    height: 34px;
+    padding: 0 18px;
+    border-radius: 999px;        /* ★pill */
+    border: 1px solid #fadbd8;   /* tab1 danger と同じ */
+    background: #fff;
+    color: var(--danger);
+    font-weight: 800;
+    font-size: 13px;
     cursor: pointer;
+    line-height: 34px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    line-height: 1;              /* 文字の縦ズレ防止 */
   }
   .lvlMiniClear:active{ transform: translateY(1px); }
   
-  /* スマホ微調整（右列をさらに詰める & グリッド幅も少し縮める） */
+  /* ① 大ボタン：下部の計算/クリアも “小クリアの拡大版” として pill に統一 */
+  .lvlBigBtn{
+    width: 46%;
+    height: 62px;
+    border-radius: 999px;   /* ★pill */
+    font-size: 32px;
+    font-weight: 900;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+    line-height: 1;
+    transform: translateY(-1px); /* 文字が1px下に見える端末対策は維持 */
+  }
+  .lvlClearBtn{
+    background:#fff;
+    border: 3px solid var(--danger);  /* pillに合わせて少し細く */
+    color: var(--danger);
+  }
+  
+  /* スマホ微調整 */
   @media (max-width: 520px){
     .lvlInput{ column-gap: 8px; }
     .lvlInputRight{ gap: 6px; }
   
+    .lvlIn2{ width: 22px; }
+    .lvlIn4, .lvlInBoost{ width: 36px; }
+  
     .lvlQuickLv{
-      grid-template-columns: repeat(3, 28px);
-      gap: 3px;
+      grid-template-columns: repeat(3, 34px);
+      gap: 4px;
     }
     .lvlQuick:has(.lvlQuickBtn[data-boost]),
     .lvlQuick:has(.lvlQuickBtn[data-mini]){
-      grid-template-columns: repeat(3, 28px);
-      gap: 3px;
+      grid-template-columns: repeat(3, 34px);
+      gap: 4px;
     }
   
     .lvlQuickBtn{
-      width: 28px;
-      height: 24px;
-      border-radius: 8px;
-      font-size: 12px;
+      width: 34px;
+      height: 28px;
+      border-radius: 10px;
+      font-size: 13px;
     }
-  
-    .lvlIn2{ width: 36px; }
-    .lvlIn4, .lvlInBoost{ width: 60px; }
   }
 
   
@@ -1169,7 +1187,7 @@
             <div></div>
             <div class="lvlInputRight">
               <input id="lvProgressExp" class="lvlIn4" type="number" min="1" max="9999" inputmode="numeric">
-              <span class="lvlUnit">EXP</span>
+              <span class="lvlUnit">pt</span>
             </div>
           </div>
         </div>
