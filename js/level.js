@@ -369,7 +369,7 @@ function roundHalfUp(x) {
     html.push(`<div class="lvResTitle">計算結果</div>`);
     html.push(row("必要経験値", `${totalExp.toLocaleString()} EXP`));
     html.push(row("必要なアメの数", `${Math.max(0, simNormal.candiesTotal - candyOwned).toLocaleString()} 個`));
-    html.push(row("必要なゆめのかけら量", `${simNormal.shardsTotal.toLocaleString()} 個`));
+    html.push(row("必要なゆめのかけら量", `${simNormal.shardsTotal.toLocaleString()} `));
 
     // アメブースト時（入力されている時だけ表示）
     if (boostCount > 0) {
@@ -381,7 +381,7 @@ function roundHalfUp(x) {
       });
       html.push(subTitle(`アメブースト時（EXP×2 / かけら×5）`));
       html.push(row("必要なアメの数", `${Math.max(0, simBoost.candiesTotal - candyOwned).toLocaleString()} 個`));
-      html.push(row("必要なゆめのかけら量", `${simBoost.shardsTotal.toLocaleString()} 個`));
+      html.push(row("必要なゆめのかけら量", `${simBoost.shardsTotal.toLocaleString()} `));
     }
 
     // ミニアメブースト時（入力されている時だけ表示）
@@ -394,7 +394,7 @@ function roundHalfUp(x) {
       });
       html.push(subTitle(`ミニアメブースト時（EXP×2 / かけら×4）`));
       html.push(row("必要なアメの数", `${Math.max(0, simMini.candiesTotal - candyOwned).toLocaleString()} 個`));
-      html.push(row("必要なゆめのかけら量", `${simMini.shardsTotal.toLocaleString()} 個`));
+      html.push(row("必要なゆめのかけら量", `${simMini.shardsTotal.toLocaleString()} `));
     }
 
     showResult(html.join(""));
@@ -427,3 +427,4 @@ function roundHalfUp(x) {
   };
 
 })();
+
