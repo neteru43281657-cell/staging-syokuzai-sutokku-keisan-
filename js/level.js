@@ -25,34 +25,21 @@ function toNum(v) {
   };
 
   // アメ1個あたりの基礎EXP（レベル帯 × 性格）
-  // ※ここは「表の値」を使い、さらに性格の追加係数を掛ける
   function baseCandyExp(level, nature) {
-    // レベル帯
-    // Lv1〜25 / Lv25〜30 / Lv30以上
-    // ※Lv25は「25〜30帯」に含める（ユーザー入力上 “25/30ボタン”があるので自然）
     let band;
     if (level < 25) band = "1_25";
     else if (level < 30) band = "25_30";
     else band = "30_plus";
-
+  
     const table = {
       "1_25": { none: 35, up: 41, down: 29 },
       "25_30": { none: 30, up: 35, down: 25 },
       "30_plus": { none: 25, up: 30, down: 21 },
     };
-
-    const base = table[band][nature] ?? table[band].none;
-
-    // 追加補正（ユーザー確定）
-    // EXP↑：さらに 0.82倍（=より育ちやすい）
-    // EXP↓：さらに 1.18倍（=より育ちにくい）
-    const extra =
-      nature === "up" ? 0.82 :
-      nature === "down" ? 1.18 :
-      1.0;
-
-    return base * extra;
+  
+    return table[band][nature] ?? table[band].none;
   }
+
 
   // =========================
   // テーブル読み込み
@@ -404,6 +391,7 @@ function parseExpTable(txt) {
     },
   };
 })();
+
 
 
 
