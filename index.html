@@ -680,6 +680,33 @@
     align-items: start;
     padding: 4px 0;
   }
+
+  /* 性格/経験値タイプ：1列レイアウトで左寄せ（縦割れ防止） */
+  .lvlRowFull{
+    grid-template-columns: 1fr !important;
+    align-items: start;
+  }
+  .lvlRowFull .lvlLabel{
+    margin-bottom: 6px;
+  }
+
+  /* ラジオ：1行固定（足りない場合は横スクロール） */
+  .lvlRadios{
+    display:flex;
+    gap:18px;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    -webkit-overflow-scrolling: touch;
+    align-items:center;
+    justify-content:flex-start;
+  }
+  .lvlRadios::-webkit-scrollbar{ display:none; }
+
+  .lvlRadio{
+    white-space: nowrap;
+  }
+
+
   @media (max-width: 520px){
     .lvlRow{ grid-template-columns: 1fr 230px; }
     .lvlLabel{ font-size: 14px; }
@@ -716,13 +743,26 @@
   /* 小クリアを入力欄に寄せる（位置ズレ対策） */
   .lvlInput > .lvlMiniClear{ justify-self: end; }
   
-  /* 入力＋単位は常に一塊 */
+  /* 入力＋単位：入力欄の左端を揃える（紫ライン対策） */
   .lvlInputRight{
-    display:flex;
-    gap:8px;
+    display:grid;
+    grid-template-columns: 1fr auto; /* input | unit */
+    gap: 8px;
     align-items:center;
-    justify-content:flex-end;
+    justify-content:end;
+    width: 150px;        /* ここが基準幅：全行の入力位置が揃う */
     white-space: nowrap;
+  }
+
+  /* 小クリアをこの中に入れる行用（後述のHTML変更で使う） */
+  .lvlInputRight.hasClear{
+    grid-template-columns: auto 1fr auto; /* clear | input | unit */
+    width: 210px;
+  }
+  .lvlInputRight.hasClear .lvlMiniClear{
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 10px;
   }
   
   .lvlInput input{
@@ -744,19 +784,29 @@
     white-space: nowrap;
   }
   
-  /* 入力欄：今のだいたい2/3 */
-  .lvlIn2{ width: 48px; text-align:center; }     /* 今のレベル/目標レベル */
-  .lvlIn4{ width: 110px; text-align:right; }     /* 次LvEXP/所持数 */
-  .lvlInBoost{ width: 80px; text-align:right; }  /* ブースト個数 */
+  /* 入力欄サイズ：さらにコンパクトに */
+  .lvlIn2{ width: 40px; text-align:center; }     /* 今のレベル/目標レベル */
+  .lvlIn4{ width: 96px; text-align:right; }      /* 次LvEXP/所持数 */
+  .lvlInBoost{ width: 72px; text-align:right; }  /* ブースト個数 */
   
-  /* クイック：コンパクト化 */
+  /* クイック（通常：ブースト等） */
   .lvlQuick{
     display:flex;
     gap:6px;
     flex-wrap:wrap;
     justify-content:flex-end;
-    max-width: 160px;
+    max-width: 150px;
   }
+
+  /* レベル用：3列固定（横3×縦2） */
+  .lvlQuickLv{
+    display:grid;
+    grid-template-columns: repeat(3, 36px);
+    gap: 6px;
+    justify-content:end;
+    max-width: none;
+  }
+
   .lvlQuickBtn{
     width: 32px;
     height: 26px;
@@ -1012,7 +1062,7 @@
         <div class="lvlRow">
           <div class="lvlLabel"><span class="lvlReq">*</span> 今のレベル</div>
           <div class="lvlInput">
-            <div class="lvlQuick">
+            <div class="lvlQuick lvlQuickLv">
               <button type="button" class="lvlQuickBtn" data-now="25">25</button>
               <button type="button" class="lvlQuickBtn" data-now="30">30</button>
               <button type="button" class="lvlQuickBtn" data-now="50">50</button>
@@ -1031,7 +1081,7 @@
         <div class="lvlRow">
           <div class="lvlLabel"><span class="lvlReq">*</span> 目標のレベル</div>
           <div class="lvlInput">
-            <div class="lvlQuick">
+            <div class="lvlQuick lvlQuickLv">
               <button type="button" class="lvlQuickBtn" data-target="25">25</button>
               <button type="button" class="lvlQuickBtn" data-target="30">30</button>
               <button type="button" class="lvlQuickBtn" data-target="50">50</button>
@@ -1048,7 +1098,7 @@
         </div>
       
         <!-- 性格 -->
-        <div class="lvlRow">
+        <div class="lvlRow lvlRowFull">
           <div class="lvlLabel"><span class="lvlReq">*</span> 性格</div>
           <div class="lvlRadios">
             <label class="lvlRadio"><input type="radio" name="lvNature" value="none" checked> 無補正</label>
@@ -1058,7 +1108,7 @@
         </div>
       
         <!-- 経験値タイプ -->
-        <div class="lvlRow">
+        <div class="lvlRow lvlRowFull">
           <div class="lvlLabel"><span class="lvlReq">*</span> 経験値タイプ</div>
           <div class="lvlRadios">
             <label class="lvlRadio"><input type="radio" name="lvType" value="normal" checked> ふつう</label>
@@ -1076,13 +1126,14 @@
         <div class="lvlRow">
           <div class="lvlLabel">次のレベルまでの経験値</div>
           <div class="lvlInput">
-            <button id="lvClearOptional" type="button" class="lvlMiniClear">クリア</button>
-            <div class="lvlInputRight">
+            <div class="lvlInputRight hasClear">
+              <button id="lvClearOptional" type="button" class="lvlMiniClear">クリア</button>
               <input id="lvProgressExp" class="lvlIn4" type="number" min="1" max="9999" inputmode="numeric">
               <span class="lvlUnit">EXP</span>
             </div>
           </div>
         </div>
+
       
         <!-- アメ所持数（1〜9999） -->
         <div class="lvlRow">
