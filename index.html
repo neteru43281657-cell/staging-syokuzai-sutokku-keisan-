@@ -658,24 +658,24 @@
   ========================= */
   .lvlForm{ display:flex; flex-direction:column; gap:10px; }
   
-  /* 2分割の区切り線 */
   .lvlDivider{
     height:2px;
     background: rgba(0,0,0,0.18);
     border-radius: 999px;
-    margin: 8px 0;
+    margin: 10px 0;
   }
   
   .lvlRow{
     display:grid;
-    grid-template-columns: 1fr 220px;
+    grid-template-columns: 1fr 230px;
     gap: 10px;
     align-items: center;
     padding: 2px 0;
   }
   
+  /* スマホ：2カラム維持（入力欄が横いっぱいになるのを防ぐ） */
   @media (max-width: 520px){
-    .lvlRow{ grid-template-columns: 1fr; }
+    .lvlRow{ grid-template-columns: 1fr 210px; }
   }
   
   .lvlLabel{
@@ -685,6 +685,8 @@
     line-height: 1.15;
   }
   .lvlReq{ color:#e74c3c; margin-right:6px; }
+  
+  /* ※任意 の小ささは維持するが、余計な説明は不要なので控えめ */
   .lvlNote{ font-size:12px; font-weight:700; color: var(--muted); margin-top:6px; display:block; }
   
   .lvlInput{
@@ -698,26 +700,45 @@
   .lvlInput input{
     border: 2px solid rgba(0,0,0,0.12);
     border-radius: 10px;
-    padding: 8px 10px;
+    padding: 6px 8px;
     font-weight: 900;
     outline: none;
-    max-width:none;
+  
+    /* 他のCSSで width:100% が当たっても勝つように */
+    width: auto !important;
+    flex: 0 0 auto;
+    max-width: none;
   }
   .lvlInput input:focus{ border-color: rgba(0,0,0,0.25); }
   
-  .lvlUnit{ font-weight:900; color:#111; }
+  /* 単位「レベル/EXP/個」が縦に割れないように */
+  .lvlUnit{
+    font-weight: 900;
+    color:#111;
+    white-space: nowrap;
+  }
   
-  /* 入力ボックス：小さめ（完成イメージ寄せ） */
-  .lvlIn2{ width: 78px; text-align:center; }
+  /* 入力ボックス：今の1/3くらいの見た目に（小さめ） */
+  .lvlIn2{ width: 46px; text-align:center; }
   .lvlIn4{ width: 120px; text-align:right; }
+  .lvlInBoost{ width: 88px; text-align:right; }
   
-  /* ボタン（25/30/50/55/60/65）：完成イメージ寄せ（角丸少なめ・小さめ） */
+  /* 右側（入力＋単位） */
+  .lvlInputRight{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    justify-content:flex-end;
+    white-space: nowrap;
+  }
+  
+  /* クイックボタン（角ばった小ボタン） */
   .lvlQuick{
     display:flex;
     gap:6px;
     flex-wrap:wrap;
     justify-content:flex-end;
-    max-width: 150px; /* 2段になりやすくする */
+    max-width: 150px; /* 2段になりやすく */
   }
   .lvlQuickBtn{
     width: 36px;
@@ -732,9 +753,7 @@
   }
   .lvlQuickBtn:active{ transform: translateY(1px); }
   
-  .lvlInputRight{ display:flex; gap:10px; align-items:center; }
-  
-  /* ラジオ */
+  /* ラジオ：文字と高さを揃える */
   .lvlRadios{
     display:flex;
     gap:18px;
@@ -748,22 +767,32 @@
     display:flex;
     align-items:center;
     gap:8px;
+    line-height: 1;
   }
-  .lvlRadio input{ width:16px; height:16px; }
+  .lvlRadio input{
+    width:16px;
+    height:16px;
+    position: relative;
+    top: -1px; /* 1〜2px上げる */
+  }
   
   .lvUp{ color:#e74c3c; }
   .lvDown{ color:#1f4fff; }
   
-  /* チェック（ブースト：入力欄なし） */
-  .lvlCheck{
-    display:flex;
-    align-items:center;
-    gap:10px;
+  /* ミニクリアボタン（任意入力のみ消す） */
+  .lvlMiniClear{
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 2px solid rgba(0,0,0,0.18);
+    background: #fff;
     font-weight: 900;
+    cursor: pointer;
+    line-height: 1;
   }
-  .lvlCheck input[type="checkbox"]{ width:18px; height:18px; }
+  .lvlMiniClear:active{ transform: translateY(1px); }
   
-  /* ボタン（少し上に見えるよう調整） */
+  /* ボタン */
   .lvlButtons{
     display:flex;
     justify-content: space-between;
@@ -820,6 +849,7 @@
   .lvlResult .lvResKey{ font-weight: 900; color:#111; }
   .lvlResult .lvResVal{ font-weight: 900; color:#111; white-space: nowrap; }
   .lvlWarn{ color:#e74c3c; font-weight:900; margin-top:10px; }
+
 
   </style>
 </head>
@@ -950,7 +980,7 @@
       
         <!-- ===== 必須（上側）===== -->
       
-        <!-- 今のレベル：ボタン追加＋2桁ボックス -->
+        <!-- 今のレベル（65ボタン削除 / 1〜64入力） -->
         <div class="lvlRow">
           <div class="lvlLabel"><span class="lvlReq">*</span> 今のレベル</div>
           <div class="lvlInput">
@@ -960,17 +990,16 @@
               <button type="button" class="lvlQuickBtn" data-now="50">50</button>
               <button type="button" class="lvlQuickBtn" data-now="55">55</button>
               <button type="button" class="lvlQuickBtn" data-now="60">60</button>
-              <button type="button" class="lvlQuickBtn" data-now="65">65</button>
             </div>
       
             <div class="lvlInputRight">
-              <input id="lvNow" class="lvlIn2" type="number" min="1" max="64">
+              <input id="lvNow" class="lvlIn2" type="number" min="1" max="64" inputmode="numeric">
               <span class="lvlUnit">レベル</span>
             </div>
           </div>
         </div>
       
-        <!-- 目標レベル：ボタン形状寄せ＋入力小さめ -->
+        <!-- 目標レベル（2〜65入力） -->
         <div class="lvlRow">
           <div class="lvlLabel"><span class="lvlReq">*</span> 目標のレベル</div>
           <div class="lvlInput">
@@ -984,7 +1013,7 @@
             </div>
       
             <div class="lvlInputRight">
-              <input id="lvTarget" class="lvlIn2" type="number" min="2" max="65">
+              <input id="lvTarget" class="lvlIn2" type="number" min="2" max="65" inputmode="numeric">
               <span class="lvlUnit">レベル</span>
             </div>
           </div>
@@ -1015,55 +1044,71 @@
       
         <!-- ===== 任意（下側）===== -->
       
-        <!-- 次のレベルまでの経験値：4桁ボックス（小さめ） -->
+        <!-- 次のレベルまでの経験値（1〜9999）＋ 任意だけ消すクリア -->
         <div class="lvlRow">
-          <div class="lvlLabel">
-            次のレベルまでの経験値
-            <span class="lvlNote">※任意</span>
-          </div>
+          <div class="lvlLabel">次のレベルまでの経験値</div>
           <div class="lvlInput">
-            <input id="lvProgressExp" class="lvlIn4" type="number" min="0" max="9999">
-            <span class="lvlUnit">EXP</span>
+            <button id="lvClearOptional" type="button" class="lvlMiniClear">クリア</button>
+            <div class="lvlInputRight">
+              <input id="lvProgressExp" class="lvlIn4" type="number" min="1" max="9999" inputmode="numeric">
+              <span class="lvlUnit">EXP</span>
+            </div>
           </div>
         </div>
       
-        <!-- アメ所持数：4桁ボックス（小さめ） -->
+        <!-- アメ所持数（1〜9999） -->
         <div class="lvlRow">
-          <div class="lvlLabel">
-            ポケモンのアメ所持数
-            <span class="lvlNote">※任意</span>
-          </div>
+          <div class="lvlLabel">ポケモンのアメ所持数</div>
           <div class="lvlInput">
-            <input id="lvCandyOwned" class="lvlIn4" type="number" min="0" max="9999">
-            <span class="lvlUnit">個</span>
+            <div class="lvlInputRight">
+              <input id="lvCandyOwned" class="lvlIn4" type="number" min="1" max="9999" inputmode="numeric">
+              <span class="lvlUnit">個</span>
+            </div>
           </div>
         </div>
       
-        <!-- アメブースト：チェックのみ（無限使用） -->
+        <!-- アメブースト（0〜9999）＋クイックボタン -->
         <div class="lvlRow">
-          <div class="lvlLabel">
-            アメブースト
-            <span class="lvlNote">※任意</span>
-          </div>
+          <div class="lvlLabel">アメブースト</div>
           <div class="lvlInput">
-            <label class="lvlCheck">
-              <input id="lvBoostOn" type="checkbox">
-              ON
-            </label>
+            <div class="lvlQuick">
+              <button type="button" class="lvlQuickBtn" data-boost="0">0</button>
+              <button type="button" class="lvlQuickBtn" data-boost="100">100</button>
+              <button type="button" class="lvlQuickBtn" data-boost="150">150</button>
+              <button type="button" class="lvlQuickBtn" data-boost="200">200</button>
+              <button type="button" class="lvlQuickBtn" data-boost="250">250</button>
+              <button type="button" class="lvlQuickBtn" data-boost="300">300</button>
+              <button type="button" class="lvlQuickBtn" data-boost="350">350</button>
+              <button type="button" class="lvlQuickBtn" data-boost="400">400</button>
+              <button type="button" class="lvlQuickBtn" data-boost="450">450</button>
+              <button type="button" class="lvlQuickBtn" data-boost="500">500</button>
+            </div>
+      
+            <div class="lvlInputRight">
+              <input id="lvBoostCount" class="lvlInBoost" type="number" min="0" max="9999" inputmode="numeric">
+              <span class="lvlUnit">個</span>
+            </div>
           </div>
         </div>
       
-        <!-- ミニアメブースト：チェックのみ（無限使用） -->
+        <!-- ミニアメブースト（0〜9999）＋クイックボタン -->
         <div class="lvlRow">
-          <div class="lvlLabel">
-            ミニアメブースト
-            <span class="lvlNote">※任意</span>
-          </div>
+          <div class="lvlLabel">ミニアメブースト</div>
           <div class="lvlInput">
-            <label class="lvlCheck">
-              <input id="lvMiniBoostOn" type="checkbox">
-              ON
-            </label>
+            <div class="lvlQuick">
+              <button type="button" class="lvlQuickBtn" data-mini="0">0</button>
+              <button type="button" class="lvlQuickBtn" data-mini="100">100</button>
+              <button type="button" class="lvlQuickBtn" data-mini="150">150</button>
+              <button type="button" class="lvlQuickBtn" data-mini="200">200</button>
+              <button type="button" class="lvlQuickBtn" data-mini="250">250</button>
+              <button type="button" class="lvlQuickBtn" data-mini="300">300</button>
+              <button type="button" class="lvlQuickBtn" data-mini="350">350</button>
+            </div>
+      
+            <div class="lvlInputRight">
+              <input id="lvMiniBoostCount" class="lvlInBoost" type="number" min="0" max="9999" inputmode="numeric">
+              <span class="lvlUnit">個</span>
+            </div>
           </div>
         </div>
       
