@@ -658,11 +658,39 @@
   ========================= */
   .lvlForm{ display:flex; flex-direction:column; gap:14px; }
   
+  /* 2分割の箱 */
+  .lvlSection{
+    border: 2px solid rgba(0,0,0,0.14);
+    background:#fff;
+    border-radius: 18px;
+    padding: 14px;
+  }
+  .lvlSection.required{
+    border: 2px solid var(--main);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.10);
+  }
+  .lvlSectionTitle{
+    font-weight: 900;
+    color: var(--main);
+    text-align:center;
+    margin-bottom: 10px;
+    font-size: 16px;
+  }
+  
+  /* 必須/任意の区切り線（全体をグレーで2分） */
+  .lvlDivider{
+    height:2px;
+    background: rgba(0,0,0,0.18);
+    border-radius: 999px;
+    margin: 2px 0;
+  }
+  
   .lvlRow{
     display:grid;
-    grid-template-columns: 1fr 260px;
+    grid-template-columns: 1fr auto;
     gap: 12px;
     align-items: center;
+    padding: 6px 0;
   }
   
   @media (max-width: 520px){
@@ -678,30 +706,81 @@
   .lvlReq{ color:#e74c3c; margin-right:6px; }
   .lvlNote{ font-size:12px; font-weight:700; color: var(--muted); }
   
-  .lvlInput{ display:flex; gap:10px; align-items:center; justify-content:flex-end; flex-wrap:wrap; }
-  .lvlInput input{ max-width: 220px; }
+  .lvlInput{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    justify-content:flex-end;
+    flex-wrap:wrap;
+  }
+  
   .lvlUnit{ font-weight:900; color:#111; }
   
-  .lvlQuick{ display:flex; gap:6px; }
+  /* 入力ボックスサイズ（要望通り） */
+  .lvlInput input{
+    border: 2px solid rgba(0,0,0,0.12);
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-weight: 900;
+    outline: none;
+  }
+  .lvlInput input:focus{
+    border-color: rgba(0,0,0,0.25);
+  }
+  
+  /* ちょうど2桁 */
+  .lvlIn2{
+    width: 92px;
+    max-width: 92px;
+    text-align: center;
+  }
+  /* ちょうど4桁 */
+  .lvlIn4{
+    width: 150px;
+    max-width: 150px;
+    text-align: right;
+  }
+  /* ブースト個数（3桁想定） */
+  .lvlIn3{
+    width: 120px;
+    max-width: 120px;
+    text-align: right;
+  }
+  
+  /* 目標レベルの簡易ボタン */
+  .lvlQuick{ display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
   .lvlQuickBtn{
-    padding: 6px 10px;
-    border-radius: 6px;
-    border: 1px solid var(--line);
+    padding: 7px 10px;
+    border-radius: 10px;
+    border: 2px solid rgba(0,0,0,0.12);
     background: #fff;
     font-weight: 900;
     cursor: pointer;
+    line-height: 1;
   }
+  .lvlQuickBtn:active{ transform: translateY(1px); }
+  
   .lvlInputRight{ display:flex; gap:10px; align-items:center; }
   
-  .lvlDivider{ height:2px; background: rgba(0,0,0,0.18); border-radius: 999px; margin: 8px 0; }
-  
+  /* ラジオ */
   .lvlRadios{ display:flex; gap:18px; flex-wrap:wrap; align-items:center; justify-content:flex-start; }
   .lvlRadio{ font-weight: 900; color:#111; display:flex; align-items:center; gap:8px; }
   .lvlRadio input{ width:16px; height:16px; }
-  
   .lvUp{ color:#e74c3c; }
   .lvDown{ color:#1f4fff; }
   
+  /* チェック */
+  .lvlCheck{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight: 900;
+  }
+  .lvlCheck input[type="checkbox"]{
+    width:18px; height:18px;
+  }
+  
+  /* ボタン */
   .lvlButtons{
     display:flex;
     justify-content: space-between;
@@ -721,6 +800,7 @@
     color: #e74c3c;
   }
   
+  /* 結果 */
   .lvlResult{
     margin-top: 14px;
     border: 2px solid var(--main);
@@ -735,6 +815,13 @@
     margin-bottom: 8px;
     color: var(--main);
   }
+  .lvlResult .lvResSubTitle{
+    margin-top: 10px;
+    font-weight: 900;
+    color:#111;
+    padding-top: 8px;
+    border-top: 1px solid rgba(0,0,0,0.10);
+  }
   .lvlResult .lvResRow{
     display:flex;
     justify-content: space-between;
@@ -746,6 +833,7 @@
   .lvlResult .lvResKey{ font-weight: 900; color:#111; }
   .lvlResult .lvResVal{ font-weight: 900; color:#111; white-space: nowrap; }
   .lvlWarn{ color:#e74c3c; font-weight:900; margin-top:10px; }
+
 
   </style>
 </head>
@@ -877,6 +965,133 @@
   
       <!-- 入力エリア -->
       <div class="lvlForm">
+      
+        <!-- 必須入力（青枠・影） -->
+        <div class="lvlSection required">
+          <div class="lvlSectionTitle">入力必須項目</div>
+      
+          <!-- 今のレベル -->
+          <div class="lvlRow">
+            <div class="lvlLabel"><span class="lvlReq">*</span> 今のレベル</div>
+            <div class="lvlInput">
+              <input id="lvNow" class="lvlIn2" type="number" min="1" max="64" placeholder="1〜64">
+              <span class="lvlUnit">レベル</span>
+            </div>
+          </div>
+      
+          <!-- 目標レベル -->
+          <div class="lvlRow">
+            <div class="lvlLabel"><span class="lvlReq">*</span> 目標のレベル</div>
+            <div class="lvlInput">
+              <div class="lvlQuick">
+                <button type="button" class="lvlQuickBtn" data-lv="25">25</button>
+                <button type="button" class="lvlQuickBtn" data-lv="30">30</button>
+                <button type="button" class="lvlQuickBtn" data-lv="50">50</button>
+                <button type="button" class="lvlQuickBtn" data-lv="55">55</button>
+                <button type="button" class="lvlQuickBtn" data-lv="60">60</button>
+                <button type="button" class="lvlQuickBtn" data-lv="65">65</button>
+              </div>
+      
+              <div class="lvlInputRight">
+                <input id="lvTarget" class="lvlIn2" type="number" min="2" max="65" placeholder="2〜65">
+                <span class="lvlUnit">レベル</span>
+              </div>
+            </div>
+          </div>
+      
+          <!-- 性格 -->
+          <div class="lvlRow">
+            <div class="lvlLabel"><span class="lvlReq">*</span> 性格</div>
+            <div class="lvlRadios">
+              <label class="lvlRadio"><input type="radio" name="lvNature" value="none" checked> 無補正</label>
+              <label class="lvlRadio"><input type="radio" name="lvNature" value="up"> <span class="lvUp">EXP↑</span></label>
+              <label class="lvlRadio"><input type="radio" name="lvNature" value="down"> <span class="lvDown">EXP↓</span></label>
+            </div>
+          </div>
+      
+          <!-- 経験値タイプ -->
+          <div class="lvlRow">
+            <div class="lvlLabel"><span class="lvlReq">*</span> 経験値タイプ</div>
+            <div class="lvlRadios">
+              <label class="lvlRadio"><input type="radio" name="lvType" value="normal" checked> ふつう</label>
+              <label class="lvlRadio"><input type="radio" name="lvType" value="600"> 600族</label>
+              <label class="lvlRadio"><input type="radio" name="lvType" value="semi"> 準伝説</label>
+              <label class="lvlRadio"><input type="radio" name="lvType" value="legend"> 伝説 / 幻</label>
+            </div>
+          </div>
+        </div>
+      
+        <!-- グレー区切り線（必須 / 任意） -->
+        <div class="lvlDivider"></div>
+      
+        <!-- 任意入力 -->
+        <div class="lvlSection">
+          <div class="lvlSectionTitle" style="color:#111;">任意入力</div>
+      
+          <!-- 次のレベルまでの経験値 -->
+          <div class="lvlRow">
+            <div class="lvlLabel">
+              次のレベルまでの経験値<br><span class="lvlNote">※任意</span>
+            </div>
+            <div class="lvlInput">
+              <input id="lvProgressExp" class="lvlIn4" type="number" min="0" max="9999" placeholder="0〜9999">
+              <span class="lvlUnit">EXP</span>
+            </div>
+          </div>
+      
+          <!-- アメ所持数 -->
+          <div class="lvlRow">
+            <div class="lvlLabel">
+              ポケモンのアメ所持数<br><span class="lvlNote">※任意</span>
+            </div>
+            <div class="lvlInput">
+              <input id="lvCandyOwned" class="lvlIn4" type="number" min="0" max="9999" placeholder="0〜9999">
+              <span class="lvlUnit">個</span>
+            </div>
+          </div>
+      
+          <!-- アメブースト（チェック式） -->
+          <div class="lvlRow">
+            <div class="lvlLabel">
+              アメブースト<br><span class="lvlNote">※任意</span>
+            </div>
+            <div class="lvlInput">
+              <label class="lvlCheck">
+                <input id="lvBoostOn" type="checkbox">
+                ON
+              </label>
+              <input id="lvBoostCount" class="lvlIn3" type="number" min="0" max="999" placeholder="0〜999" disabled>
+              <span class="lvlUnit">個　使用</span>
+            </div>
+          </div>
+      
+          <!-- ミニアメブースト（チェック式） -->
+          <div class="lvlRow">
+            <div class="lvlLabel">
+              ミニアメブースト<br><span class="lvlNote">※任意</span>
+            </div>
+            <div class="lvlInput">
+              <label class="lvlCheck">
+                <input id="lvMiniBoostOn" type="checkbox">
+                ON
+              </label>
+              <input id="lvMiniBoostCount" class="lvlIn3" type="number" min="0" max="999" placeholder="0〜999" disabled>
+              <span class="lvlUnit">個　使用</span>
+            </div>
+          </div>
+        </div>
+      
+        <!-- ボタン -->
+        <div class="lvlButtons">
+          <button id="lvCalc" class="primary lvlBigBtn">計算</button>
+          <button id="lvClear" class="lvlBigBtn lvlClearBtn">クリア</button>
+        </div>
+      
+        <!-- 結果 -->
+        <div id="lvResult" class="lvlResult" style="display:none;"></div>
+      
+      </div>
+
   
         <!-- 今のレベル -->
         <div class="lvlRow">
