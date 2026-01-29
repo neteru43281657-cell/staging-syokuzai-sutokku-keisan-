@@ -1140,7 +1140,18 @@
       top: 10px !important;
       right: 10px !important;
     }
-    
+
+    /* ブースト行だけ：上寄せにして、ラジオを「ブーストの下」に見せる */
+    #tab3 .lvlRowBoost{
+      align-items: flex-start;
+    }
+    #tab3 .lvlRowBoost .lvlBoostRadios{
+      margin-top: 6px;
+      justify-content: flex-start;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
   }
     
   </style>
@@ -1376,7 +1387,7 @@
         </div>
 
         <!-- ブースト（クイック廃止／ラジオはブーストの下） -->
-        <div class="lvlRow">
+        <div class="lvlRow lvlRowBoost">
           <div class="lvlLabel">ブースト</div>
           <div class="lvlInput" style="grid-template-columns:1fr;">
             <div class="lvlRadios lvlBoostRadios">
