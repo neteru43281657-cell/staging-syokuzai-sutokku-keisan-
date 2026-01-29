@@ -830,22 +830,37 @@
   
   /* PC表示（900px以上）でのレイアウト修正 */
   @media (min-width: 900px) {
-    /* ブーストとオプションの行を全幅（1カラム）に変更 */
-    #tab3 .lvlRowBoost,
-    #tab3 .lvlRowOpt {
-      grid-template-columns: 1fr !important;
-    }
-    
-    /* 入力群を左寄せにする */
-    #tab3 .lvlBoostLine,
-    #tab3 .lvlOptLine {
-      justify-content: flex-start !important;
-      grid-template-columns: 200px 1fr !important; /* ラベル幅を確保しつつ左詰め */
-    }
+    /* PC表示（900px以上）: ラベルと入力を左右に振り分ける */
+    @media (min-width: 900px) {
+      /* 「今のレベル」などと同様の2カラム構造に戻す */
+      #tab3 .lvlRowBoost,
+      #tab3 .lvlRowOpt {
+        grid-template-columns: minmax(0, 1fr) minmax(120px, 260px) !important;
+      }
 
-    #tab3 .lvlBoostCountLine,
-    #tab3 .lvlInputRight {
-      justify-content: flex-start !important; /* 右寄せを解除 */
+      /* ブースト行内：ラジオボタンを左、個数入力を右に配置 */
+      #tab3 .lvlBoostLine {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center;
+        width: 100%;
+      }
+
+      /* オプション行内：各項目を左右に振り分ける */
+      #tab3 .lvlOptLine {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 8px; /* 項目間の微調整 */
+      }
+
+      /* 個数入力欄を右端へ寄せる */
+      #tab3 .lvlBoostCountLine,
+      #tab3 .lvlInputRight {
+        justify-content: flex-end !important;
+        margin-top: 0 !important; /* 縦ズレ防止 */
+      }
     }
   }
     
