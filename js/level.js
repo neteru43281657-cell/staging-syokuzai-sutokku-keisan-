@@ -210,6 +210,106 @@ function roundHalfUp(x) {
       shardsTotal: Math.round(shards),
     };
   }
+
+/* =========================
+   * UI Event Bindings
+   * ========================= */
+
+  function setVal(inputEl, v) {
+    if (!inputEl) return;
+    inputEl.value = String(v);
+    // enforceDigitsやUI計算を走らせるためにイベントを発火
+    inputEl.dispatchEvent(new Event("input", { bubbles: true }));
+    inputEl.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function bindQuickButtons() {
+    const root = document.getElementById("tab3") || document;
+  
+    root.addEventListener("click", (e) => {
+      const btn = e.target.closest?.(".lvlQuickBtn");
+      if (!btn) return;
+      e.preventDefault();
+  
+      // 今のレベル
+      if (btn.dataset.now != null) {
+        const v = Number(btn.dataset.now);
+        if (Number.isFinite(v) && v >= 1 && v <= 64) setVal(el("lvNow"), v);
+        return;
+      }
+      // 目標レベル
+      if (btn.dataset.target != null) {
+        const v = Number(btn.dataset.target);
+        if (Number.isFinite(v) && v >= 2 && v <= 65) setVal(el("lvTarget"), v);
+        return;
+      }
+      // アメブースト
+      if (btn.dataset.boost != null) {
+        const v = Number(btn.dataset.boost);
+        if (Number.isFinite(v)) {
+          setVal(el("lvBoostCount"), v);
+          if (v > 0) setVal(el("lvMiniBoostCount"), 0);
+        }
+        return;
+      }
+      // ミニアメブースト
+      if (btn.dataset.mini != null) {
+        const v = Number(btn.dataset.mini);
+        if (Number.isFinite(v)) {
+          setVal(el("lvMiniBoostCount"), v);
+          if (v > 0) setVal(el("lvBoostCount"), 0);
+        }
+        return;
+      }
+    }, { passive: false });
+  }
+
+  function bindOnce() {
+    const elCalc = el("lvCalc");
+    const elClear = el("lvClear");
+    if (elCalc) elCalc.addEventListener("click", onCalc);
+    if (elClear) elClear.addEventListener("click", clearAll);
+
+    bindQuickButtons();
+
+    // 範囲外の入力を防ぐ
+    clampIntoInput(el("lvNow"), 1, 64);
+    clampIntoInput(el("lvTarget"), 2, 65);
+    clampIntoInput(el("lvBoostCount"), 0, 9999);
+    clampIntoInput(el("lvMiniBoostCount"), 0, 9999);
+  }
+
+  // 補助関数：入力時に値を強制的に範囲内に収める
+  function clampIntoInput(inputEl, min, max) {
+    if (!inputEl) return;
+    inputEl.addEventListener("input", () => {
+      if (inputEl.value === "") return;
+      const n = Number(inputEl.value);
+      if (!Number.isFinite(n)) return;
+      const v = Math.min(max, Math.max(min, Math.trunc(n)));
+      if (String(v) !== inputEl.value) inputEl.value = String(v);
+    });
+  }
+
+  // グローバルにLevelTabを公開
+  window.LevelTab = {
+    init() {
+      if (window.__LEVEL_TAB_BOUND__) return;
+      window.__LEVEL_TAB_BOUND__ = true;
+      bindOnce();
+    },
+  };
+
+function clearAll() {
+    ["lvNow", "lvTarget", "lvProgressExp", "lvCandyOwned"].forEach(id => {
+      if (el(id)) el(id).value = "";
+    });
+    if (el("lvBoostCount")) el("lvBoostCount").value = "0";
+    if (el("lvMiniBoostCount")) el("lvMiniBoostCount").value = "0";
+    const box = el("lvResult");
+    if (box) { box.innerHTML = ""; box.style.display = "none"; }
+  }
+  
   
   /* =========================
    * UI
@@ -495,6 +595,7 @@ function roundHalfUp(x) {
   };
 
 })();
+
 
 
 
