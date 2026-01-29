@@ -779,7 +779,17 @@ header {
     font-weight: var(--fw-heading);
     outline: none;
     width: auto !important;
-  
+
+  /* オプション等：.lvlInput を経由しない input にも共通装飾を適用（見た目統一） */
+  #tab3 .lvlInputRight input{
+    border: 2px solid rgba(0,0,0,0.12);
+    border-radius: 10px;
+    padding: 4px 6px;
+    font-weight: var(--fw-heading);
+    outline: none;
+    line-height: 1;
+  }
+    
     /* 現状維持：機種差で縦がズレるのを抑える */
     line-height: 1;
   }
@@ -1173,6 +1183,13 @@ header {
       width: 100%;
     }
 
+    /* ブースト：左側を「ラベル→ラジオ」の縦並びにする */
+    #tab3 .lvlBoostLeft{
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
   }
     
   </style>
@@ -1407,11 +1424,12 @@ header {
           </div>
         </div>
 
-        <!-- ブースト（ラジオはブーストの下） -->
+        <!-- ブースト -->
         <div class="lvlRow lvlRowBoost">
-          <div class="lvlLabel">ブースト</div>
+          <!-- 左側（緑枠）：ラベル + ラジオ -->
+          <div class="lvlBoostLeft">
+            <div class="lvlLabel">ブースト</div>
         
-          <div class="lvlInput" style="grid-template-columns:1fr;">
             <div class="lvlRadios lvlBoostRadios">
               <label class="lvlRadio">
                 <input type="radio" name="lvBoostKind" value="full"> アメブースト
@@ -1420,15 +1438,14 @@ header {
                 <input type="radio" name="lvBoostKind" value="mini"> ミニアメブースト
               </label>
             </div>
+          </div>
         
-            <div class="lvlBoostCountLine">
-              <div class="lvlInputRight">
-                <input id="lvBoostCount" class="lvlInBoost"
-                       type="number" inputmode="numeric"
-                       placeholder="xxxx">
-                <span class="lvlUnit">個</span>
-              </div>
-            </div>
+          <!-- 右側：個数入力 -->
+          <div class="lvlInputRight">
+            <input id="lvBoostCount" class="lvlInBoost"
+                   type="number" min="1" max="9999" inputmode="numeric"
+                   placeholder="xxxx">
+            <span class="lvlUnit">個</span>
           </div>
         </div>
         
