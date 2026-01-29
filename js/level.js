@@ -53,21 +53,27 @@ function roundHalfUp(x) {
     return table[band][nature] ?? table[band].none;
   }
 
-  /* =========================
+/* =========================
    * Core calculations
    * ========================= */
+  
+  // エラーの原因となっていた関数です。必ず含めてください。
+  function clampInt(n, min, max) {
+    n = Number(n);
+    if (!Number.isFinite(n)) return min;
+    return Math.max(min, Math.min(max, Math.trunc(n)));
+  }
+
   function calcTotalNeedExp(lvNow, lvTarget, typeKey) {
     let sum = 0;
     for (let to = lvNow + 1; to <= lvTarget; to++) {
       const row = expTable.get(to);
       if (!row) throw new Error(`EXP tableにLv${to}が見つかりません`);
 
-      // テーブルの列を直接参照（計算による誤差を防止）
       let step;
       if (typeof row === "number") {
         step = row;
       } else {
-        // "600", "semi", "legend", "normal" のキーで取得
         step = row[typeKey] ?? row.normal;
       }
       sum += step;
@@ -85,13 +91,9 @@ function roundHalfUp(x) {
     let shards = 0;
     let lv = lvNow;
     
-    // 現在のレベル内での進捗（累積経験値）を計算
-    // 「次のレベルまで」が入力されている場合は、必要量から差し引いて開始
     const rowNext = expTable.get(lv + 1);
     const needForNext = rowNext ? (typeof rowNext === "number" ? rowNext : (rowNext[typeKey] ?? rowNext.normal)) : 0;
     
-    // expCarry = 「そのレベルですでに獲得済みの経験値」
-    // 入力がなければ 0。入力があれば (必要量 - 残り) で算出
     let expCarry = 0;
     if (progressExp > 0 && progressExp < needForNext) {
       expCarry = needForNext - progressExp;
@@ -103,7 +105,6 @@ function roundHalfUp(x) {
       boostKind === "mini" ? 4 :
       boostKind === "full" ? 5 : 1;
 
-    // レベルを1つずつシミュレーション
     while (lv < lvTarget) {
       const targetLv = lv + 1;
       const row = expTable.get(targetLv);
@@ -111,15 +112,11 @@ function roundHalfUp(x) {
 
       const needStep = typeof row === "number" ? row : (row[typeKey] ?? row.normal);
 
-      // そのレベルに必要な経験値に達するまでアメを投入
       while (expCarry < needStep) {
         const useBoost = (boostRemain > 0 && boostKind !== "none");
-        
-        // アメ1個あたりの獲得量（現在のレベルに依存）
         const perCandyBase = baseCandyExp(lv, natureKey);
         const gain = Math.floor(perCandyBase * (useBoost ? boostExpMul : 1));
         
-        // かけら消費量（目標とするレベルに依存）
         const shardBase = shardTable.get(targetLv) || 0;
         const shardCost = shardBase * (useBoost ? boostShardMul : 1);
 
@@ -130,7 +127,6 @@ function roundHalfUp(x) {
         if (useBoost) boostRemain--;
       }
 
-      // 次のレベルへ（余剰経験値を持ち越し）
       expCarry -= needStep;
       lv++;
     }
@@ -425,6 +421,7 @@ function roundHalfUp(x) {
   };
 
 })();
+
 
 
 
