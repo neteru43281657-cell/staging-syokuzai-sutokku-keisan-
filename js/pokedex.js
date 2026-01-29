@@ -250,7 +250,6 @@ async function showFieldDetail(fieldId) {
           <img src="images/${field.file}" alt="${fieldName}">
           <div>
             <div class="field-title">${fieldName}</div>
-            <div style="font-size:12px; color:var(--muted); font-weight:800;">出現ポケモン数 / 必要エナジー</div>
           </div>
         </div>
         ${buildEnergyTableHTML(fieldName, energyMap)}
