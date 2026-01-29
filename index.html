@@ -972,6 +972,47 @@
     margin: 10px 0 6px;  /* 下だけ少し詰める */
   }
 
+  /* PC：タブ③（レベルシミュレーター）のカード幅を他タブと同じにする */
+  @media (min-width: 900px){
+    #tab3 #levelCard{
+      max-width: none !important;
+      width: 100% !important;
+      margin: 0 !important; /* 中央寄せを解除 */
+    }
+  }
+
+  /* ===== タブ③：スピンボタン制御（PC向け） ===== */
+  @media (min-width: 900px){
+  
+    /* ▼ 下側（区切り線より下の任意入力）＝スピンを消す */
+    #tab3 #lvProgressExp::-webkit-outer-spin-button,
+    #tab3 #lvProgressExp::-webkit-inner-spin-button,
+    #tab3 #lvCandyOwned::-webkit-outer-spin-button,
+    #tab3 #lvCandyOwned::-webkit-inner-spin-button,
+    #tab3 #lvBoostCount::-webkit-outer-spin-button,
+    #tab3 #lvBoostCount::-webkit-inner-spin-button,
+    #tab3 #lvMiniBoostCount::-webkit-outer-spin-button,
+    #tab3 #lvMiniBoostCount::-webkit-inner-spin-button{
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    /* Firefox用 */
+    #tab3 #lvProgressExp,
+    #tab3 #lvCandyOwned,
+    #tab3 #lvBoostCount,
+    #tab3 #lvMiniBoostCount{
+      -moz-appearance: textfield;
+    }
+  
+    /* ▲ 上側（区切り線より上のレベル入力）＝普段から見える寄りにする */
+    #tab3 #lvNow::-webkit-outer-spin-button,
+    #tab3 #lvNow::-webkit-inner-spin-button,
+    #tab3 #lvTarget::-webkit-outer-spin-button,
+    #tab3 #lvTarget::-webkit-inner-spin-button{
+      opacity: 1; /* “常時表示寄り” */
+    }
+  }
+    
   </style>
 </head>
 
