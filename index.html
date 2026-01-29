@@ -995,7 +995,7 @@
   #tab3 .lvlIn4,
   #tab3 .lvlInBoost{
     width: 8ch !important;      /* 4桁想定（余白込み） */
-    text-align: right !important;
+    text-align: center !important;
   }
   
   /* number入力の見た目を安定（機種差で横に伸びるのを抑える） */
@@ -1032,6 +1032,18 @@
     border-radius: 18px !important;  /* 高さ34pxに対して、丸い角丸四角形 */
   }
     
+  /* ブースト2行だけ：縦積みをやめて「上段」に戻す（紫線まで上げる） */
+  #tab3 .lvlRow .lvlInputStack{
+    grid-template-columns: 1fr auto !important; /* 左=クイック, 右=入力+単位 */
+    align-items: start !important;
+  }
+  
+  /* 入力欄を“上段”に固定（クイックと同じ段の上側へ） */
+  #tab3 .lvlInputStack .lvlInputRight{
+    align-self: start !important;
+    margin-top: 0 !important;
+  }
+
   </style>
 </head>
 
