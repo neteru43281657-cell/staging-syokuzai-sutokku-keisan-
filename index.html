@@ -1158,11 +1158,12 @@ header {
     #tab3 .lvlRowBoost{
       align-items: flex-start;
     }
-    #tab3 .lvlRowBoost .lvlBoostRadios{
+    .lvlBoostRadios{
       margin-top: 6px;
       justify-content: flex-start;
       gap: 18px;
-      flex-wrap: nowrap;
+      flex-wrap: wrap;      /* ← スマホで切れない */
+      overflow-x: visible;  /* ← .lvlRadios の横スクロールを無効化 */
     }
 
 
