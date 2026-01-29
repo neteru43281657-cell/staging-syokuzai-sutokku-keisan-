@@ -54,6 +54,65 @@ function roundHalfUp(x) {
   }
 
 /* =========================
+   * Tables
+   * ========================= */
+  let expTable = null;
+  let shardTable = null;
+
+  // データを一度だけ読み込むための関数（エラーの原因となっていた箇所）
+  async function loadTablesOnce() {
+    if (expTable && shardTable) return;
+
+    const [expTxt, shardTxt] = await Promise.all([
+      fetch("./data/exp_table.txt", { cache: "no-store" }).then(r => r.text()),
+      fetch("./data/shard_table.txt", { cache: "no-store" }).then(r => r.text()),
+    ]);
+
+    expTable = parseExpTable(expTxt);
+    shardTable = parseTwoColTable(shardTxt);
+  }
+
+  function parseTwoColTable(txt) {
+    const map = new Map();
+    txt.split(/\r?\n/).forEach(line => {
+      const s = line.trim();
+      if (!s || s.startsWith("#")) return;
+      const p = s.split(/\s+/);
+      if (p.length < 2) return;
+      const k = Number(p[0]);
+      const v = toNum(p[1]);
+      if (Number.isFinite(k) && Number.isFinite(v)) map.set(k, v);
+    });
+    return map;
+  }
+
+  function parseExpTable(txt) {
+    const map = new Map();
+    txt.split(/\r?\n/).forEach(line => {
+      const s = line.trim();
+      if (!s || s.startsWith("#")) return;
+      const p = s.split(/\s+/);
+      if (p.length < 2) return;
+
+      const lv = Number(p[0]);
+      if (!Number.isFinite(lv)) return;
+
+      if (p.length === 2) {
+        map.set(lv, toNum(p[1]));
+        return;
+      }
+
+      map.set(lv, {
+        normal: toNum(p[1]),
+        "600": toNum(p[2]),
+        semi: toNum(p[3]),
+        legend: toNum(p[4]),
+      });
+    });
+    return map;
+  }
+  
+/* =========================
    * Core calculations
    * ========================= */
   
@@ -421,6 +480,7 @@ function roundHalfUp(x) {
   };
 
 })();
+
 
 
 
