@@ -1212,9 +1212,68 @@
       gap: 18px;
       flex-wrap: wrap;
     }
-
   }
-    
+
+  /* =========================
+   * [PC] タブ③：オプション行だけ正しく整列（左=項目名 / 右=入力）
+   * ========================= */
+  @media (min-width: 900px){
+  
+    /* PCブロック内の display: contents 指定をオプションだけ無効化 */
+    #tab3 .lvlRowOpt .lvlOptLines{ display:flex !important; flex-direction:column !important; gap:10px !important; }
+    #tab3 .lvlRowOpt .lvlOptLine{  display:grid !important; grid-template-columns: 1fr auto !important; gap:10px !important; align-items:center !important; }
+  
+    /* オプションの中身は「中央+右」(col2〜col3) をまるごと使う */
+    #tab3 .lvlRowOpt .lvlInput{
+      grid-column: 2 / span 2 !important;
+      justify-self: stretch !important;
+      width: 100% !important;
+    }
+  
+    /* オプション内のラベル/入力の“変なgrid-column固定”を解除して、行内で自然に並べる */
+    #tab3 .lvlRowOpt .lvlOptName{
+      grid-column: auto !important;
+      justify-self: start !important;
+      white-space: nowrap !important;
+    }
+    #tab3 .lvlRowOpt .lvlInputRight{
+      grid-column: auto !important;
+      justify-self: end !important; /* 右の赤線に揃う */
+    }
+  }
+
+  /* =========================
+   * [SP] タブ③：ブースト行を
+   * 1行目 右に「xxxx 個」
+   * 2行目 左に「〇アメブースト 〇ミニアメブースト」
+   * ========================= */
+  @media (max-width: 520px){
+  
+    /* ブースト行の入力側だけ、2段レイアウトにする（inline style を上書き） */
+    #tab3 .lvlRow:has(.lvlBoostRadios) .lvlInput{
+      display: grid !important;
+      grid-template-columns: 1fr auto !important;
+      grid-template-rows: auto auto !important;
+      row-gap: 8px !important;
+    }
+  
+    /* 右上：個数入力 */
+    #tab3 .lvlRow:has(.lvlBoostRadios) .lvlBoostCountLine{
+      grid-column: 2 !important;
+      grid-row: 1 !important;
+      justify-self: end !important;
+      margin-top: 0 !important;
+    }
+  
+    /* 下段：ラジオ（2つ横並び） */
+    #tab3 .lvlRow:has(.lvlBoostRadios) .lvlBoostRadios{
+      grid-column: 1 / -1 !important;
+      grid-row: 2 !important;
+      justify-content: flex-start !important;
+      gap: 18px !important;
+    }
+  }
+
   </style>
 </head>
 
