@@ -347,13 +347,20 @@ function roundHalfUp(x) {
     if (typeNormal) typeNormal.checked = true;
   }
 
-  async function onCalc() {
-    hideResult();
+  function onCalc() {
+      hideResult();
+  
+      const nowRaw = (el("lvNow")?.value ?? "").trim();
+      const targetRaw = (el("lvTarget")?.value ?? "").trim();
+  
+      // ★ 何も入力していない（必須が空）の場合は何も出力しない
+      if (!nowRaw || !targetRaw) return;
+  
+      const lvNow = clampInt(nowRaw, LV_MIN, LV_MAX);      // 1〜64
+      const lvTarget = clampInt(targetRaw, 2, LV_MAX);     // 2〜65
+      const natureKey = getRadio("lvNature") || "none";
+      const typeKey = getRadio("lvType") || "normal";
 
-    const lvNow = clampInt(el("lvNow")?.value, LV_MIN, LV_MAX);      // 1〜64
-    const lvTarget = clampInt(el("lvTarget")?.value, 2, LV_MAX);     // 2〜65
-    const natureKey = getRadio("lvNature") || "none";
-    const typeKey = getRadio("lvType") || "normal";
 
     // 任意入力：未入力は0扱い
     const progressExpRaw = el("lvProgressExp")?.value;
@@ -458,6 +465,7 @@ function roundHalfUp(x) {
   };
 
 })();
+
 
 
 
