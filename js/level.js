@@ -145,12 +145,23 @@ function toNum(v) {
   }
 
   function simulateCandiesAndShards(opts) {
-    const { lvNow, lvTarget, typeKey, natureKey, initialProgress, boostKind, boostCount } = opts;
-    
+    const {
+      lvNow,
+      lvTarget,
+      typeKey,
+      natureKey,
+      initialProgress,
+      freeExp,          // ★追加：睡眠等で差し引くEXP（アメ無しで得るEXP）
+      boostKind,
+      boostCount
+    } = opts;
+
     let candies = 0;
     let shards = 0;
     let lv = lvNow;
-    let currentExp = initialProgress;
+
+    // ★最初に「進捗（次Lvまでの差し引き）」＋「freeExp」を載せる
+    let currentExp = (initialProgress || 0) + (freeExp || 0);
 
     let boostRemain = Math.max(0, boostCount || 0);
     const boostExpMul = (boostKind === "none") ? 1 : 2;
@@ -160,7 +171,7 @@ function toNum(v) {
       const targetLv = lv + 1;
       const row = expTable.get(targetLv);
       if (!row) break;
-      
+
       const needStep = getNeedStep(targetLv, typeKey);
 
       // このレベル（targetLv）に到達するまでアメを投入
@@ -187,6 +198,7 @@ function toNum(v) {
     return { candiesTotal: candies, shardsTotal: shards };
   }
 
+
   /* =========================
    * UI & Event Listeners
    * ========================= */
@@ -199,92 +211,188 @@ function toNum(v) {
   }
 
   async function onCalc() {
+    // ★結果は常に表示（入力不足なら案内だけ出す）
     const nowRaw = (el("lvNow")?.value ?? "").trim();
     const targetRaw = (el("lvTarget")?.value ?? "").trim();
-    if (!nowRaw || !targetRaw) return;
+
+    if (!nowRaw || !targetRaw) {
+      showResult(`<div class="lvResTitle">計算結果</div><div class="lvlWarn">「今のレベル」「目標レベル」を入力すると自動で計算します</div>`);
+      return;
+    }
 
     const lvNow = clampInt(nowRaw, 1, 64);
     const lvTarget = clampInt(targetRaw, 2, 65);
     if (lvTarget <= lvNow) {
-      showResult(`<div class="lvlWarn">「目標のレベル」は「今のレベル」より大きい値にしてください</div>`);
+      showResult(`<div class="lvResTitle">計算結果</div><div class="lvlWarn">「目標のレベル」は「今のレベル」より大きい値にしてください</div>`);
       return;
     }
 
     await loadTablesOnce();
+
     const natureKey = getRadio("lvNature") || "none";
     const typeKey = getRadio("lvType") || "normal";
-    const progressExp = clampInt(el("lvProgressExp")?.value || 0, 0, 9999);
-    const candyOwned = clampInt(el("lvCandyOwned")?.value || 0, 0, 9999);
-    const boostCount = clampInt(el("lvBoostCount")?.value || 0, 0, 9999);
-    const miniCount = clampInt(el("lvMiniBoostCount")?.value || 0, 0, 9999);
 
+    // 進捗（次Lvまでの残り）
+    const progressExp = clampInt(el("lvProgressExp")?.value || 0, 0, 9999);
+
+    // 所持アメ
+    const candyOwned = clampInt(el("lvCandyOwned")?.value || 0, 0, 9999);
+
+    // ★ブースト統合
+    const boostKind = getRadio("lvBoostKind") || "none"; // none/full/mini
+    const boostCount = clampInt(el("lvBoostCount")?.value || 0, 0, 9999);
+
+    // ★オプション
+    const sleepDays = clampInt(el("lvSleepDays")?.value || 0, 0, 999);
+    const sleepBonus = clampInt(el("lvSleepBonus")?.value || 0, 0, 5);
+    const incense = clampInt(el("lvGrowthIncense")?.value || 0, 0, 999);
+
+    // 次Lv必要EXP
     const needForNextLevel = getNeedStep(lvNow + 1, typeKey);
+
+    // 既に稼いだ進捗（= need - 残り）
     let initialProgress = 0;
     if (progressExp > 0 && progressExp < needForNextLevel) {
       initialProgress = needForNextLevel - progressExp;
     }
 
-    let totalExpNeeded = 0;
+    // 総必要EXP（丸め済needStepの合計）
+    let totalSteps = 0;
     for (let i = lvNow + 1; i <= lvTarget; i++) {
-      totalExpNeeded += getNeedStep(i, typeKey);
+      totalSteps += getNeedStep(i, typeKey);
     }
 
-    totalExpNeeded = Math.max(0, totalExpNeeded - initialProgress);
+    // ★freeExp（睡眠など）を算出：過剰にならないよう totalSteps で上限をかける
+    let freeExp = 0;
+    if (sleepDays > 0) {
+      const perDay = 100 + 14 * sleepBonus; // 例：bonus=5 → 170
+      freeExp = perDay * sleepDays;
 
-    // シミュレーション実行
-    const simNormal = simulateCandiesAndShards({ 
-      lvNow, lvTarget, typeKey, natureKey, initialProgress, boostKind: "none" 
+      // せいちょうのおこう：最後を *2（個数ぶん）
+      // ※巨大入力でも壊れないよう、合計必要EXPを上限にして倍々にする
+      for (let i = 0; i < incense; i++) {
+        freeExp = Math.min(totalSteps, freeExp * 2);
+        if (freeExp >= totalSteps) break;
+      }
+      freeExp = Math.min(totalSteps, freeExp);
+    }
+
+    // 表示用：必要経験値（進捗 + freeExp を差し引く）
+    let totalExpNeeded = Math.max(0, totalSteps - initialProgress - freeExp);
+
+    // ==== シミュレーション ====
+    const simNormal = simulateCandiesAndShards({
+      lvNow, lvTarget, typeKey, natureKey,
+      initialProgress,
+      freeExp,
+      boostKind: "none",
+      boostCount: 0
     });
 
     let html = `<div class="lvResTitle">計算結果</div>`;
     html += `<div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">${totalExpNeeded.toLocaleString()} pt</div></div>`;
-    html += `<div class="lvResRow"><div class="lvResKey">必要なアメの数</div><div class="lvResVal">${Math.max(0, simNormal.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
-    html += `<div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量</div><div class="lvResVal">${simNormal.shardsTotal.toLocaleString()}</div></div>`;
 
-    if (boostCount > 0) {
-      const simBoost = simulateCandiesAndShards({ 
-        lvNow, lvTarget, typeKey, natureKey, initialProgress, boostKind: "full", boostCount 
+    html += `<div class="lvResRow"><div class="lvResKey"><img class="lvIcon" src="images/アメ_透過.png" alt="">必要なアメの数</div><div class="lvResVal">${Math.max(0, simNormal.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
+    html += `<div class="lvResRow"><div class="lvResKey"><img class="lvIcon" src="images/ゆめのかけら_透過.png" alt="">必要なゆめのかけら量</div><div class="lvResVal">${simNormal.shardsTotal.toLocaleString()}</div></div>`;
+
+    // ★選択中のブーストだけ表示（個数>0 かつ なし以外）
+    if (boostKind !== "none" && boostCount > 0) {
+      const simBoost = simulateCandiesAndShards({
+        lvNow, lvTarget, typeKey, natureKey,
+        initialProgress,
+        freeExp,
+        boostKind: boostKind === "mini" ? "mini" : "full",
+        boostCount
       });
-      html += `<div class="lvResSubTitle">アメブースト時 (x2 / かけらx5)</div>`;
-      html += `<div class="lvResRow"><div class="lvResKey">必要なアメの数</div><div class="lvResVal">${Math.max(0, simBoost.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
-      html += `<div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量</div><div class="lvResVal">${simBoost.shardsTotal.toLocaleString()}</div></div>`;
+
+      const subtitle =
+        (boostKind === "mini")
+          ? `ミニブースト時 (x2 / かけらx4)`
+          : `アメブースト時 (x2 / かけらx5)`;
+
+      html += `<div class="lvResSubTitle"><img class="lvIcon" src="images/アメブースト_透過.png" alt="">${subtitle}</div>`;
+      html += `<div class="lvResRow"><div class="lvResKey"><img class="lvIcon" src="images/アメ_透過.png" alt="">必要なアメの数</div><div class="lvResVal">${Math.max(0, simBoost.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
+      html += `<div class="lvResRow"><div class="lvResKey"><img class="lvIcon" src="images/ゆめのかけら_透過.png" alt="">必要なゆめのかけら量</div><div class="lvResVal">${simBoost.shardsTotal.toLocaleString()}</div></div>`;
     }
-    if (miniCount > 0) {
-      const simMini = simulateCandiesAndShards({ 
-        lvNow, lvTarget, typeKey, natureKey, initialProgress, boostKind: "mini", boostCount: miniCount 
-      });
-      html += `<div class="lvResSubTitle">ミニアメブースト時 (x2 / かけらx4)</div>`;
-      html += `<div class="lvResRow"><div class="lvResKey">必要なアメの数</div><div class="lvResVal">${Math.max(0, simMini.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
-      html += `<div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量</div><div class="lvResVal">${simMini.shardsTotal.toLocaleString()}</div></div>`;
-    }
+
     showResult(html);
   }
 
+
   function clearAll() {
-    ["lvNow", "lvTarget", "lvProgressExp", "lvCandyOwned", "lvBoostCount", "lvMiniBoostCount"].forEach(id => {
-      if (el(id)) el(id).value = (id.includes("Boost") ? "0" : "");
+    [
+      "lvNow",
+      "lvTarget",
+      "lvProgressExp",
+      "lvCandyOwned",
+      "lvBoostCount",
+      "lvSleepDays",
+      "lvSleepBonus",
+      "lvGrowthIncense"
+    ].forEach(id => {
+      if (!el(id)) return;
+      // 個数系は 0、それ以外は空に戻す（見た目を自然に）
+      if (id === "lvBoostCount") el(id).value = "0";
+      else el(id).value = "";
     });
-    const box = el("lvResult"); if (box) { box.innerHTML = ""; box.style.display = "none"; }
+
+    // ブースト：なしへ戻す
+    const rNone = document.querySelector('input[name="lvBoostKind"][value="none"]');
+    if (rNone) rNone.checked = true;
+
+    // 結果は常時表示なので、案内を出す
+    onCalc();
   }
 
-  function setVal(inputEl, v) {
-    if (!inputEl) return;
-    inputEl.value = String(v);
-    inputEl.dispatchEvent(new Event("input", { bubbles: true }));
-  }
 
   function bindOnce() {
-    el("lvCalc")?.addEventListener("click", onCalc);
+    // 計算ボタンは廃止：入力/変更ごとに自動計算
     el("lvClear")?.addEventListener("click", clearAll);
-    
+
+    // クイックボタン（レベル/ブースト）
     document.getElementById("tab3")?.addEventListener("click", (e) => {
       const btn = e.target.closest(".lvlQuickBtn"); if (!btn) return;
+
       if (btn.dataset.now) setVal(el("lvNow"), btn.dataset.now);
       if (btn.dataset.target) setVal(el("lvTarget"), btn.dataset.target);
-      if (btn.dataset.boost) { setVal(el("lvBoostCount"), btn.dataset.boost); setVal(el("lvMiniBoostCount"), 0); }
-      if (btn.dataset.mini) { setVal(el("lvMiniBoostCount"), btn.dataset.mini); setVal(el("lvBoostCount"), 0); }
+
+      if (btn.dataset.boost) {
+        setVal(el("lvBoostCount"), btn.dataset.boost);
+
+        // もし「なし」だったら、とりあえずアメブーストへ（使う意図が自然）
+        const cur = getRadio("lvBoostKind") || "none";
+        if (cur === "none") {
+          const rFull = document.querySelector('input[name="lvBoostKind"][value="full"]');
+          if (rFull) { rFull.checked = true; }
+        }
+        onCalc();
+      }
     });
+
+    // 入力で再計算（イベント委譲）
+    const tab = document.getElementById("tab3");
+    if (tab) {
+      tab.addEventListener("input", (e) => {
+        const t = e.target;
+        if (!t) return;
+        if (t.matches("#lvNow,#lvTarget,#lvProgressExp,#lvCandyOwned,#lvBoostCount,#lvSleepDays,#lvSleepBonus,#lvGrowthIncense")) {
+          onCalc();
+        }
+      });
+
+      tab.addEventListener("change", (e) => {
+        const t = e.target;
+        if (!t) return;
+        if (t.name === "lvNature" || t.name === "lvType" || t.name === "lvBoostKind") {
+          onCalc();
+        }
+      });
+    }
+
+    // 初期表示（結果を常に出す）
+    onCalc();
   }
+
 
   window.LevelTab = {
     init() {
@@ -295,4 +403,5 @@ function toNum(v) {
   };
 
 })();
+
 
