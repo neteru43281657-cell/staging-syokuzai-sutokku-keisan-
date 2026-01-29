@@ -290,9 +290,12 @@ function toNum(v) {
     const nowRaw = (el("lvNow")?.value ?? "").trim();
     const targetRaw = (el("lvTarget")?.value ?? "").trim();
 
-    // 未入力でも計算結果枠だけ表示（案内文は出さない）
-    if (!nowRaw || !targetRaw) {
-      showResult(`<div class="lvResTitle">計算結果</div>`);
+    // 必須4項目（今のレベル/目標のレベル/性格/経験値タイプ）が揃うまで何も出力しない
+    const natureKey = getRadio("lvNature");
+    const typeKey = getRadio("lvType");
+
+    if (!nowRaw || !targetRaw || !natureKey || !typeKey) {
+      hideResult();
       return;
     }
 
@@ -309,25 +312,7 @@ function toNum(v) {
 
     await loadTablesOnce();
 
-    const natureKey = getRadio("lvNature") || "none";
-    const typeKey = getRadio("lvType") || "normal";
-    
-    // 次のレベル（lvNow+1）に必要な経験値（その1段分）
-    const needNext = getNeedStep(lvNow + 1, typeKey);
-    
-    // 「次のレベルまでの経験値」は “残り” として扱う：
-    // 未入力 → 進捗0
-    // 入力あり → 進捗 = needNext - 残り（0未満にならないように）
-    const progressRaw = (el("lvProgressExp")?.value ?? "").trim();
-    const remainToNext = progressRaw ? clampInt(progressRaw, 1, 9999) : 0;
-    const initialProgress = progressRaw ? Math.max(0, needNext - remainToNext) : 0;
-    
-    // lvNow → lvTarget までの総必要経験値（各段の合計）
-    let totalSteps = 0;
-    for (let lv = lvNow + 1; lv <= lvTarget; lv++) {
-      totalSteps += getNeedStep(lv, typeKey);
-    }
-    
+    const progressExp = toNum(el("lvProgressExp")?.value || 0); // 空欄は0扱い
     const candyOwned = toNum(el("lvCandyOwned")?.value || 0);   // 空欄は0扱い
 
     const boostKind = getRadio("lvBoostKind") || "none"; // 未選択=none
@@ -345,41 +330,43 @@ function toNum(v) {
       }
     }
 
-    // オプション（空欄は0扱い）
-    let sleepDays = toNum(el("lvSleepDays")?.value || 0);
-    let sleepBonus = toNum(el("lvSleepBonus")?.value || 0);
-    let incense = toNum(el("lvGrowthIncense")?.value || 0);
-    
-    // 数値として安全側に丸める（空欄→0のまま）
-    sleepDays = clampInt(sleepDays, 0, 999);
-    sleepBonus = clampInt(sleepBonus, 0, 5);
-    incense = clampInt(incense, 0, 999);
-    
-    // おこうは「睡眠した日数」を超えられない（睡眠=1日1回 / おこう=1日1個）
-    let incenseEff = incense;
-    
-    if (sleepDays <= 0) {
-      incenseEff = 0;
-      // 睡眠が未入力/0なら、おこうは空欄に戻す
-      if (el("lvGrowthIncense") && (el("lvGrowthIncense").value || "").trim() !== "") {
-        el("lvGrowthIncense").value = "";
-      }
-    } else if (incenseEff > sleepDays) {
-      incenseEff = sleepDays;
-      // 5個→4個 みたいに自動で打ち直す
-      if (el("lvGrowthIncense")) el("lvGrowthIncense").value = String(sleepDays);
-    }
-    
-    // freeExp（睡眠で稼げる経験値）
-    let freeExp = 0;
-    if (sleepDays > 0) {
-      const perDay = 100 + 14 * sleepBonus;      // 例：睡眠EXPボーナス2体 → 128
-      // おこう使用日は2倍＝その日ぶん perDay がもう1回加算される
-      // 合計 = perDay * (睡眠日数 + おこう使用日数)
-      freeExp = perDay * (sleepDays + incenseEff);
-      if (freeExp > totalSteps) freeExp = totalSteps;
+    // オプション
+    const sleepDays = toNum(el("lvSleepDays")?.value || 0);
+    const sleepBonus = toNum(el("lvSleepBonus")?.value || 0);
+    const incense = toNum(el("lvGrowthIncense")?.value || 0);
+
+    // 次レベル必要EXP
+    const needForNextLevel = getNeedStep(lvNow + 1, typeKey);
+
+    // 進捗（次レベルまでの残り）→ 既に稼いだ量に変換
+    let initialProgress = 0;
+    if (progressExp > 0 && progressExp < needForNextLevel) {
+      initialProgress = needForNextLevel - progressExp;
     }
 
+    // 総必要EXP（needStep合計）
+    let totalSteps = 0;
+    for (let i = lvNow + 1; i <= lvTarget; i++) {
+      totalSteps += getNeedStep(i, typeKey);
+    }
+
+    // freeExp（睡眠など）を算出し、上限を totalSteps にする
+    let freeExp = 0;
+    if (sleepDays > 0) {
+      const perDay = 100 + 14 * sleepBonus; // 100 + 14*体
+      freeExp = perDay * sleepDays;
+
+      if (incense > 0) {
+        // *2 を incense 個分（ただし totalSteps を超えたら打ち止め）
+        let i = 0;
+        while (i < incense && freeExp < totalSteps) {
+          freeExp *= 2;
+          if (freeExp >= totalSteps) { freeExp = totalSteps; break; }
+          i++;
+        }
+      }
+      if (freeExp > totalSteps) freeExp = totalSteps;
+    }
 
     // 表示用：必要経験値（進捗 + freeExp 分を差し引き）
     const totalExpNeeded = Math.max(0, totalSteps - initialProgress - freeExp);
@@ -531,6 +518,4 @@ function toNum(v) {
   };
 
 })();
-
-
 
