@@ -35,28 +35,18 @@
       --muted: #5d6d7e;
       --line: #d6e0ea;
       --danger: #e74c3c;
-      --fw-regular: 600;
-      --fw-strong: 800;
-      --fw-heading: 900;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-      font-weight: var(--fw-regular);
       background: var(--bg);
       color: var(--text);
       line-height: 1.5;
       -webkit-font-smoothing: antialiased;
     }
 
-    
-
-    /* フォント統一：フォーム部品がOS既定フォントに戻らないようにする */
-    button, input, select, textarea {
-      font-family: inherit;
-    }
-header {
+    header {
       padding: 10px 20px;
       background: var(--main);
       color: #fff;
@@ -68,8 +58,8 @@ header {
       align-items: center;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    .title-text { font-weight: var(--fw-strong); letter-spacing: 0.03em; font-size: 18px; }
-    .ver-text { font-size: 11px; font-weight: var(--fw-regular); opacity: 0.8; margin-top: 2px; }
+    .title-text { font-weight: 800; letter-spacing: 0.03em; font-size: 18px; }
+    .ver-text { font-size: 11px; font-weight: 400; opacity: 0.8; margin-top: 2px; }
 
     main {
       max-width: 980px;
@@ -111,7 +101,7 @@ header {
       gap: 4px;
       color: var(--muted);
       font-size: 10px;
-      font-weight: var(--fw-strong);
+      font-weight: 700;
       cursor: pointer;
       flex: 1;
       padding: 8px 0;
@@ -144,7 +134,7 @@ header {
       width: 100%;
     }
 
-    label { font-size: 11px; font-weight: var(--fw-strong); color: var(--muted); display: block; margin-bottom: 4px; }
+    label { font-size: 11px; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px; }
 
     select, input[type="number"] {
       padding: 10px;
@@ -157,7 +147,7 @@ header {
     }
 
     select.emphSelect{
-      font-weight: var(--fw-strong);
+      font-weight: 800;
       border: 2px solid var(--main);
       background: #fff;
       box-shadow: 0 6px 14px rgba(0,0,0,.08);
@@ -176,7 +166,7 @@ header {
     .recipeRow.catLocked .catSel.emphSelect{
       border: 1px solid #e3eaf2 !important;
       box-shadow: none !important;
-      font-weight: var(--fw-regular) !important;
+      font-weight: 400 !important;
     }
 
     select:disabled{
@@ -184,12 +174,12 @@ header {
       border-color: #e3eaf2 !important;
       color: #8a97a6 !important;
       box-shadow: none !important;
-      font-weight: var(--fw-regular) !important;      /* 通常の字体 */
+      font-weight: 400 !important;      /* 通常の字体 */
       opacity: 1 !important;            /* ブラウザ既定の薄さを無効化 */
     }
     
     label.emphLabel{
-      font-weight: var(--fw-heading);
+      font-weight: 900;
       color: var(--text);
     }
     
@@ -197,14 +187,14 @@ header {
       padding: 10px 16px;
       border: 1px solid var(--line);
       border-radius: 10px;
-      font-weight: var(--fw-strong);
+      font-weight: 800;
       cursor: pointer;
       font-size: 14px;
     }
     button.primary { background: var(--main); color: #fff; border-color: var(--main); }
     button.danger { color: var(--danger); border-color: #fadbd8; background: #fff; }
 
-    .badge { font-size: 12px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); font-weight: var(--fw-strong); }
+    .badge { font-size: 12px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); font-weight: 700; }
     #summaryBadge { background: var(--main-soft); color: var(--main); border: 1px solid #cce5ff; }
     .total-badge { background: var(--main); color: #fff; border: none; padding: 6px 16px; }
 
@@ -223,7 +213,7 @@ header {
       overflow: hidden;
     }
     .icon { width: 30px; height: 30px; object-fit: contain; }
-    .tileName { font-size: 8px; font-weight: var(--fw-strong); width: 100%; overflow: hidden; text-overflow: clip; white-space: nowrap; }
+    .tileName { font-size: 8px; font-weight: 700; width: 100%; overflow: hidden; text-overflow: clip; white-space: nowrap; }
 
     .chkLabel {
       font-size: 10px;
@@ -248,7 +238,7 @@ header {
     .ncPikaOpt{
       margin-top: 6px;
       font-size: 12px;
-      font-weight: var(--fw-strong);
+      font-weight: 700;
       color: var(--text);
       display: flex;
       align-items: center;
@@ -268,7 +258,7 @@ header {
       height: 24px !important;
       padding: 0 2px !important;
       font-size: 14px !important;
-      font-weight: var(--fw-strong) !important;
+      font-weight: 800 !important;
       text-align: center;
       border-radius: 6px !important;
     }
@@ -300,18 +290,18 @@ header {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: var(--fw-heading);
+      font-weight: bold;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       cursor: pointer;
     }
 
     .preview { font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; width: 100%; align-items: center; }
-    .preview span { display: flex; align-items: center; background: var(--main-soft); color: var(--main); padding: 2px 6px; border-radius: 6px; font-weight: var(--fw-strong); border: 1px solid #d0e7ff; }
+    .preview span { display: flex; align-items: center; background: var(--main-soft); color: var(--main); padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 1px solid #d0e7ff; }
 
     /* カレンダー用 */
     .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
     .month-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 10px; }
-    .month-name { font-weight: var(--fw-heading); text-align: center; border-bottom: 1px solid var(--line); margin-bottom: 5px; color: var(--text); }
+    .month-name { font-weight: 900; text-align: center; border-bottom: 1px solid var(--line); margin-bottom: 5px; color: var(--text); }
 
     .days-grid {
       display: grid;
@@ -327,7 +317,7 @@ header {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: var(--fw-heading);
+      font-weight: bold;
       font-size: 10px;
       position: relative;
       border-radius: 4px;
@@ -344,7 +334,7 @@ header {
     .dow:nth-child(7) { color: #e74c3c !important; }
     .day-sat { color: #007bff !important; }
     .day-sun { color: #e74c3c !important; }
-    .day-holiday { color: #ff8c00 !important; font-weight: var(--fw-heading); }
+    .day-holiday { color: #ff8c00 !important; font-weight: 900; }
 
     .day-today::after {
       content: "";
@@ -382,20 +372,20 @@ header {
     }
     .field-item:active { transform: scale(0.98); background: var(--main-soft); }
     .field-img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 8px; }
-    .field-name { font-size: 11px; font-weight: var(--fw-strong); color: var(--text); }
+    .field-name { font-size: 11px; font-weight: 800; color: var(--text); }
 
     /* ===== 出現ポケモン一覧（tab2 詳細） ===== */
     .field-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
     .field-header img { width: 56px; height: 56px; object-fit: contain; }
-    .field-title { font-weight: var(--fw-heading); font-size: 16px; color: var(--text); }
+    .field-title { font-weight: 900; font-size: 16px; color: var(--text); }
 
     .energy-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
     .energy-table th, .energy-table td { border: 1px solid var(--line); padding: 8px; text-align: center; }
-    .energy-table th { background: #f7f9fc; font-weight: var(--fw-heading); }
+    .energy-table th { background: #f7f9fc; font-weight: 900; }
 
     .sleep-section { margin-top: 14px; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff; }
-    .sleep-label { padding: 10px 12px; font-weight: var(--fw-heading); font-size: 13px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--line); }
-    .sleep-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 64px; padding: 6px 10px; border-radius: 10px; font-weight: var(--fw-heading); font-size: 12px; color: #111; }
+    .sleep-label { padding: 10px 12px; font-weight: 900; font-size: 13px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--line); }
+    .sleep-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 64px; padding: 6px 10px; border-radius: 10px; font-weight: 900; font-size: 12px; color: #111; }
     .badge-uto { background: #ffe66a; }
     .badge-suya { background: #aee7f2; }
     .badge-gusu { background: #8fb3ff; color: #0b1b3a; }
@@ -403,7 +393,7 @@ header {
     .poke-grid { padding: 10px 10px 12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 8px; }
     .poke-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .poke-item img { width: 44px; height: 44px; object-fit: contain; }
-    .poke-name { font-size: 9px; font-weight: var(--fw-strong); color: var(--muted); text-align: center; line-height: 1.2; word-break: keep-all; }
+    .poke-name { font-size: 9px; font-weight: 800; color: var(--muted); text-align: center; line-height: 1.2; word-break: keep-all; }
 
     /* =========================================================
        ここから：レイアウトを「安定版」に1本化
@@ -411,7 +401,7 @@ header {
 
     /* セクション見出し（青縦線）を全端末で統一 */
     .sectionTitle{
-      font-weight: var(--fw-heading);
+      font-weight: 900;
       font-size: 14px;
       border-left: 5px solid var(--main);
       padding-left: 10px;
@@ -474,7 +464,7 @@ header {
       width:100%;
     }
     #modeBlock .modeTitle{
-      font-weight: var(--fw-heading);
+      font-weight: 900;
       font-size: 14px;
       color: var(--muted);
       margin-bottom: 2px;
@@ -532,7 +522,7 @@ header {
       flex-wrap: nowrap;
     }
     .resultTitle{
-      font-weight: var(--fw-heading);
+      font-weight: 900;
       font-size: 16px;
       color: var(--main);
       line-height: 1.15;
@@ -618,7 +608,7 @@ header {
     /* 注意書き：PCでは“補足”に見えるように */
     .result-card .mode3Note{
       font-size: 12px;
-      font-weight: var(--fw-regular);
+      font-weight: 600;
       color: #6b7a8a;
       line-height: 1.45;
       margin-top: 8px;
@@ -652,7 +642,7 @@ header {
   
   .result-card .tileName{
     font-size: 8px;
-    font-weight: var(--fw-strong);
+    font-weight: 700;
     width: 100%;
     overflow: hidden;
     text-overflow: clip;
@@ -685,13 +675,13 @@ header {
   /* 行：左ラベル / 右入力群（現状の列幅を維持） */
   .lvlRow{
     display:grid;
-    grid-template-columns: minmax(0, 1fr) minmax(140px, 260px);
+    grid-template-columns: 1fr 260px;
     gap: 10px;
     align-items: start;
     padding: 4px 0;
   }
   @media (max-width: 520px){
-    .lvlRow{ grid-template-columns: minmax(0, 1fr) minmax(120px, 200px); }
+    .lvlRow{ grid-template-columns: 1fr 230px; }
     .lvlLabel{ font-size: 14px; }
     .lvlRadio{ font-size: 12px; }
     .lvlQuick{ max-width: 150px; }
@@ -706,7 +696,7 @@ header {
   
   /* ラベル */
   .lvlLabel{
-    font-weight: var(--fw-heading);
+    font-weight: 900;
     font-size: 16px;
     color: #111;
     line-height: 1.2;
@@ -714,7 +704,7 @@ header {
   .lvlReq{ color:#e74c3c; margin-right:6px; }
   .lvlNote{
     font-size:12px;
-    font-weight: var(--fw-strong);
+    font-weight:700;
     color: var(--muted);
     margin-top:6px;
     display:block;
@@ -759,7 +749,7 @@ header {
   
   /* 単位 */
   .lvlUnit{
-    font-weight: var(--fw-heading);
+    font-weight: 900;
     color:#111;
     white-space: nowrap;
     font-size: 10px;
@@ -771,18 +761,15 @@ header {
     align-items: center;
   }
   
-  /* 入力（共通）：.lvlInput 経由／経由しない input も同じ見た目にする */
-  .lvlInput input,
-  #tab3 .lvlInputRight input{
+  /* 入力（共通） */
+  .lvlInput input{
     border: 2px solid rgba(0,0,0,0.12);
     border-radius: 10px;
     padding: 4px 6px;
-    font-weight: var(--fw-heading);
+    font-weight: 900;
     outline: none;
     width: auto !important;
-    line-height: 1;
-  }
-    
+  
     /* 現状維持：機種差で縦がズレるのを抑える */
     line-height: 1;
   }
@@ -820,19 +807,19 @@ header {
   }
   #tab3 .lvlOptName{
     font-size: 13px;
-    font-weight: var(--fw-strong);
+    font-weight: 800;
     color: var(--text);
   }
   
   /* 3桁入力の横幅 */
   #tab3 .lvlIn3{
-    width: 7ch !important;
+    width: 5ch !important;
     text-align: center !important;
   }
 
   /* 1桁入力（睡眠EXPボーナス用） */
   #tab3 .lvlIn1{
-    width: 4.5ch !important;
+    width: 3.5ch !important;
     text-align: center !important;
   }
 
@@ -881,7 +868,7 @@ header {
     border-radius: 10px;
     border: 2px solid rgba(0,0,0,0.16);
     background: #fff;
-    font-weight: var(--fw-heading);
+    font-weight: 900;
     font-size: 13px;
     cursor: pointer;
     line-height: 1;
@@ -912,7 +899,7 @@ header {
     border: 1px solid #fadbd8;
     background: #fff;
     color: var(--danger);
-    font-weight: var(--fw-strong);
+    font-weight: 800;
     font-size: 13px;
     cursor: pointer;
     line-height: 34px;
@@ -935,7 +922,7 @@ header {
     width: 46%;
     height: 62px;
     font-size: 28px;
-    font-weight: var(--fw-heading);
+    font-weight: 900;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -967,14 +954,14 @@ header {
     font-size: 14px;
   }
   .lvlResult .lvResTitle{
-    font-weight: var(--fw-heading);
+    font-weight: 900;
     font-size: 15px;
     margin-bottom: 8px;
     color: var(--main);
   }
   .lvlResult .lvResSubTitle{
     margin-top: 10px;
-    font-weight: var(--fw-heading);
+    font-weight: 900;
     color:#111;
     padding-top: 8px;
     border-top: 1px solid rgba(0,0,0,0.10);
@@ -987,9 +974,9 @@ header {
     border-bottom: 1px solid rgba(0,0,0,0.08);
   }
   .lvlResult .lvResRow:last-child{ border-bottom:none; }
-  .lvlResult .lvResKey{ font-weight: var(--fw-heading); color:#111; }
-  .lvlResult .lvResVal{ font-weight: var(--fw-heading); color:#111; white-space: nowrap; }
-  .lvlWarn{ color:#e74c3c; font-weight: var(--fw-heading); margin-top:10px; }
+  .lvlResult .lvResKey{ font-weight: 900; color:#111; }
+  .lvlResult .lvResVal{ font-weight: 900; color:#111; white-space: nowrap; }
+  .lvlWarn{ color:#e74c3c; font-weight:900; margin-top:10px; }
 
   /* =========================
      tab3：ボタンを1つにして中央寄せ＆少し細く
@@ -1051,13 +1038,13 @@ header {
   }
   #tab3 .lvlOptName{
     font-size: 11px;
-    font-weight: var(--fw-heading);
+    font-weight: 900;
     color: var(--muted);
     margin-bottom: 6px;
     white-space: nowrap;
   }
   #tab3 .lvlIn3{
-    width: 7ch !important;      /* 3桁想定の小さめ */
+    width: 5ch !important;      /* 3桁想定の小さめ */
     text-align: center !important;
   }
     
@@ -1158,32 +1145,16 @@ header {
     #tab3 .lvlRowBoost{
       align-items: flex-start;
     }
-    .lvlBoostRadios{
+    #tab3 .lvlRowBoost .lvlBoostRadios{
       margin-top: 6px;
       justify-content: flex-start;
       gap: 18px;
-      flex-wrap: wrap;      /* ← スマホで切れない */
-      overflow-x: visible;  /* ← .lvlRadios の横スクロールを無効化 */
+      flex-wrap: nowrap;              /* ← スマホでも横並び固定 */
+      overflow-x: auto;               /* 画面が狭い時は横スクロール */
+      -webkit-overflow-scrolling: touch;
     }
+    .lvlBoostRadios::-webkit-scrollbar{ display:none; }
 
-
-    /* tab3：ブースト/オプションが中央寄りに見えるのを防止（幅を100%に固定） */
-    #tab3 .lvlBoostRadios { width: 100%; justify-content: flex-start; }
-    #tab3 .lvlOptLines { width: 100%; }
-    #tab3 .lvlOptLine  { width: 100%; }
-
-    #tab3 .lvlOptLines,
-    #tab3 .lvlOptLine{
-      width: 100%;
-    }
-
-    /* ブースト：左側を「ラベル→ラジオ」の縦並びにする */
-    #tab3 .lvlBoostLeft{
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    
   }
     
   </style>
@@ -1201,7 +1172,7 @@ header {
     <button id="openDocs"
       style="background:none; border:none; color:#fff; cursor:pointer; display:flex; align-items:center; gap:6px; padding:6px 8px;">
       <span style="font-size:18px; line-height:1;">📚</span>
-      <span style="font-size:12px; font-weight: var(--fw-strong);">お役立ち資料集</span>
+      <span style="font-size:12px; font-weight:800;">お役立ち資料集</span>
     </button>
 
     <button id="openNotice"
@@ -1360,7 +1331,7 @@ header {
         <div class="lvlRow lvlRowFull">
           <div class="lvlLabel"><span class="lvlReq">*</span> 性格</div>
           <div class="lvlRadios">
-            <label class="lvlRadio"><input type="radio" name="lvNature" value="none"> 無補正</label>
+            <label class="lvlRadio"><input type="radio" name="lvNature" value="none" checked> 無補正</label>
             <label class="lvlRadio"><input type="radio" name="lvNature" value="up"> <span class="lvUp">EXP↑</span></label>
             <label class="lvlRadio"><input type="radio" name="lvNature" value="down"> <span class="lvDown">EXP↓</span></label>
           </div>
@@ -1370,7 +1341,7 @@ header {
         <div class="lvlRow lvlRowFull">
           <div class="lvlLabel"><span class="lvlReq">*</span> 経験値タイプ</div>
           <div class="lvlRadios">
-            <label class="lvlRadio"><input type="radio" name="lvType" value="normal"> ふつう</label>
+            <label class="lvlRadio"><input type="radio" name="lvType" value="normal" checked> ふつう</label>
             <label class="lvlRadio"><input type="radio" name="lvType" value="600"> 600族</label>
             <label class="lvlRadio"><input type="radio" name="lvType" value="semi"> 準伝説</label>
             <label class="lvlRadio"><input type="radio" name="lvType" value="legend"> 伝説 / 幻</label>
@@ -1418,12 +1389,10 @@ header {
           </div>
         </div>
 
-        <!-- ブースト -->
+        <!-- ブースト（クイック廃止／ラジオはブーストの下） -->
         <div class="lvlRow lvlRowBoost">
-          <!-- 左側（緑枠）：ラベル + ラジオ -->
-          <div class="lvlBoostLeft">
-            <div class="lvlLabel">ブースト</div>
-        
+          <div class="lvlLabel">ブースト</div>
+          <div class="lvlInput" style="grid-template-columns:1fr;">
             <div class="lvlRadios lvlBoostRadios">
               <label class="lvlRadio">
                 <input type="radio" name="lvBoostKind" value="full"> アメブースト
@@ -1432,54 +1401,59 @@ header {
                 <input type="radio" name="lvBoostKind" value="mini"> ミニアメブースト
               </label>
             </div>
-          </div>
         
-          <!-- 右側：個数入力 -->
-          <div class="lvlInputRight">
-            <input id="lvBoostCount" class="lvlInBoost"
-                   type="number" min="1" max="9999" inputmode="numeric"
-                   placeholder="xxxx">
-            <span class="lvlUnit">個</span>
-          </div>
-        </div>
-        
-        <!-- オプション（経験値タイプと同じ構造：見出し→中身） -->
-        <div class="lvlRow lvlRowFull">
-          <div class="lvlLabel">オプション</div>
-        
-          <div class="lvlOptLines">
-            <div class="lvlOptLine">
-              <div class="lvlOptName">睡眠</div>
+            <div class="lvlBoostCountLine">
               <div class="lvlInputRight">
-                <input id="lvSleepDays" class="lvlIn3"
-                       type="number" min="1" max="999" inputmode="numeric"
-                       placeholder="xxx">
-                <span class="lvlUnit">日</span>
-              </div>
-            </div>
-        
-            <div class="lvlOptLine">
-              <div class="lvlOptName">睡眠EXPボーナス</div>
-              <div class="lvlInputRight">
-                <input id="lvSleepBonus" class="lvlIn1"
-                       type="number" min="1" max="5" inputmode="numeric"
-                       placeholder="x">
-                <span class="lvlUnit">体</span>
-              </div>
-            </div>
-        
-            <div class="lvlOptLine">
-              <div class="lvlOptName">せいちょうのおこう</div>
-              <div class="lvlInputRight">
-                <input id="lvGrowthIncense" class="lvlIn3"
-                       type="number" min="1" max="999" inputmode="numeric"
-                       placeholder="xxx">
+                <input id="lvBoostCount" class="lvlInBoost"
+                       type="number" inputmode="numeric"
+                       placeholder="xxxx">
                 <span class="lvlUnit">個</span>
               </div>
             </div>
           </div>
         </div>
 
+
+        <div class="lvlDivider"></div>
+
+        <!-- オプション（枠なし・3行・左揃え） -->
+        <div class="lvlRow">
+          <div class="lvlLabel">オプション</div>
+          <div class="lvlInput" style="grid-template-columns:1fr;">
+            <div class="lvlOptLines">
+              <div class="lvlOptLine">
+                <div class="lvlOptName">睡眠</div>
+                <div class="lvlInputRight">
+                  <input id="lvSleepDays" class="lvlIn3"
+                         type="number" min="1" max="999" inputmode="numeric"
+                         placeholder="xxx">
+                  <span class="lvlUnit">日</span>
+                </div>
+              </div>
+
+              <div class="lvlOptLine">
+                <div class="lvlOptName">睡眠EXPボーナス</div>
+                <div class="lvlInputRight">
+                  <input id="lvSleepBonus" class="lvlIn1"
+                         type="number" min="1" max="5" inputmode="numeric"
+                         placeholder="x">
+                  <span class="lvlUnit">体</span>
+                </div>
+              </div>
+
+              <div class="lvlOptLine">
+                <div class="lvlOptName">せいちょうのおこう</div>
+                <div class="lvlInputRight">
+                  <input id="lvGrowthIncense" class="lvlIn3"
+                         type="number" min="1" max="999" inputmode="numeric"
+                         placeholder="xxx">
+                  <span class="lvlUnit">個</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
 
         <!-- 結果（常に表示） -->
         <div id="lvResult" class="lvlResult"></div>
@@ -1530,9 +1504,9 @@ header {
   <div class="card" style="max-width:520px; width:100%; position:relative;">
 
     <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:12px;">
-      <div style="font-weight: var(--fw-heading);">📖 お役立ち資料集</div>
+      <div style="font-weight:900;">📖 お役立ち資料集</div>
       <button id="closeDocs"
-        style="background:none; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-weight: var(--fw-strong); cursor:pointer;">
+        style="background:none; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-weight:800; cursor:pointer;">
         閉じる
       </button>
     </div>
@@ -1541,7 +1515,7 @@ header {
     <div style="display:flex; flex-direction:column; gap:12px;">
 
       <div style="border:1px solid var(--line); border-radius:14px; padding:12px;">
-        <div style="font-weight: var(--fw-heading); margin-bottom:8px;">エナジー効率の良いレシピ一覧</div>
+        <div style="font-weight:900; margin-bottom:8px;">エナジー効率の良いレシピ一覧</div>
         <div class="row">
           <button class="primary" type="button" onclick="openDoc('エナジー効率の良いレシピ一覧.png')">開く</button>
           <a href="images/エナジー効率の良いレシピ一覧.png" download style="text-decoration:none;">
@@ -1551,7 +1525,7 @@ header {
       </div>
 
       <div style="border:1px solid var(--line); border-radius:14px; padding:12px;">
-        <div style="font-weight: var(--fw-heading); margin-bottom:8px;">きのみタイプ強さランキング</div>
+        <div style="font-weight:900; margin-bottom:8px;">きのみタイプ強さランキング</div>
         <div class="row">
           <button class="primary" type="button" onclick="openDoc('きのみタイプ強さランキング.png')">開く</button>
           <a href="images/きのみタイプ強さランキング.png" download style="text-decoration:none;">
@@ -1561,7 +1535,7 @@ header {
       </div>
 
       <div style="border:1px solid var(--line); border-radius:14px; padding:12px;">
-        <div style="font-weight: var(--fw-heading); margin-bottom:8px;">お香で呼べるポケモンかけらランキング</div>
+        <div style="font-weight:900; margin-bottom:8px;">お香で呼べるポケモンかけらランキング</div>
         <div class="row">
           <button class="primary" type="button" onclick="openDoc('お香で呼べるポケモンかけらランキング.png')">開く</button>
           <a href="images/お香で呼べるポケモンかけらランキング.png" download style="text-decoration:none;">
@@ -1580,9 +1554,9 @@ header {
          background:rgba(0,0,0,0.7); z-index:3000; align-items:center; justify-content:center; padding:14px;">
   <div class="card" style="max-width:900px; width:100%; max-height:92vh; overflow:auto; position:relative;">
     <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:12px;">
-      <div id="docViewerTitle" style="font-weight: var(--fw-heading);">資料</div>
+      <div id="docViewerTitle" style="font-weight:900;">資料</div>
       <button id="closeDocViewer"
-        style="background:none; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-weight: var(--fw-strong); cursor:pointer;">
+        style="background:none; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-weight:800; cursor:pointer;">
         戻る
       </button>
     </div>
@@ -1598,7 +1572,7 @@ header {
          background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; padding:20px;">
   <div class="card" style="max-width:400px; width:100%; position:relative;">
 
-    <div style="font-weight: var(--fw-heading); margin-bottom:12px; border-bottom:1px solid var(--line); padding-bottom:8px;">
+    <div style="font-weight:900; margin-bottom:12px; border-bottom:1px solid var(--line); padding-bottom:8px;">
       ご利用上の注意
     </div>
 
@@ -1609,7 +1583,7 @@ header {
     </p>
 
     <div style="font-size:13px; color:var(--text); line-height:1.6; margin-bottom:20px;">
-      <div style="font-weight: var(--fw-heading); margin-bottom:6px;">出典：</div>
+      <div style="font-weight:900; margin-bottom:6px;">出典：</div>
       <ul style="margin:0 0 0 18px; padding:0;">
         <li>Pokémon Sleep 公式サイト</li>
         <li>RaenonXポケスリ攻略ツール</li>
@@ -1623,7 +1597,7 @@ header {
 
 
 
-<!-- JS 読み込み -->
+<!-- JS 読み込み（あなたの構成に合わせて） -->
 <script src="data/ingredients.js"></script>
 <script src="data/recipes.js"></script>
 <script src="data/fields.js"></script>
