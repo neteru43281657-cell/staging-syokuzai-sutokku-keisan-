@@ -273,6 +273,13 @@ function toNum(v) {
     box.style.display = "block";
   }
 
+  function hideResult() {
+    const box = el("lvResult");
+    if (!box) return;
+    box.innerHTML = "";
+    box.style.display = "none";
+  }
+
   /* =========================
    * Main calc
    * ========================= */
@@ -289,15 +296,15 @@ function toNum(v) {
 
     const nowRaw = (el("lvNow")?.value ?? "").trim();
     const targetRaw = (el("lvTarget")?.value ?? "").trim();
-
-    // 必須4項目（今のレベル/目標のレベル/性格/経験値タイプ）が揃うまで何も出力しない
-    const natureKey = getRadio("lvNature");
-    const typeKey = getRadio("lvType");
-
-    if (!nowRaw || !targetRaw || !natureKey || !typeKey) {
+    const natureSel = getRadio("lvNature");
+    const typeSel = getRadio("lvType");
+    
+    // 必須4項目が揃うまで、結果は一切出さない
+    if (!nowRaw || !targetRaw || !natureSel || !typeSel) {
       hideResult();
       return;
     }
+
 
     const lvNow = clampInt(nowRaw, 1, 64);
     const lvTarget = clampInt(targetRaw, 2, 65);
@@ -518,4 +525,5 @@ function toNum(v) {
   };
 
 })();
+
 
