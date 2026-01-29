@@ -655,15 +655,15 @@
   }
 
   /* =========================
-     レベルシミュレーター用
+     レベルシミュレーター（tab3）- 1本化（見た目は現状維持）
   ========================= */
-  .lvlForm{ display:flex; flex-direction:column; gap:12px; }
   
-  /* PC：カードが間延びしないように中央寄せ＋適度な幅 */
   #levelCard{ max-width: 760px; margin: 0 auto; }
   @media (min-width: 900px){
     #levelCard{ box-shadow: 0 6px 24px rgba(0,0,0,0.04); }
   }
+  
+  .lvlForm{ display:flex; flex-direction:column; gap:12px; }
   
   .lvlDivider{
     height:2px;
@@ -672,41 +672,14 @@
     margin: 10px 0;
   }
   
-  /* 右カラム固定でラインを揃える */
+  /* 行：左ラベル / 右入力群（現状の列幅を維持） */
   .lvlRow{
     display:grid;
-    grid-template-columns: 1fr 260px;   /* 左：ラベル / 右：入力群 */
+    grid-template-columns: 1fr 260px;
     gap: 10px;
     align-items: start;
     padding: 4px 0;
   }
-
-  /* 性格/経験値タイプ：1列レイアウトで左寄せ（縦割れ防止） */
-  .lvlRowFull{
-    grid-template-columns: 1fr !important;
-    align-items: start;
-  }
-  .lvlRowFull .lvlLabel{
-    margin-bottom: 6px;
-  }
-
-  /* ラジオ：1行固定（足りない場合は横スクロール） */
-  .lvlRadios{
-    display:flex;
-    gap:18px;
-    flex-wrap:nowrap;
-    overflow-x:auto;
-    -webkit-overflow-scrolling: touch;
-    align-items:center;
-    justify-content:flex-start;
-  }
-  .lvlRadios::-webkit-scrollbar{ display:none; }
-
-  .lvlRadio{
-    white-space: nowrap;
-  }
-
-
   @media (max-width: 520px){
     .lvlRow{ grid-template-columns: 1fr 230px; }
     .lvlLabel{ font-size: 14px; }
@@ -714,6 +687,14 @@
     .lvlQuick{ max-width: 150px; }
   }
   
+  /* 性格/経験値タイプ：1列 */
+  .lvlRowFull{
+    grid-template-columns: 1fr !important;
+    align-items: start;
+  }
+  .lvlRowFull .lvlLabel{ margin-bottom: 6px; }
+  
+  /* ラベル */
   .lvlLabel{
     font-weight: 900;
     font-size: 16px;
@@ -721,8 +702,6 @@
     line-height: 1.2;
   }
   .lvlReq{ color:#e74c3c; margin-right:6px; }
-  
-  /* 任意の※表記 */
   .lvlNote{
     font-size:12px;
     font-weight:700;
@@ -731,110 +710,7 @@
     display:block;
   }
   
-  /* =========================================================
-     レベルシミュレーター：入力/ラジオ/小クリア/クイック（最新版）
-     ① クリア形状：タブ①のクリア（pill）に統一。大ボタンも同形状
-     ② クイック：全て 1.2倍
-     ③ EXP表記は pt（※HTML/JS側も変更あり）
-     ④ 入力欄：思い切って全て “半分” へ（短く）
-  ========================================================= */
-  
-  /* 入力側：左=クイック、右=入力＋単位 */
-  .lvlInput{
-    display: grid;
-    grid-template-columns: 1fr auto;   /* 右側は内容幅 */
-    column-gap: 10px;
-    align-items: start;
-  }
-  
-  /* 入力＋単位（右列）：自然幅 + 右寄せ */
-  .lvlInputRight{
-    display: inline-grid;
-    grid-template-columns: auto auto;  /* input | unit */
-    gap: 6px;
-    align-items: center;
-    justify-content: end;
-    white-space: nowrap;
-  }
-  
-  /* 単位（pt/個/レベル） */
-  .lvlUnit{
-    font-weight: 900;
-    color:#111;
-    white-space: nowrap;
-    font-size: 10px;
-    opacity: .85;
-  }
-  
-  /* 入力欄（共通） */
-  .lvlInput input{
-    border: 2px solid rgba(0,0,0,0.12);
-    border-radius: 10px;
-    padding: 4px 6px;
-    font-weight: 900;
-    outline: none;
-    width: auto !important;
-  }
-  
-  /* ④ 入力幅：全部 “半分” へ（短く） */
-  .lvlIn2{      width: 12px; text-align:center; }  /* レベル：2桁 */
-  .lvlIn4{      width: 16px; text-align:center; }   /* pt / 個：4桁想定でも短く */
-  .lvlInBoost{  width: 16px; text-align:center; }   /* ブースト：短く */
-  
-  /* ② クイックボタン：全用途で 1.2倍 */
-  .lvlQuickBtn{
-    width: 36px;                 /* 30px → 36px */
-    height: 28px;                /* 24px → 28px */
-    border-radius: 10px;
-    border: 2px solid rgba(0,0,0,0.16);
-    background: #fff;
-    font-weight: 900;
-    font-size: 13px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 0;
-  }
-  .lvlQuickBtn:active{ transform: translateY(1px); }
-  
-  /* クイック（通常） */
-  .lvlQuick{
-    display:flex;
-    gap: 4px;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    max-width: none;
-  }
-  
-  /* レベル用：3列固定（横3×縦2） */
-  .lvlQuickLv{
-    display: grid;
-    grid-template-columns: repeat(3, 36px);
-    gap: 4px;
-    justify-content: start;
-    max-width: none;
-  }
-  
-  /* ④ ブースト/ミニ：クイックを “横3マス” グリッドに統一（はみ出し防止）
-     ※ Chrome/Android でOKな :has() を使用 */
-  .lvlQuick:has(.lvlQuickBtn[data-boost]),
-  .lvlQuick:has(.lvlQuickBtn[data-mini]){
-    display: grid;
-    grid-template-columns: repeat(3, 36px);
-    gap: 4px;
-    justify-content: start;
-    max-width: none;
-  }
-  
-  /* ブースト行：縦積み（クイック上、入力下） */
-  .lvlInputStack{
-    grid-template-columns: 1fr !important;
-    row-gap: 10px;
-  }
-  .lvlInputStack .lvlInputRight{
-    justify-self: end;
-  }
-  
-  /* ② 性格/経験値タイプ：ラジオの●を下へ */
+  /* ラジオ：1行固定 */
   .lvlRadios{
     display:flex;
     gap:18px;
@@ -846,17 +722,133 @@
   }
   .lvlRadios::-webkit-scrollbar{ display:none; }
   .lvlRadio{ white-space: nowrap; }
+  
+  /* ラジオ位置（現状：少し下げる＝4px） */
   .lvlRadio input[type="radio"]{
     margin: 0 6px 0 0;
     transform: translateY(4px);
   }
   
-  /* ① 小さいクリア：タブ①の「クリア(danger)」と同形状（pill）へ */
+  /* 入力側：左=クイック、右=入力＋単位 */
+  .lvlInput{
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: 10px;
+    align-items: start;
+  }
+  
+  /* 右：入力＋単位 */
+  .lvlInputRight{
+    display: inline-grid;
+    grid-template-columns: auto auto;  /* input | unit */
+    gap: 6px;
+    align-items: center;              /* 現状維持：縦ズレ防止 */
+    justify-content: end;
+    white-space: nowrap;
+  }
+  
+  /* 単位 */
+  .lvlUnit{
+    font-weight: 900;
+    color:#111;
+    white-space: nowrap;
+    font-size: 10px;
+    opacity: .85;
+  
+    /* 現状維持：ベースライン差を吸収 */
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  /* 入力（共通） */
+  .lvlInput input{
+    border: 2px solid rgba(0,0,0,0.12);
+    border-radius: 10px;
+    padding: 4px 6px;
+    font-weight: 900;
+    outline: none;
+    width: auto !important;
+  
+    /* 現状維持：機種差で縦がズレるのを抑える */
+    line-height: 1;
+  }
+  
+  /* 入力幅（現状の“最終上書き”結果を維持） */
+  #tab3 .lvlIn2{
+    width: 6ch !important;
+    text-align: center !important;
+  }
+  #tab3 .lvlIn4,
+  #tab3 .lvlInBoost{
+    width: 8ch !important;
+    text-align: center !important;
+  }
+  
+  /* クイック（通常） */
+  .lvlQuick{
+    display:flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    max-width: none;
+  }
+  
+  /* レベル用：3列 */
+  .lvlQuickLv{
+    display: grid;
+    grid-template-columns: repeat(3, 36px);
+    gap: 4px;
+    justify-content: start;
+    max-width: none;
+  }
+  
+  /* ブースト/ミニ：クイックを3列グリッド化（現状のまま） */
+  .lvlQuick:has(.lvlQuickBtn[data-boost]),
+  .lvlQuick:has(.lvlQuickBtn[data-mini]){
+    display: grid;
+    grid-template-columns: repeat(3, 36px);
+    gap: 4px;
+    justify-content: start;
+    max-width: none;
+  }
+  
+  /* クイックボタン（現状維持サイズ） */
+  .lvlQuickBtn{
+    width: 36px;
+    height: 28px;
+    border-radius: 10px;
+    border: 2px solid rgba(0,0,0,0.16);
+    background: #fff;
+    font-weight: 900;
+    font-size: 13px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+  .lvlQuickBtn:active{ transform: translateY(1px); }
+  
+  /* ブースト行：元は縦積み指定（HTMLの class は残す）が、最終上書きで“2列”に戻している */
+  .lvlInputStack{
+    grid-template-columns: 1fr !important;
+    row-gap: 10px;
+  }
+  
+  /* ★最終上書き：ブースト2行だけ「上段に上げる」＝現状維持 */
+  #tab3 .lvlRow .lvlInputStack{
+    grid-template-columns: 1fr auto !important;
+    align-items: start !important;
+  }
+  #tab3 .lvlInputStack .lvlInputRight{
+    align-self: start !important;
+    margin-top: 0 !important;
+  }
+  
+  /* 小クリア（現状：角丸四角形寄り） */
   .lvlMiniClear{
     height: 34px;
     padding: 0 18px;
-    border-radius: 999px;        /* ★pill */
-    border: 1px solid #fadbd8;   /* tab1 danger と同じ */
+    border: 1px solid #fadbd8;
     background: #fff;
     color: var(--danger);
     font-weight: 800;
@@ -867,56 +859,11 @@
     align-items: center;
     justify-content: center;
   }
+  /* 最終上書き：角丸指定（現状維持） */
+  #tab3 .lvlMiniClear{ border-radius: 18px !important; }
   .lvlMiniClear:active{ transform: translateY(1px); }
   
-  /* ① 大ボタン：下部の計算/クリアも “小クリアの拡大版” として pill に統一 */
-  .lvlBigBtn{
-    width: 46%;
-    height: 62px;
-    border-radius: 999px;   /* ★pill */
-    font-size: 32px;
-    font-weight: 900;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:0;
-    line-height: 1;
-    transform: translateY(-1px); /* 文字が1px下に見える端末対策は維持 */
-  }
-  .lvlClearBtn{
-    background:#fff;
-    border: 3px solid var(--danger);  /* pillに合わせて少し細く */
-    color: var(--danger);
-  }
-  
-  /* スマホ微調整 */
-  @media (max-width: 520px){
-    .lvlInput{ column-gap: 8px; }
-    .lvlInputRight{ gap: 6px; }
-  
-    .lvlIn2{ width: 22px; }
-    .lvlIn4, .lvlInBoost{ width: 36px; }
-  
-    .lvlQuickLv{
-      grid-template-columns: repeat(3, 34px);
-      gap: 4px;
-    }
-    .lvlQuick:has(.lvlQuickBtn[data-boost]),
-    .lvlQuick:has(.lvlQuickBtn[data-mini]){
-      grid-template-columns: repeat(3, 34px);
-      gap: 4px;
-    }
-  
-    .lvlQuickBtn{
-      width: 34px;
-      height: 28px;
-      border-radius: 10px;
-      font-size: 13px;
-    }
-  }
-
-  
-  /* 計算/クリア：大きすぎ＆文字の縦ズレ対策 */
+  /* 下部ボタン（計算/クリア） */
   .lvlButtons{
     display:flex;
     justify-content: space-between;
@@ -926,7 +873,6 @@
   .lvlBigBtn{
     width: 46%;
     height: 62px;
-    border-radius: 22px;
     font-size: 28px;
     font-weight: 900;
     display:flex;
@@ -934,9 +880,15 @@
     justify-content:center;
     padding:0;
     line-height: 1;
+  
+    /* 文字が1px下に見える端末向け微調整 */
+    transform: translateY(-1px);
   }
-  /* 文字が1px下に見える端末向け微調整 */
-  .lvlBigBtn{ transform: translateY(-1px); }
+  /* 最終上書き：角丸＆フォントサイズ（現状維持） */
+  #tab3 .lvlBigBtn{
+    border-radius: 28px !important;
+    font-size: 30px !important;
+  }
   
   .lvlClearBtn{
     background:#fff;
@@ -977,82 +929,32 @@
   .lvlResult .lvResKey{ font-weight: 900; color:#111; }
   .lvlResult .lvResVal{ font-weight: 900; color:#111; white-space: nowrap; }
   .lvlWarn{ color:#e74c3c; font-weight:900; margin-top:10px; }
-
-  /* =========================================================
-     LvSim 最終上書き（2026-01-29）
-     ① Lv入力：2桁相当の幅に固定
-     ② 次Lvpt/アメ所持：見た目は4桁幅（入力制限はJSで4桁）
-     ③ ブースト個数：4桁幅 + 縦ズレ解消
-     ④ 計算/クリア：角丸四角形（丸すぎNG・円形NG）
-  ========================================================= */
   
-  /* --- 入力幅（pxではなく “ch” で文字数に合わせる） --- */
-  #tab3 .lvlIn2{
-    width: 6ch !important;      /* 2桁想定（余白込み） */
-    text-align: center !important;
-  }
+  /* placeholder（tab3 内は全部薄グレー：現状維持） */
+  #tab3 input:placeholder-shown{ color: #c0c6cf; }
+  #tab3 input::placeholder{ color: #c0c6cf; opacity: 1; }
   
-  #tab3 .lvlIn4,
-  #tab3 .lvlInBoost{
-    width: 8ch !important;      /* 4桁想定（余白込み） */
-    text-align: center !important;
-  }
+  /* スマホ微調整（現状維持） */
+  @media (max-width: 520px){
+    .lvlInput{ column-gap: 8px; }
+    .lvlInputRight{ gap: 6px; }
   
-  /* number入力の見た目を安定（機種差で横に伸びるのを抑える） */
-  #tab3 .lvlInput input{
-    padding: 4px 6px !important;
-    line-height: 1 !important;
-  }
+    .lvlQuickLv{
+      grid-template-columns: repeat(3, 34px);
+      gap: 4px;
+    }
+    .lvlQuick:has(.lvlQuickBtn[data-boost]),
+    .lvlQuick:has(.lvlQuickBtn[data-mini]){
+      grid-template-columns: repeat(3, 34px);
+      gap: 4px;
+    }
   
-  /* 単位のベースラインでズレないように */
-  #tab3 .lvlUnit{
-    line-height: 1 !important;
-    display: inline-flex !important;
-    align-items: center !important;
-  }
-  
-  /* ③ ブースト個数だけ下に落ちて見える対策（右側を中央揃えに固定） */
-  #tab3 .lvlInputRight{
-    align-items: center !important;
-  }
-  
-  /* --- ② クイックボタン：いまのサイズ感を維持（必要なら微調整可） --- */
-  /* 既に1.2倍になっているので、ここでは触りません */
-  
-  /* --- ④ 下部の計算/クリア：角丸四角形に（丸すぎ・円形にしない） --- */
-  /* ※あなたのCSS内で .lvlBigBtn が2回定義されており、後ろの border-radius:22px が効いています。
-     ここで “より丸く” しつつ pill(999px)にはしない値に固定します。 */
-  #tab3 .lvlBigBtn{
-    border-radius: 28px !important;  /* 高さ62pxに対して、角が最大限丸い長方形 */
-    font-size: 30px !important;
-  }
-  
-  /* ④ 小さいクリアも同系統（角丸四角形）に寄せる（タブ①と完全一致ではなく、統一感優先） */
-  #tab3 .lvlMiniClear{
-    border-radius: 18px !important;  /* 高さ34pxに対して、丸い角丸四角形 */
-  }
-    
-  /* ブースト2行だけ：縦積みをやめて「上段」に戻す（紫線まで上げる） */
-  #tab3 .lvlRow .lvlInputStack{
-    grid-template-columns: 1fr auto !important; /* 左=クイック, 右=入力+単位 */
-    align-items: start !important;
-  }
-  
-  /* 入力欄を“上段”に固定（クイックと同じ段の上側へ） */
-  #tab3 .lvlInputStack .lvlInputRight{
-    align-self: start !important;
-    margin-top: 0 !important;
-  }
-
-  /* レベルシミュレーター：placeholder が表示されている input はすべて薄いグレー */
-  #tab3 input:placeholder-shown{
-    color: #c0c6cf;
-  }
-  
-  /* placeholder 文字そのもの（ブラウザ差吸収） */
-  #tab3 input::placeholder{
-    color: #c0c6cf;
-    opacity: 1;
+    .lvlQuickBtn{
+      width: 34px;
+      height: 28px;
+      border-radius: 10px;
+      font-size: 13px;
+    }
   }
 
   </style>
