@@ -1132,15 +1132,15 @@
       margin-top: 8px;
     }
     
-    /* 結果欄：×ボタンを右上に出すため relative */
-    .lvlResult{ position: relative; }
-    
-    /* タブ①の ×（removeBtn）を流用しつつ、結果欄右上に配置 */
+    /* 結果カードの右上カーブに×を被せる */
+    #tab3 .lvlResult{ position: relative; }
     #tab3 .lvResultClose{
-      top: 10px !important;
-      right: 10px !important;
+      position: absolute !important;
+      top: -12px !important;
+      right: -12px !important;
+      z-index: 10;
     }
-
+    
     /* ブースト行だけ：上寄せにして、ラジオを「ブーストの下」に見せる */
     #tab3 .lvlRowBoost{
       align-items: flex-start;
