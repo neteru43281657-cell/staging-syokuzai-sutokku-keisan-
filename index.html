@@ -1149,13 +1149,19 @@
       margin-top: 6px;
       justify-content: flex-start;
       gap: 18px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
     }
+
 
     /* tab3：ブースト/オプションが中央寄りに見えるのを防止（幅を100%に固定） */
     #tab3 .lvlBoostRadios { width: 100%; justify-content: flex-start; }
     #tab3 .lvlOptLines { width: 100%; }
     #tab3 .lvlOptLine  { width: 100%; }
+
+    #tab3 .lvlOptLines,
+    #tab3 .lvlOptLine{
+      width: 100%;
+    }
 
   }
     
@@ -1333,7 +1339,7 @@
         <div class="lvlRow lvlRowFull">
           <div class="lvlLabel"><span class="lvlReq">*</span> 性格</div>
           <div class="lvlRadios">
-            <label class="lvlRadio"><input type="radio" name="lvNature" value="none" checked> 無補正</label>
+            <label class="lvlRadio"><input type="radio" name="lvNature" value="none"> 無補正</label>
             <label class="lvlRadio"><input type="radio" name="lvNature" value="up"> <span class="lvUp">EXP↑</span></label>
             <label class="lvlRadio"><input type="radio" name="lvNature" value="down"> <span class="lvDown">EXP↓</span></label>
           </div>
@@ -1343,7 +1349,7 @@
         <div class="lvlRow lvlRowFull">
           <div class="lvlLabel"><span class="lvlReq">*</span> 経験値タイプ</div>
           <div class="lvlRadios">
-            <label class="lvlRadio"><input type="radio" name="lvType" value="normal" checked> ふつう</label>
+            <label class="lvlRadio"><input type="radio" name="lvType" value="normal"> ふつう</label>
             <label class="lvlRadio"><input type="radio" name="lvType" value="600"> 600族</label>
             <label class="lvlRadio"><input type="radio" name="lvType" value="semi"> 準伝説</label>
             <label class="lvlRadio"><input type="radio" name="lvType" value="legend"> 伝説 / 幻</label>
@@ -1391,72 +1397,43 @@
           </div>
         </div>
 
-        <!-- ブースト（クイック廃止／ラジオはブーストの下） -->
-          <!-- ブースト（ラジオ左 / 個数右 を1行で揃える） -->
-          <div class="lvlRow lvlRowBoost">
-            <div class="lvlLabel">ブースト</div>
-          
-            <!-- ここを 2カラムにする（左=ラジオ、右=個数入力） -->
-            <div class="lvlInput" style="grid-template-columns: 1fr auto; column-gap: 10px; align-items: center;">
-              <div class="lvlRadios lvlBoostRadios">
-                <label class="lvlRadio">
-                  <input type="radio" name="lvBoostKind" value="full"> アメブースト
-                </label>
-                <label class="lvlRadio">
-                  <input type="radio" name="lvBoostKind" value="mini"> ミニアメブースト
-                </label>
-              </div>
-          
+        <!-- オプション（経験値タイプと同じ構造：見出し→中身） -->
+        <div class="lvlRow lvlRowFull">
+          <div class="lvlLabel">オプション</div>
+        
+          <div class="lvlOptLines">
+            <div class="lvlOptLine">
+              <div class="lvlOptName">睡眠</div>
               <div class="lvlInputRight">
-                <input id="lvBoostCount" class="lvlInBoost"
-                       type="number" inputmode="numeric"
-                       placeholder="xxxx">
+                <input id="lvSleepDays" class="lvlIn3"
+                       type="number" min="1" max="999" inputmode="numeric"
+                       placeholder="xxx">
+                <span class="lvlUnit">日</span>
+              </div>
+            </div>
+        
+            <div class="lvlOptLine">
+              <div class="lvlOptName">睡眠EXPボーナス</div>
+              <div class="lvlInputRight">
+                <input id="lvSleepBonus" class="lvlIn1"
+                       type="number" min="1" max="5" inputmode="numeric"
+                       placeholder="x">
+                <span class="lvlUnit">体</span>
+              </div>
+            </div>
+        
+            <div class="lvlOptLine">
+              <div class="lvlOptName">せいちょうのおこう</div>
+              <div class="lvlInputRight">
+                <input id="lvGrowthIncense" class="lvlIn3"
+                       type="number" min="1" max="999" inputmode="numeric"
+                       placeholder="xxx">
                 <span class="lvlUnit">個</span>
               </div>
             </div>
           </div>
-
-
-        <div class="lvlDivider"></div>
-
-        <!-- オプション（枠なし・3行・左揃え） -->
-        <div class="lvlRow">
-          <div class="lvlLabel">オプション</div>
-          <div class="lvlInput" style="grid-template-columns:1fr;">
-            <div class="lvlOptLines">
-              <div class="lvlOptLine">
-                <div class="lvlOptName">睡眠</div>
-                <div class="lvlInputRight">
-                  <input id="lvSleepDays" class="lvlIn3"
-                         type="number" min="1" max="999" inputmode="numeric"
-                         placeholder="xxx">
-                  <span class="lvlUnit">日</span>
-                </div>
-              </div>
-
-              <div class="lvlOptLine">
-                <div class="lvlOptName">睡眠EXPボーナス</div>
-                <div class="lvlInputRight">
-                  <input id="lvSleepBonus" class="lvlIn1"
-                         type="number" min="1" max="5" inputmode="numeric"
-                         placeholder="x">
-                  <span class="lvlUnit">体</span>
-                </div>
-              </div>
-
-              <div class="lvlOptLine">
-                <div class="lvlOptName">せいちょうのおこう</div>
-                <div class="lvlInputRight">
-                  <input id="lvGrowthIncense" class="lvlIn3"
-                         type="number" min="1" max="999" inputmode="numeric"
-                         placeholder="xxx">
-                  <span class="lvlUnit">個</span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
-        
+
 
         <!-- 結果（常に表示） -->
         <div id="lvResult" class="lvlResult"></div>
