@@ -784,7 +784,40 @@
     width: 8ch !important;
     text-align: center !important;
   }
+
+  /* ブースト：2行目を「クイック + 入力」にする */
+  #tab3 .lvlBoostLine{
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: start;
+  }
   
+  /* オプション：枠なしで3行・左揃え */
+  #tab3 .lvlOptLines{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  #tab3 .lvlOptLine{
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: center;
+  }
+  #tab3 .lvlOptName{
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  
+  /* 3桁入力の横幅 */
+  #tab3 .lvlIn3{
+    width: 5ch !important;
+    text-align: center !important;
+  }
+
+    
   /* クイック（通常） */
   .lvlQuick{
     display:flex;
@@ -1310,52 +1343,48 @@
           </div>
         </div>
 
-        <!-- ブースト（アメブースト / ミニアメブースト を統合） -->
+        <!-- ブースト（性格/経験値タイプと同じ並び：左揃え） -->
         <div class="lvlRow">
           <div class="lvlLabel">ブースト</div>
-          <div class="lvlInput lvlInputStack">
-            <div class="lvlBoostWrap">
-              <!-- ラジオ（性格と同じ見た目の流用） -->
-              <div class="lvlRadios lvlBoostRadios">
-                <label class="lvlRadio"><input type="radio" name="lvBoostKind" value="none" checked> なし</label>
-                <label class="lvlRadio"><input type="radio" name="lvBoostKind" value="full"> アメブースト</label>
-                <label class="lvlRadio"><input type="radio" name="lvBoostKind" value="mini"> ミニアメブースト</label>
+          <div class="lvlInput" style="grid-template-columns:1fr;">
+            <!-- ラジオ：なしは作らない（押し直しで解除） -->
+            <div class="lvlRadios lvlBoostRadios">
+              <label class="lvlRadio"><input type="radio" name="lvBoostKind" value="full"> アメブースト</label>
+              <label class="lvlRadio"><input type="radio" name="lvBoostKind" value="mini"> ミニブースト</label>
+            </div>
+
+            <!-- 2行目：クイック＋個数 -->
+            <div class="lvlBoostLine">
+              <div class="lvlQuick">
+                <button type="button" class="lvlQuickBtn" data-boost="100">100</button>
+                <button type="button" class="lvlQuickBtn" data-boost="150">150</button>
+                <button type="button" class="lvlQuickBtn" data-boost="200">200</button>
+                <button type="button" class="lvlQuickBtn" data-boost="250">250</button>
+                <button type="button" class="lvlQuickBtn" data-boost="300">300</button>
+                <button type="button" class="lvlQuickBtn" data-boost="350">350</button>
+                <button type="button" class="lvlQuickBtn" data-boost="400">400</button>
+                <button type="button" class="lvlQuickBtn" data-boost="450">450</button>
+                <button type="button" class="lvlQuickBtn" data-boost="500">500</button>
               </div>
 
-              <!-- クイック＋個数（旧アメブーストを継承） -->
-              <div class="lvlBoostLine">
-                <div class="lvlQuick">
-                  <button type="button" class="lvlQuickBtn" data-boost="100">100</button>
-                  <button type="button" class="lvlQuickBtn" data-boost="150">150</button>
-                  <button type="button" class="lvlQuickBtn" data-boost="200">200</button>
-                  <button type="button" class="lvlQuickBtn" data-boost="250">250</button>
-                  <button type="button" class="lvlQuickBtn" data-boost="300">300</button>
-                  <button type="button" class="lvlQuickBtn" data-boost="350">350</button>
-                  <button type="button" class="lvlQuickBtn" data-boost="400">400</button>
-                  <button type="button" class="lvlQuickBtn" data-boost="450">450</button>
-                  <button type="button" class="lvlQuickBtn" data-boost="500">500</button>
-                </div>
-
-                <div class="lvlInputRight">
-                  <input id="lvBoostCount" class="lvlInBoost"
-                         type="number" min="0" max="9999" inputmode="numeric"
-                         placeholder="xxxx">
-                  <span class="lvlUnit">個</span>
-                </div>
+              <div class="lvlInputRight">
+                <input id="lvBoostCount" class="lvlInBoost"
+                       type="number" min="0" max="9999" inputmode="numeric"
+                       placeholder="xxxx">
+                <span class="lvlUnit">個</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- ブーストの下にも区切り線 -->
         <div class="lvlDivider"></div>
 
-        <!-- オプション（睡眠 / 睡眠EXPボーナス / せいちょうのおこう） -->
+        <!-- オプション（枠なし・3行・左揃え） -->
         <div class="lvlRow">
           <div class="lvlLabel">オプション</div>
-          <div class="lvlInput" style="grid-template-columns: 1fr;">
-            <div class="lvlOptGrid">
-              <div class="lvlOptItem">
+          <div class="lvlInput" style="grid-template-columns:1fr;">
+            <div class="lvlOptLines">
+              <div class="lvlOptLine">
                 <div class="lvlOptName">睡眠</div>
                 <div class="lvlInputRight">
                   <input id="lvSleepDays" class="lvlIn3"
@@ -1365,7 +1394,7 @@
                 </div>
               </div>
 
-              <div class="lvlOptItem">
+              <div class="lvlOptLine">
                 <div class="lvlOptName">睡眠EXPボーナス</div>
                 <div class="lvlInputRight">
                   <input id="lvSleepBonus" class="lvlIn2"
@@ -1374,6 +1403,20 @@
                   <span class="lvlUnit">体</span>
                 </div>
               </div>
+
+              <div class="lvlOptLine">
+                <div class="lvlOptName">せいちょうのおこう</div>
+                <div class="lvlInputRight">
+                  <input id="lvGrowthIncense" class="lvlIn3"
+                         type="number" min="1" max="999" inputmode="numeric"
+                         placeholder="xxx">
+                  <span class="lvlUnit">個</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
 
               <div class="lvlOptItem">
                 <div class="lvlOptName">せいちょうのおこう</div>
