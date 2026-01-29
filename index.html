@@ -828,77 +828,74 @@
     text-align: center !important;
   }
   
-    /* PC表示（900px以上）: 赤線イメージに基づく3カラム風レイアウト */
-    @media (min-width: 900px) {
-      /* 全体行の構成: [ラベルエリア 140px] [コンテンツエリア 1fr] [入力エリア 120px] */
-      #tab3 .lvlRow {
-        display: grid !important;
-        grid-template-columns: 140px 1fr 120px !important;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 0;
-      }
+/* PC表示（900px以上）: 赤線のガイドラインに基づく完全整列 */
+@media (min-width: 900px) {
+  /* 1. 共通の親Grid設定：全行の「縦の線」をここで固定する */
+  #tab3 .lvlRow {
+    display: grid !important;
+    /* [左ラベル 140px] [中央コンテンツ 1fr] [右入力エリア 120px] */
+    grid-template-columns: 140px 1fr 120px !important;
+    gap: 0 10px; /* 横の間隔 */
+    align-items: center;
+    padding: 10px 0;
+  }
 
-      /* ブースト行とオプション詳細行の特殊調整 */
-      #tab3 .lvlRowBoost,
-      #tab3 .lvlOptLine {
-        display: contents !important; /* 親のgrid(lvlRow)を直接参照させる */
-      }
+  /* 2. オプションセクションの特殊構造をGridに適合させる */
+  #tab3 .lvlRowOpt {
+    display: grid !important;
+    grid-template-columns: 140px 1fr 120px !important;
+    grid-column: 1 / span 3; /* 行全体を占有 */
+  }
 
-      /* 1カラム目: 大見出し・小見出し */
-      #tab3 .lvlLabel,
-      #tab3 .lvlOptName {
-        grid-column: 1;
-        justify-self: start;
-        margin: 0;
-      }
+  /* 3. 各項目のカラム配置指定 */
+  /* 【左カラム: 項目名】 */
+  #tab3 .lvlLabel,
+  #tab3 .lvlOptName {
+    grid-column: 1;
+    justify-self: start;
+    white-space: nowrap;
+  }
 
-      /* 2カラム目: ラジオボタンなどのメインコンテンツ */
-      #tab3 .lvlInput,
-      #tab3 .lvlBoostRadios {
-        grid-column: 2;
-        justify-self: start;
-      }
+  /* 【中央カラム: ラジオボタンなど】 */
+  #tab3 .lvlInput,
+  #tab3 .lvlBoostRadios {
+    grid-column: 2;
+    justify-self: start; /* 赤線の「中央開始ライン」に左端を揃える */
+  }
 
-      /* 3カラム目: 入力欄 + 単位 */
-      #tab3 .lvlInputRight,
-      #tab3 .lvlBoostCountLine {
-        grid-column: 3;
-        justify-self: end;
-        display: flex !important;
-        align-items: center;
-        white-space: nowrap;
-      }
+  /* 【右カラム: 入力欄＋単位】 */
+  #tab3 .lvlInputRight,
+  #tab3 .lvlBoostCountLine {
+    grid-column: 3;
+    justify-self: end; /* 右端の赤線ラインに右揃え */
+    display: flex !important;
+    align-items: center;
+  }
 
-      /* 入力欄のサイズを統一 */
-      #tab3 .lvlIn4,
-      #tab3 .lvlInBoost,
-      #tab3 .lvlIn3,
-      #tab3 .lvlIn1 {
-        width: 6ch !important;
-        text-align: center !important;
-        margin-right: 4px;
-      }
+  /* 4. 入力エリアの内部構造調整 */
+  #tab3 .lvlBoostLine,
+  #tab3 .lvlOptLines,
+  #tab3 .lvlOptLine {
+    display: contents !important; /* 子要素を直接lvlRowのGridに乗せる魔法のプロパティ */
+  }
 
-      /* オプション内の各項目を行として独立させるための調整 */
-      #tab3 .lvlRowOpt {
-        display: grid !important;
-        grid-template-columns: 140px 1fr 120px !important;
-        grid-column: 1 / span 3; /* 行全体を占有 */
-        align-items: center;
-      }
-      #tab3 .lvlOptLines {
-        display: contents; /* 子要素(lvlOptLine)を親のgridに配置 */
-      }
-      #tab3 .lvlOptLine {
-        display: grid !important;
-        grid-template-columns: subgrid; /* CSS subgridが使えない環境向けに以下を併記 */
-        grid-template-columns: 140px 1fr 120px !important;
-        grid-column: 1 / span 3;
-        align-items: center;
-        height: 40px;
-      }
-    }
+  /* 5. 入力欄のサイズと余白の統一（睡眠EXPボーナス等含む） */
+  #tab3 .lvlIn4,
+  #tab3 .lvlInBoost,
+  #tab3 .lvlIn3,
+  #tab3 .lvlIn1 {
+    width: 6ch !important;
+    height: 32px;
+    text-align: center !important;
+    margin-right: 6px; /* 単位（個・日など）との間隔 */
+    box-sizing: border-box;
+  }
+
+  /* 6. 縦位置の微調整（ブースト等） */
+  #tab3 .lvlBoostRadios {
+    margin-top: 0 !important; /* 縦のズレを解消 */
+  }
+}
     
   /* クリア1個のときは確実に中央寄せ */
   #tab3 .lvlButtons.lvlButtonsSingle{
