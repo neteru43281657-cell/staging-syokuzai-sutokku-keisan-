@@ -212,7 +212,31 @@ function buildPokemonGridHTML(label, badgeClass, names, master) {
   `;
 }
 
+function isDetailOpen() {
+  const d = pokEl("fieldDetail");
+  if (!d) return false;
+  return d.style.display !== "none";
+}
+
+function replaceMenuState() {
+  try {
+    const st = history.state || {};
+    history.replaceState({ ...st, pokedex: { view: "menu", fieldId: null } }, "", location.href);
+  } catch (_) {}
+}
+
+function pushDetailState(fieldId) {
+  try {
+    const st = history.state || {};
+    history.pushState({ ...st, pokedex: { view: "detail", fieldId } }, "", location.href);
+  } catch (_) {}
+}
+
 function renderFieldMenu() {
+  // タブ②クリック時は常に一覧へ戻す
+  pokEl("fieldMenu").style.display = "block";
+  pokEl("fieldDetail").style.display = "none";
+
   const grid = document.querySelector(".field-grid");
   grid.innerHTML = FIELDS.map(field => `
     <div class="field-item" onclick="showFieldDetail('${field.id}')">
@@ -220,9 +244,13 @@ function renderFieldMenu() {
       <div class="field-name">${field.name}</div>
     </div>
   `).join("");
+
+  // 詳細表示の履歴を残さない（= 戻るでアプリが閉じないように）
+  replaceMenuState();
 }
 
-async function showFieldDetail(fieldId) {
+async function showFieldDetail(fieldId, opts = {}) {
+  const fromPop = !!opts.fromPop;
   const field = FIELDS.find(f => f.id === fieldId);
 
   pokEl("fieldMenu").style.display = "none";
@@ -235,6 +263,11 @@ async function showFieldDetail(fieldId) {
       <div style="font-size:12px; color:var(--muted); margin-top:8px;">${field?.name || ""}</div>
     </div>
   `;
+
+  // 一覧→詳細へ遷移した時だけ履歴を積む（Androidの戻るで一覧に戻すため）
+  if (!fromPop) {
+    pushDetailState(fieldId);
+  }
 
   try {
     const master = await loadPokemonMaster();
@@ -281,9 +314,31 @@ async function showFieldDetail(fieldId) {
   }
 }
 
-function backToMenu() {
+function backToMenu(viaPop = false) {
   pokEl("fieldMenu").style.display = "block";
   pokEl("fieldDetail").style.display = "none";
+
+  // 画面内の「←戻る」でもスマホ本体の「戻る」でも同じ挙動にする
+  if (!viaPop) {
+    const st = history.state?.pokedex;
+    if (st?.view === "detail") {
+      // 履歴を戻して一覧へ
+      try { history.back(); return; } catch (_) {}
+    }
+    replaceMenuState();
+  }
 }
+
+// Androidの戻るボタン / ブラウザ戻るに追従
+window.addEventListener("popstate", (e) => {
+  const st = e.state?.pokedex;
+  if (st?.view === "detail" && st.fieldId) {
+    showFieldDetail(st.fieldId, { fromPop: true });
+    return;
+  }
+  if (isDetailOpen()) {
+    backToMenu(true);
+  }
+});
 
 window.PokedexTab = { renderFieldMenu, showFieldDetail, backToMenu };
