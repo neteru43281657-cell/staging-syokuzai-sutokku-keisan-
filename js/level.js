@@ -486,6 +486,25 @@ function toNum(v) {
       });
     }
 
+    // レベル入力欄のクイック（今のレベル / 目標レベル）
+    const tab3 = document.getElementById("tab3");
+    if (tab3) {
+      tab3.addEventListener("click", (e) => {
+        const btn = e.target.closest(".lvlQuickBtn");
+        if (!btn) return;
+
+        if (btn.dataset.now) {
+          el("lvNow").value = String(btn.dataset.now);
+          boostCountTouched = boostCountTouched; // no-op（他の状態維持）
+          onCalc();
+        }
+        if (btn.dataset.target) {
+          el("lvTarget").value = String(btn.dataset.target);
+          onCalc();
+        }
+      });
+    }
+    
     // 初期表示
     onCalc();
   }
@@ -499,3 +518,4 @@ function toNum(v) {
   };
 
 })();
+
