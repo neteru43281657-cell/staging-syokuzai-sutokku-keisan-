@@ -962,6 +962,16 @@
     display: none;
   }    
 
+  /* 小クリアの“行”ごと消す（ボタンだけ消すと行のpaddingが残るため） */
+  #tab3 .lvlRow:has(#lvClearOptional){
+    display: none;
+  }
+  
+  /* 区切り線まわりの余白を上下一致に近づける（必要なら微調整） */
+  #tab3 .lvlDivider{
+    margin: 10px 0 6px;  /* 下だけ少し詰める */
+  }
+
   </style>
 </head>
 
