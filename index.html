@@ -117,6 +117,9 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
 
+    /* タブ③：スマホで横にはみ出すのを防ぐ */
+    #levelCard{ overflow-x: hidden; }
+
     .result-card {
       border: 2px solid var(--main);
       background: #ffffff;
@@ -655,7 +658,7 @@
   }
 
   /* =========================
-     経験値シミュレーター（tab3）- 1本化（見た目は現状維持）
+     経験値シミュレータ―（tab3）- 1本化（見た目は現状維持）
   ========================= */
   
   #levelCard{ max-width: 760px; margin: 0 auto; }
@@ -675,13 +678,13 @@
   /* 行：左ラベル / 右入力群（現状の列幅を維持） */
   .lvlRow{
     display:grid;
-    grid-template-columns: 1fr 260px;
+    grid-template-columns: minmax(0, 1fr) minmax(120px, 260px);
     gap: 10px;
     align-items: start;
     padding: 4px 0;
   }
   @media (max-width: 520px){
-    .lvlRow{ grid-template-columns: 1fr 230px; }
+    .lvlRow{ grid-template-columns: minmax(0, 1fr) minmax(120px, 200px); }
     .lvlLabel{ font-size: 14px; }
     .lvlRadio{ font-size: 12px; }
     .lvlQuick{ max-width: 150px; }
@@ -762,7 +765,8 @@
   }
   
   /* 入力（共通） */
-  .lvlInput input{
+  .lvlInput input,
+  .lvlInputRight input{
     border: 2px solid rgba(0,0,0,0.12);
     border-radius: 10px;
     padding: 4px 6px;
@@ -1075,19 +1079,7 @@
     }
   }
 
-  /* ブースト左側：ラベルの下にラジオを置く */
-  #tab3 .lvlBoostLeft{
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  
-  /* スマホでも「ミニアメブースト」が縦落ちしない */
-  #tab3 .lvlBoostRadios{
-    flex-wrap: nowrap;
-  }
-
-  /* 経験値シミュレーター：小さいクリアボタンを非表示（機能は残す） */
+  /* 経験値シミュレータ―：小さいクリアボタンを非表示（機能は残す） */
   #tab3 #lvClearOptional{
     display: none;
   }    
@@ -1102,7 +1094,7 @@
     margin: 10px 0 6px;  /* 下だけ少し詰める */
   }
 
-  /* PC：タブ③（経験値シミュレーター）のカード幅を他タブと同じにする */
+  /* PC：タブ③（経験値シミュレータ―）のカード幅を他タブと同じにする */
   @media (min-width: 900px){
     #tab3 #levelCard{
       max-width: none !important;
@@ -1161,11 +1153,8 @@
       margin-top: 6px;
       justify-content: flex-start;
       gap: 18px;
-      flex-wrap: nowrap;              /* ← スマホでも横並び固定 */
-      overflow-x: auto;               /* 画面が狭い時は横スクロール */
-      -webkit-overflow-scrolling: touch;
+      flex-wrap: wrap;
     }
-    .lvlBoostRadios::-webkit-scrollbar{ display:none; }
 
   }
     
@@ -1401,11 +1390,10 @@
           </div>
         </div>
 
-        <!-- ブースト（左：ラベル＋ラジオ／右：個数） -->
+        <!-- ブースト（クイック廃止／ラジオはブーストの下） -->
         <div class="lvlRow lvlRowBoost">
-          <div class="lvlBoostLeft">
-            <div class="lvlLabel">ブースト</div>
-        
+          <div class="lvlLabel">ブースト</div>
+          <div class="lvlInput" style="grid-template-columns:1fr;">
             <div class="lvlRadios lvlBoostRadios">
               <label class="lvlRadio">
                 <input type="radio" name="lvBoostKind" value="full"> アメブースト
@@ -1414,51 +1402,54 @@
                 <input type="radio" name="lvBoostKind" value="mini"> ミニアメブースト
               </label>
             </div>
-          </div>
         
-          <div class="lvlInputRight">
-            <input id="lvBoostCount" class="lvlInBoost"
-                   type="number" inputmode="numeric"
-                   placeholder="xxxx">
-            <span class="lvlUnit">個</span>
+            <div class="lvlBoostCountLine">
+              <div class="lvlInputRight">
+                <input id="lvBoostCount" class="lvlInBoost"
+                       type="number" inputmode="numeric"
+                       placeholder="xxxx">
+                <span class="lvlUnit">個</span>
+              </div>
+            </div>
           </div>
         </div>
 
 
         <div class="lvlDivider"></div>
 
-        <!-- オプション（全幅：見出し→中身） -->
-        <div class="lvlRow lvlRowFull">
+        <!-- オプション（枠なし・3行・左揃え） -->
+        <div class="lvlRow">
           <div class="lvlLabel">オプション</div>
-        
-          <div class="lvlOptLines">
-            <div class="lvlOptLine">
-              <div class="lvlOptName">睡眠</div>
-              <div class="lvlInputRight">
-                <input id="lvSleepDays" class="lvlIn3"
-                       type="number" min="1" max="999" inputmode="numeric"
-                       placeholder="xxx">
-                <span class="lvlUnit">日</span>
+          <div class="lvlInput" style="grid-template-columns:1fr;">
+            <div class="lvlOptLines">
+              <div class="lvlOptLine">
+                <div class="lvlOptName">睡眠</div>
+                <div class="lvlInputRight">
+                  <input id="lvSleepDays" class="lvlIn3"
+                         type="number" min="1" max="999" inputmode="numeric"
+                         placeholder="xxx">
+                  <span class="lvlUnit">日</span>
+                </div>
               </div>
-            </div>
-        
-            <div class="lvlOptLine">
-              <div class="lvlOptName">睡眠EXPボーナス</div>
-              <div class="lvlInputRight">
-                <input id="lvSleepBonus" class="lvlIn1"
-                       type="number" min="1" max="5" inputmode="numeric"
-                       placeholder="x">
-                <span class="lvlUnit">体</span>
+
+              <div class="lvlOptLine">
+                <div class="lvlOptName">睡眠EXPボーナス</div>
+                <div class="lvlInputRight">
+                  <input id="lvSleepBonus" class="lvlIn1"
+                         type="number" min="1" max="5" inputmode="numeric"
+                         placeholder="x">
+                  <span class="lvlUnit">体</span>
+                </div>
               </div>
-            </div>
-        
-            <div class="lvlOptLine">
-              <div class="lvlOptName">せいちょうのおこう</div>
-              <div class="lvlInputRight">
-                <input id="lvGrowthIncense" class="lvlIn3"
-                       type="number" min="1" max="999" inputmode="numeric"
-                       placeholder="xxx">
-                <span class="lvlUnit">個</span>
+
+              <div class="lvlOptLine">
+                <div class="lvlOptName">せいちょうのおこう</div>
+                <div class="lvlInputRight">
+                  <input id="lvGrowthIncense" class="lvlIn3"
+                         type="number" min="1" max="999" inputmode="numeric"
+                         placeholder="xxx">
+                  <span class="lvlUnit">個</span>
+                </div>
               </div>
             </div>
           </div>
@@ -1497,7 +1488,7 @@
 
   <div class="nav-item" onclick="switchTab('tab3', this)">
     <span class="nav-icon">🔍</span>
-    <span>経験値シミュレーター</span>
+    <span>経験値シミュレータ―</span>
   </div>
 
   <div class="nav-item" onclick="switchTab('tab4', this)">
