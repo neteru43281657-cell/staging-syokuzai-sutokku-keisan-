@@ -23,6 +23,8 @@ function toNum(v) {
     ]);
     expTable = parseExpTable(expTxt);
     shardTable = parseTwoColTable(shardTxt);
+    buildNeedStepCache(); // ← 追加
+
   }
 
   function parseTwoColTable(txt) {
@@ -58,6 +60,66 @@ function toNum(v) {
     return map;
   }
 
+  /* =========================
+   * 必要EXP（タイプ倍率）算出：累計→丸め→差分
+   * ========================= */
+  
+  const TYPE_MUL = {
+    normal: 1.0,
+    "600": 1.5,
+    semi: 1.8,
+    legend: 2.2,
+  };
+  
+  // Map<typeKey, Map<targetLv, needStep>>
+  let needStepCache = null;
+  
+  function buildNeedStepCache() {
+    if (!expTable) return;
+  
+    needStepCache = new Map();
+  
+    // ふつう（normal）はそのまま（exp_table の normal 列を使う）
+    const normalMap = new Map();
+    for (let lv = 2; lv <= 65; lv++) {
+      const row = expTable.get(lv);
+      normalMap.set(lv, row ? toNum(row.normal) : 0);
+    }
+    needStepCache.set("normal", normalMap);
+  
+    // 累計（ふつう）を作る
+    const cumNormal = [0]; // index unused
+    let sum = 0;
+    for (let lv = 2; lv <= 65; lv++) {
+      sum += normalMap.get(lv) || 0;
+      cumNormal[lv] = sum;
+    }
+  
+    // 600 / semi / legend を「累計→丸め→差分」で生成
+    ["600", "semi", "legend"].forEach(typeKey => {
+      const mul = TYPE_MUL[typeKey] || 1.0;
+  
+      const map = new Map();
+      let prevScaled = 0;
+  
+      for (let lv = 2; lv <= 65; lv++) {
+        const scaledCum = Math.round((cumNormal[lv] || 0) * mul);
+        const step = scaledCum - prevScaled;
+        map.set(lv, step);
+        prevScaled = scaledCum;
+      }
+  
+      needStepCache.set(typeKey, map);
+    });
+  }
+  
+  function getNeedStep(targetLv, typeKey) {
+    if (!needStepCache) buildNeedStepCache();
+    const m = needStepCache?.get(typeKey) || needStepCache?.get("normal");
+    return m?.get(targetLv) || 0;
+  }
+
+  
   function clampInt(n, min, max) {
     n = Number(n);
     if (!Number.isFinite(n)) return min;
@@ -99,7 +161,7 @@ function toNum(v) {
       const row = expTable.get(targetLv);
       if (!row) break;
       
-      const needStep = (row[typeKey] ?? row.normal);
+      const needStep = getNeedStep(targetLv, typeKey);
 
       // このレベル（targetLv）に到達するまでアメを投入
       while (currentExp < needStep) {
@@ -156,20 +218,17 @@ function toNum(v) {
     const boostCount = clampInt(el("lvBoostCount")?.value || 0, 0, 9999);
     const miniCount = clampInt(el("lvMiniBoostCount")?.value || 0, 0, 9999);
 
-    // 現在のレベル内での進捗EXPを計算
-    const rowNext = expTable.get(lvNow + 1);
-    const needForNextLevel = rowNext ? (rowNext[typeKey] ?? rowNext.normal) : 0;
+    const needForNextLevel = getNeedStep(lvNow + 1, typeKey);
     let initialProgress = 0;
     if (progressExp > 0 && progressExp < needForNextLevel) {
       initialProgress = needForNextLevel - progressExp;
     }
 
-    // 表示用の総必要経験値
     let totalExpNeeded = 0;
     for (let i = lvNow + 1; i <= lvTarget; i++) {
-        const r = expTable.get(i);
-        totalExpNeeded += (r ? (r[typeKey] ?? r.normal) : 0);
+      totalExpNeeded += getNeedStep(i, typeKey);
     }
+
     totalExpNeeded = Math.max(0, totalExpNeeded - initialProgress);
 
     // シミュレーション実行
@@ -236,3 +295,4 @@ function toNum(v) {
   };
 
 })();
+
