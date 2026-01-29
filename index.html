@@ -1044,18 +1044,13 @@
     margin-top: 0 !important;
   }
 
-  /* 個数入力欄：placeholder が表示されている間だけ薄いグレーに */
-  #tab3 input.lvlInBoost:placeholder-shown{
-    color: #c0c6cf;
-  }
-
-  /* placeholder が表示されている状態 */
-  #tab3 input.lvlInBoost:placeholder-shown{
+  /* レベルシミュレーター：placeholder が表示されている input はすべて薄いグレー */
+  #tab3 input:placeholder-shown{
     color: #c0c6cf;
   }
   
-  /* placeholder 文字そのもの */
-  #tab3 input.lvlInBoost::placeholder{
+  /* placeholder 文字そのもの（ブラウザ差吸収） */
+  #tab3 input::placeholder{
     color: #c0c6cf;
     opacity: 1;
   }
