@@ -113,31 +113,44 @@ function roundHalfUp(x) {
   }
   
 /* =========================
-   * Core calculations
+   * Utilities & Table Loader
    * ========================= */
-  
-  // エラーの原因となっていた関数です。必ず含めてください。
   function clampInt(n, min, max) {
     n = Number(n);
     if (!Number.isFinite(n)) return min;
     return Math.max(min, Math.min(max, Math.trunc(n)));
   }
 
-  function calcTotalNeedExp(lvNow, lvTarget, typeKey) {
-    let sum = 0;
-    for (let to = lvNow + 1; to <= lvTarget; to++) {
-      const row = expTable.get(to);
-      if (!row) throw new Error(`EXP tableにLv${to}が見つかりません`);
+  let expTable = null;
+  let shardTable = null;
 
-      let step;
-      if (typeof row === "number") {
-        step = row;
-      } else {
-        step = row[typeKey] ?? row.normal;
-      }
-      sum += step;
-    }
-    return sum;
+  async function loadTablesOnce() {
+    if (expTable && shardTable) return;
+    const [expTxt, shardTxt] = await Promise.all([
+      fetch("./data/exp_table.txt", { cache: "no-store" }).then(r => r.text()),
+      fetch("./data/shard_table.txt", { cache: "no-store" }).then(r => r.text()),
+    ]);
+    expTable = parseExpTable(expTxt);
+    shardTable = parseTwoColTable(shardTxt);
+  }
+
+  /* =========================
+   * Core Logic
+   * ========================= */
+
+  function baseCandyExp(level, nature) {
+    let band;
+    // 境界値：25になるまで(1-24), 30になるまで(25-29), 30以上
+    if (level < 25) band = "1_25";
+    else if (level < 30) band = "25_30";
+    else band = "30_plus";
+  
+    const table = {
+      "1_25": { none: 35, up: 41, down: 29 },
+      "25_30": { none: 30, up: 35, down: 25 },
+      "30_plus": { none: 25, up: 30, down: 21 },
+    };
+    return table[band][nature] ?? table[band].none;
   }
 
   function simulateCandiesAndShards(opts) {
@@ -150,43 +163,45 @@ function roundHalfUp(x) {
     let shards = 0;
     let lv = lvNow;
     
-    const rowNext = expTable.get(lv + 1);
-    const needForNext = rowNext ? (typeof rowNext === "number" ? rowNext : (rowNext[typeKey] ?? rowNext.normal)) : 0;
+    // 現在のレベル内での獲得済み経験値を算出
+    const rowForNext = expTable.get(lv + 1);
+    const needForNext = rowForNext ? (typeof rowForNext === "number" ? rowForNext : (rowForNext[typeKey] ?? rowForNext.normal)) : 0;
     
-    let expCarry = 0;
+    // 「あと何ptでレベルアップか」から「現在何pt持っているか」を逆算
+    let currentExp = 0;
     if (progressExp > 0 && progressExp < needForNext) {
-      expCarry = needForNext - progressExp;
+      currentExp = needForNext - progressExp;
     }
 
     let boostRemain = Math.max(0, boostCount || 0);
     const boostExpMul = (boostKind === "none") ? 1 : 2;
-    const boostShardMul = 
-      boostKind === "mini" ? 4 :
-      boostKind === "full" ? 5 : 1;
+    const boostShardMul = (boostKind === "mini") ? 4 : (boostKind === "full" ? 5 : 1);
 
+    // 目標レベルに達するまでループ
     while (lv < lvTarget) {
       const targetLv = lv + 1;
       const row = expTable.get(targetLv);
       if (!row) break;
 
-      const needStep = typeof row === "number" ? row : (row[typeKey] ?? row.normal);
+      const expRequiredForThisLevel = typeof row === "number" ? row : (row[typeKey] ?? row.normal);
 
-      while (expCarry < needStep) {
+      // そのレベルを突破するまでアメを1個ずつ消費
+      while (currentExp < expRequiredForThisLevel) {
         const useBoost = (boostRemain > 0 && boostKind !== "none");
-        const perCandyBase = baseCandyExp(lv, natureKey);
-        const gain = Math.floor(perCandyBase * (useBoost ? boostExpMul : 1));
         
-        const shardBase = shardTable.get(targetLv) || 0;
-        const shardCost = shardBase * (useBoost ? boostShardMul : 1);
+        // アメ1個の獲得量と消費かけら
+        const gain = Math.floor(baseCandyExp(lv, natureKey) * (useBoost ? boostExpMul : 1));
+        const shardCost = (shardTable.get(targetLv) || 0) * (useBoost ? boostShardMul : 1);
 
         candies++;
         shards += shardCost;
-        expCarry += gain;
+        currentExp += gain;
         
         if (useBoost) boostRemain--;
       }
 
-      expCarry -= needStep;
+      // レベルアップ処理（余剰経験値を持ち越す）
+      currentExp -= expRequiredForThisLevel;
       lv++;
     }
 
@@ -195,7 +210,7 @@ function roundHalfUp(x) {
       shardsTotal: Math.round(shards),
     };
   }
-
+  
   /* =========================
    * UI
    * ========================= */
@@ -480,6 +495,7 @@ function roundHalfUp(x) {
   };
 
 })();
+
 
 
 
