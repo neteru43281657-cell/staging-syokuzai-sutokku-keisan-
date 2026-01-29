@@ -823,13 +823,13 @@ header {
   
   /* 3桁入力の横幅 */
   #tab3 .lvlIn3{
-    width: 5ch !important;
+    width: 7ch !important;
     text-align: center !important;
   }
 
   /* 1桁入力（睡眠EXPボーナス用） */
   #tab3 .lvlIn1{
-    width: 3.5ch !important;
+    width: 4.5ch !important;
     text-align: center !important;
   }
 
@@ -1054,7 +1054,7 @@ header {
     white-space: nowrap;
   }
   #tab3 .lvlIn3{
-    width: 5ch !important;      /* 3桁想定の小さめ */
+    width: 7ch !important;      /* 3桁想定の小さめ */
     text-align: center !important;
   }
     
@@ -1407,6 +1407,31 @@ header {
           </div>
         </div>
 
+        <!-- ブースト（ラジオはブーストの下） -->
+        <div class="lvlRow lvlRowBoost">
+          <div class="lvlLabel">ブースト</div>
+        
+          <div class="lvlInput" style="grid-template-columns:1fr;">
+            <div class="lvlRadios lvlBoostRadios">
+              <label class="lvlRadio">
+                <input type="radio" name="lvBoostKind" value="full"> アメブースト
+              </label>
+              <label class="lvlRadio">
+                <input type="radio" name="lvBoostKind" value="mini"> ミニアメブースト
+              </label>
+            </div>
+        
+            <div class="lvlBoostCountLine">
+              <div class="lvlInputRight">
+                <input id="lvBoostCount" class="lvlInBoost"
+                       type="number" inputmode="numeric"
+                       placeholder="xxxx">
+                <span class="lvlUnit">個</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <!-- オプション（経験値タイプと同じ構造：見出し→中身） -->
         <div class="lvlRow lvlRowFull">
           <div class="lvlLabel">オプション</div>
