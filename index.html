@@ -1075,6 +1075,18 @@
     }
   }
 
+  /* ブースト左側：ラベルの下にラジオを置く */
+  #tab3 .lvlBoostLeft{
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  /* スマホでも「ミニアメブースト」が縦落ちしない */
+  #tab3 .lvlBoostRadios{
+    flex-wrap: nowrap;
+  }
+
   /* レベルシミュレーター：小さいクリアボタンを非表示（機能は残す） */
   #tab3 #lvClearOptional{
     display: none;
@@ -1389,10 +1401,11 @@
           </div>
         </div>
 
-        <!-- ブースト（クイック廃止／ラジオはブーストの下） -->
+        <!-- ブースト（左：ラベル＋ラジオ／右：個数） -->
         <div class="lvlRow lvlRowBoost">
-          <div class="lvlLabel">ブースト</div>
-          <div class="lvlInput" style="grid-template-columns:1fr;">
+          <div class="lvlBoostLeft">
+            <div class="lvlLabel">ブースト</div>
+        
             <div class="lvlRadios lvlBoostRadios">
               <label class="lvlRadio">
                 <input type="radio" name="lvBoostKind" value="full"> アメブースト
@@ -1401,54 +1414,51 @@
                 <input type="radio" name="lvBoostKind" value="mini"> ミニアメブースト
               </label>
             </div>
+          </div>
         
-            <div class="lvlBoostCountLine">
-              <div class="lvlInputRight">
-                <input id="lvBoostCount" class="lvlInBoost"
-                       type="number" inputmode="numeric"
-                       placeholder="xxxx">
-                <span class="lvlUnit">個</span>
-              </div>
-            </div>
+          <div class="lvlInputRight">
+            <input id="lvBoostCount" class="lvlInBoost"
+                   type="number" inputmode="numeric"
+                   placeholder="xxxx">
+            <span class="lvlUnit">個</span>
           </div>
         </div>
 
 
         <div class="lvlDivider"></div>
 
-        <!-- オプション（枠なし・3行・左揃え） -->
-        <div class="lvlRow">
+        <!-- オプション（全幅：見出し→中身） -->
+        <div class="lvlRow lvlRowFull">
           <div class="lvlLabel">オプション</div>
-          <div class="lvlInput" style="grid-template-columns:1fr;">
-            <div class="lvlOptLines">
-              <div class="lvlOptLine">
-                <div class="lvlOptName">睡眠</div>
-                <div class="lvlInputRight">
-                  <input id="lvSleepDays" class="lvlIn3"
-                         type="number" min="1" max="999" inputmode="numeric"
-                         placeholder="xxx">
-                  <span class="lvlUnit">日</span>
-                </div>
+        
+          <div class="lvlOptLines">
+            <div class="lvlOptLine">
+              <div class="lvlOptName">睡眠</div>
+              <div class="lvlInputRight">
+                <input id="lvSleepDays" class="lvlIn3"
+                       type="number" min="1" max="999" inputmode="numeric"
+                       placeholder="xxx">
+                <span class="lvlUnit">日</span>
               </div>
-
-              <div class="lvlOptLine">
-                <div class="lvlOptName">睡眠EXPボーナス</div>
-                <div class="lvlInputRight">
-                  <input id="lvSleepBonus" class="lvlIn1"
-                         type="number" min="1" max="5" inputmode="numeric"
-                         placeholder="x">
-                  <span class="lvlUnit">体</span>
-                </div>
+            </div>
+        
+            <div class="lvlOptLine">
+              <div class="lvlOptName">睡眠EXPボーナス</div>
+              <div class="lvlInputRight">
+                <input id="lvSleepBonus" class="lvlIn1"
+                       type="number" min="1" max="5" inputmode="numeric"
+                       placeholder="x">
+                <span class="lvlUnit">体</span>
               </div>
-
-              <div class="lvlOptLine">
-                <div class="lvlOptName">せいちょうのおこう</div>
-                <div class="lvlInputRight">
-                  <input id="lvGrowthIncense" class="lvlIn3"
-                         type="number" min="1" max="999" inputmode="numeric"
-                         placeholder="xxx">
-                  <span class="lvlUnit">個</span>
-                </div>
+            </div>
+        
+            <div class="lvlOptLine">
+              <div class="lvlOptName">せいちょうのおこう</div>
+              <div class="lvlInputRight">
+                <input id="lvGrowthIncense" class="lvlIn3"
+                       type="number" min="1" max="999" inputmode="numeric"
+                       placeholder="xxx">
+                <span class="lvlUnit">個</span>
               </div>
             </div>
           </div>
