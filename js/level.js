@@ -119,20 +119,30 @@ function roundHalfUp(x) {
     return Math.max(min, Math.min(max, Math.trunc(n)));
   }
 
+  // 次レベル(toLv)へ上がるのに必要なEXP（exp_table.txt準拠）
+  function needExpToLevel(toLv, typeKey) {
+    const row = expTable.get(toLv);
+    if (!row) throw new Error(`EXP tableにLv${toLv}が見つかりません`);
+
+    // exp_table.txt が 1列のみの旧形式だった場合は倍率で補完（互換用）
+    if (typeof row === "number") {
+      const mult = EXP_TYPE_MULT[typeKey] ?? 1.0;
+      return mult === 1.0 ? row : roundHalfUp(row * mult);
+    }
+
+    // 現行形式：normal/600/semi/legend の列をそのまま使う
+    return row[typeKey] ?? row.normal;
+  }
+
+  
   function calcTotalNeedExp(lvNow, lvTarget, typeKey) {
-    const mult = EXP_TYPE_MULT[typeKey] ?? 1.0;
     let sum = 0;
-
     for (let to = lvNow + 1; to <= lvTarget; to++) {
-      const row = expTable.get(to);
-      if (!row) throw new Error(`EXP tableにLv${to}が見つかりません`);
-
-      const base = typeof row === "number" ? row : row.normal;
-      const step = mult === 1.0 ? base : roundHalfUp(base * mult);
-      sum += step;
+      sum += needExpToLevel(to, typeKey);
     }
     return sum;
   }
+
 
   function simulateCandiesAndShards(opts) {
     const {
@@ -156,9 +166,7 @@ function roundHalfUp(x) {
       const row = expTable.get(nextLv);
       if (!row) throw new Error(`EXP tableにLv${nextLv}が見つかりません`);
 
-      const mult = EXP_TYPE_MULT[typeKey] ?? 1.0;
-      const base = typeof row === "number" ? row : row.normal;
-      const needStep = mult === 1.0 ? base : roundHalfUp(base * mult);
+      const needStep = needExpToLevel(nextLv, typeKey);
 
       let remain = needStep - expCarry;
 
@@ -475,6 +483,7 @@ function roundHalfUp(x) {
   };
 
 })();
+
 
 
 
