@@ -661,7 +661,13 @@
      経験値シミュレータ―（tab3）- 1本化（見た目は現状維持）
   ========================= */
   
-  #levelCard{ max-width: 760px; margin: 0 auto; }
+  /* 他のタブの .card と条件を統一 */
+  #levelCard {
+    max-width: none;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
   @media (min-width: 900px){
     #levelCard{ box-shadow: 0 6px 24px rgba(0,0,0,0.04); }
   }
@@ -815,18 +821,34 @@
     color: var(--text);
   }
   
-  /* 3桁入力の横幅 */
-  #tab3 .lvlIn3{
-    width: 5ch !important;
+  /* 3桁・1桁入力の横幅をレベル入力（lvlIn2）と統一 */
+  #tab3 .lvlIn3,
+  #tab3 .lvlIn1 {
+    width: 6ch !important; /* lvlIn2 と同じサイズへ拡大 */
     text-align: center !important;
   }
+  
+  /* PC表示（900px以上）でのレイアウト修正 */
+  @media (min-width: 900px) {
+    /* ブーストとオプションの行を全幅（1カラム）に変更 */
+    #tab3 .lvlRowBoost,
+    #tab3 .lvlRowOpt {
+      grid-template-columns: 1fr !important;
+    }
+    
+    /* 入力群を左寄せにする */
+    #tab3 .lvlBoostLine,
+    #tab3 .lvlOptLine {
+      justify-content: flex-start !important;
+      grid-template-columns: 200px 1fr !important; /* ラベル幅を確保しつつ左詰め */
+    }
 
-  /* 1桁入力（睡眠EXPボーナス用） */
-  #tab3 .lvlIn1{
-    width: 3.5ch !important;
-    text-align: center !important;
+    #tab3 .lvlBoostCountLine,
+    #tab3 .lvlInputRight {
+      justify-content: flex-start !important; /* 右寄せを解除 */
+    }
   }
-
+    
   /* クリア1個のときは確実に中央寄せ */
   #tab3 .lvlButtons.lvlButtonsSingle{
     justify-content: center !important;
@@ -1418,8 +1440,7 @@
         <div class="lvlDivider"></div>
 
         <!-- オプション（枠なし・3行・左揃え） -->
-        <div class="lvlRow">
-          <div class="lvlLabel">オプション</div>
+        <div class="lvlRow lvlRowOpt"> <div class="lvlLabel">オプション</div>
           <div class="lvlInput" style="grid-template-columns:1fr;">
             <div class="lvlOptLines">
               <div class="lvlOptLine">
