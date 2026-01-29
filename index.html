@@ -830,30 +830,54 @@
   
   /* PC表示（900px以上）でのレイアウト修正 */
   @media (min-width: 900px) {
-    /* PC表示（900px以上）: ラベルと入力を左右に振り分ける */
+    /* PC表示（900px以上）: レイアウトの最終調整 */
     @media (min-width: 900px) {
-      /* 「今のレベル」などと同様の2カラム構造に戻す */
+      /* 2列構造を維持しつつ、右側を要素に合わせて広げる */
       #tab3 .lvlRowBoost,
       #tab3 .lvlRowOpt {
-        grid-template-columns: minmax(0, 1fr) minmax(120px, 260px) !important;
+        grid-template-columns: 140px 1fr !important; /* ラベル幅を固定し、残りを右側に割り当て */
+        gap: 20px;
       }
 
-      /* ブースト行内：ラジオボタンを左、個数入力を右に配置 */
+      /* ブースト行内：ラジオボタンを左寄せ、入力欄を右端へ */
       #tab3 .lvlBoostLine {
         display: flex !important;
-        justify-content: space-between !important;
         align-items: center;
         width: 100%;
+      }
+      #tab3 .lvlBoostRadios {
+        flex: 1; /* ラジオボタンエリアを広げて、入力欄を右に押し出す */
       }
 
-      /* オプション行内：各項目を左右に振り分ける */
+      /* オプション行内：項目名を左寄せ、入力欄を右端へ */
       #tab3 .lvlOptLine {
         display: flex !important;
-        justify-content: space-between !important;
         align-items: center;
         width: 100%;
-        margin-bottom: 8px; /* 項目間の微調整 */
+        margin-bottom: 10px;
       }
+      #tab3 .lvlOptName {
+        flex: 1; /* 名前エリアを広げて、入力欄を右に押し出す */
+        font-size: 14px;
+        color: #111;
+      }
+
+      /* 全ての任意入力欄のサイズを一括固定（睡眠EXPボーナスもこれに合わせる） */
+      #tab3 .lvlIn4,
+      #tab3 .lvlInBoost,
+      #tab3 .lvlIn3,
+      #tab3 .lvlIn1 {
+        width: 6ch !important;
+        text-align: center !important;
+        box-sizing: border-box;
+      }
+
+      /* 右端の単位を含む入力グループを右揃えに固定 */
+      #tab3 .lvlInputRight {
+        justify-content: flex-end !important;
+        min-width: 100px;
+      }
+    }
 
       /* 個数入力欄を右端へ寄せる */
       #tab3 .lvlBoostCountLine,
