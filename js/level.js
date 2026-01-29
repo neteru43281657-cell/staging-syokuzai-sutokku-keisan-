@@ -311,8 +311,23 @@ function toNum(v) {
 
     const natureKey = getRadio("lvNature") || "none";
     const typeKey = getRadio("lvType") || "normal";
-
-    const progressExp = toNum(el("lvProgressExp")?.value || 0); // 空欄は0扱い
+    
+    // 次のレベル（lvNow+1）に必要な経験値（その1段分）
+    const needNext = getNeedStep(lvNow + 1, typeKey);
+    
+    // 「次のレベルまでの経験値」は “残り” として扱う：
+    // 未入力 → 進捗0
+    // 入力あり → 進捗 = needNext - 残り（0未満にならないように）
+    const progressRaw = (el("lvProgressExp")?.value ?? "").trim();
+    const remainToNext = progressRaw ? clampInt(progressRaw, 1, 9999) : 0;
+    const initialProgress = progressRaw ? Math.max(0, needNext - remainToNext) : 0;
+    
+    // lvNow → lvTarget までの総必要経験値（各段の合計）
+    let totalSteps = 0;
+    for (let lv = lvNow + 1; lv <= lvTarget; lv++) {
+      totalSteps += getNeedStep(lv, typeKey);
+    }
+    
     const candyOwned = toNum(el("lvCandyOwned")?.value || 0);   // 空欄は0扱い
 
     const boostKind = getRadio("lvBoostKind") || "none"; // 未選択=none
@@ -516,5 +531,6 @@ function toNum(v) {
   };
 
 })();
+
 
 
