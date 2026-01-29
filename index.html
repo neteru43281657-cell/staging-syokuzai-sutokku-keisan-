@@ -35,18 +35,28 @@
       --muted: #5d6d7e;
       --line: #d6e0ea;
       --danger: #e74c3c;
+      --fw-regular: 600;
+      --fw-strong: 800;
+      --fw-heading: 900;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+      font-weight: var(--fw-regular);
       background: var(--bg);
       color: var(--text);
       line-height: 1.5;
       -webkit-font-smoothing: antialiased;
     }
 
-    header {
+    
+
+    /* フォント統一：フォーム部品がOS既定フォントに戻らないようにする */
+    button, input, select, textarea {
+      font-family: inherit;
+    }
+header {
       padding: 10px 20px;
       background: var(--main);
       color: #fff;
@@ -58,8 +68,8 @@
       align-items: center;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    .title-text { font-weight: 800; letter-spacing: 0.03em; font-size: 18px; }
-    .ver-text { font-size: 11px; font-weight: 400; opacity: 0.8; margin-top: 2px; }
+    .title-text { font-weight: var(--fw-strong); letter-spacing: 0.03em; font-size: 18px; }
+    .ver-text { font-size: 11px; font-weight: var(--fw-regular); opacity: 0.8; margin-top: 2px; }
 
     main {
       max-width: 980px;
@@ -101,7 +111,7 @@
       gap: 4px;
       color: var(--muted);
       font-size: 10px;
-      font-weight: 700;
+      font-weight: var(--fw-strong);
       cursor: pointer;
       flex: 1;
       padding: 8px 0;
@@ -134,7 +144,7 @@
       width: 100%;
     }
 
-    label { font-size: 11px; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px; }
+    label { font-size: 11px; font-weight: var(--fw-strong); color: var(--muted); display: block; margin-bottom: 4px; }
 
     select, input[type="number"] {
       padding: 10px;
@@ -147,7 +157,7 @@
     }
 
     select.emphSelect{
-      font-weight: 800;
+      font-weight: var(--fw-strong);
       border: 2px solid var(--main);
       background: #fff;
       box-shadow: 0 6px 14px rgba(0,0,0,.08);
@@ -166,7 +176,7 @@
     .recipeRow.catLocked .catSel.emphSelect{
       border: 1px solid #e3eaf2 !important;
       box-shadow: none !important;
-      font-weight: 400 !important;
+      font-weight: var(--fw-regular) !important;
     }
 
     select:disabled{
@@ -174,12 +184,12 @@
       border-color: #e3eaf2 !important;
       color: #8a97a6 !important;
       box-shadow: none !important;
-      font-weight: 400 !important;      /* 通常の字体 */
+      font-weight: var(--fw-regular) !important;      /* 通常の字体 */
       opacity: 1 !important;            /* ブラウザ既定の薄さを無効化 */
     }
     
     label.emphLabel{
-      font-weight: 900;
+      font-weight: var(--fw-heading);
       color: var(--text);
     }
     
@@ -187,14 +197,14 @@
       padding: 10px 16px;
       border: 1px solid var(--line);
       border-radius: 10px;
-      font-weight: 800;
+      font-weight: var(--fw-strong);
       cursor: pointer;
       font-size: 14px;
     }
     button.primary { background: var(--main); color: #fff; border-color: var(--main); }
     button.danger { color: var(--danger); border-color: #fadbd8; background: #fff; }
 
-    .badge { font-size: 12px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); font-weight: 700; }
+    .badge { font-size: 12px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); font-weight: var(--fw-strong); }
     #summaryBadge { background: var(--main-soft); color: var(--main); border: 1px solid #cce5ff; }
     .total-badge { background: var(--main); color: #fff; border: none; padding: 6px 16px; }
 
@@ -213,7 +223,7 @@
       overflow: hidden;
     }
     .icon { width: 30px; height: 30px; object-fit: contain; }
-    .tileName { font-size: 8px; font-weight: 700; width: 100%; overflow: hidden; text-overflow: clip; white-space: nowrap; }
+    .tileName { font-size: 8px; font-weight: var(--fw-strong); width: 100%; overflow: hidden; text-overflow: clip; white-space: nowrap; }
 
     .chkLabel {
       font-size: 10px;
@@ -238,7 +248,7 @@
     .ncPikaOpt{
       margin-top: 6px;
       font-size: 12px;
-      font-weight: 700;
+      font-weight: var(--fw-strong);
       color: var(--text);
       display: flex;
       align-items: center;
@@ -258,7 +268,7 @@
       height: 24px !important;
       padding: 0 2px !important;
       font-size: 14px !important;
-      font-weight: 800 !important;
+      font-weight: var(--fw-strong) !important;
       text-align: center;
       border-radius: 6px !important;
     }
@@ -290,18 +300,18 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
+      font-weight: var(--fw-heading);
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       cursor: pointer;
     }
 
     .preview { font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; width: 100%; align-items: center; }
-    .preview span { display: flex; align-items: center; background: var(--main-soft); color: var(--main); padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 1px solid #d0e7ff; }
+    .preview span { display: flex; align-items: center; background: var(--main-soft); color: var(--main); padding: 2px 6px; border-radius: 6px; font-weight: var(--fw-strong); border: 1px solid #d0e7ff; }
 
     /* カレンダー用 */
     .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
     .month-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 10px; }
-    .month-name { font-weight: 900; text-align: center; border-bottom: 1px solid var(--line); margin-bottom: 5px; color: var(--text); }
+    .month-name { font-weight: var(--fw-heading); text-align: center; border-bottom: 1px solid var(--line); margin-bottom: 5px; color: var(--text); }
 
     .days-grid {
       display: grid;
@@ -317,7 +327,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
+      font-weight: var(--fw-heading);
       font-size: 10px;
       position: relative;
       border-radius: 4px;
@@ -334,7 +344,7 @@
     .dow:nth-child(7) { color: #e74c3c !important; }
     .day-sat { color: #007bff !important; }
     .day-sun { color: #e74c3c !important; }
-    .day-holiday { color: #ff8c00 !important; font-weight: 900; }
+    .day-holiday { color: #ff8c00 !important; font-weight: var(--fw-heading); }
 
     .day-today::after {
       content: "";
@@ -372,20 +382,20 @@
     }
     .field-item:active { transform: scale(0.98); background: var(--main-soft); }
     .field-img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 8px; }
-    .field-name { font-size: 11px; font-weight: 800; color: var(--text); }
+    .field-name { font-size: 11px; font-weight: var(--fw-strong); color: var(--text); }
 
     /* ===== 出現ポケモン一覧（tab2 詳細） ===== */
     .field-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
     .field-header img { width: 56px; height: 56px; object-fit: contain; }
-    .field-title { font-weight: 900; font-size: 16px; color: var(--text); }
+    .field-title { font-weight: var(--fw-heading); font-size: 16px; color: var(--text); }
 
     .energy-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
     .energy-table th, .energy-table td { border: 1px solid var(--line); padding: 8px; text-align: center; }
-    .energy-table th { background: #f7f9fc; font-weight: 900; }
+    .energy-table th { background: #f7f9fc; font-weight: var(--fw-heading); }
 
     .sleep-section { margin-top: 14px; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff; }
-    .sleep-label { padding: 10px 12px; font-weight: 900; font-size: 13px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--line); }
-    .sleep-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 64px; padding: 6px 10px; border-radius: 10px; font-weight: 900; font-size: 12px; color: #111; }
+    .sleep-label { padding: 10px 12px; font-weight: var(--fw-heading); font-size: 13px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--line); }
+    .sleep-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 64px; padding: 6px 10px; border-radius: 10px; font-weight: var(--fw-heading); font-size: 12px; color: #111; }
     .badge-uto { background: #ffe66a; }
     .badge-suya { background: #aee7f2; }
     .badge-gusu { background: #8fb3ff; color: #0b1b3a; }
@@ -393,7 +403,7 @@
     .poke-grid { padding: 10px 10px 12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 8px; }
     .poke-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .poke-item img { width: 44px; height: 44px; object-fit: contain; }
-    .poke-name { font-size: 9px; font-weight: 800; color: var(--muted); text-align: center; line-height: 1.2; word-break: keep-all; }
+    .poke-name { font-size: 9px; font-weight: var(--fw-strong); color: var(--muted); text-align: center; line-height: 1.2; word-break: keep-all; }
 
     /* =========================================================
        ここから：レイアウトを「安定版」に1本化
@@ -401,7 +411,7 @@
 
     /* セクション見出し（青縦線）を全端末で統一 */
     .sectionTitle{
-      font-weight: 900;
+      font-weight: var(--fw-heading);
       font-size: 14px;
       border-left: 5px solid var(--main);
       padding-left: 10px;
@@ -464,7 +474,7 @@
       width:100%;
     }
     #modeBlock .modeTitle{
-      font-weight: 900;
+      font-weight: var(--fw-heading);
       font-size: 14px;
       color: var(--muted);
       margin-bottom: 2px;
@@ -522,7 +532,7 @@
       flex-wrap: nowrap;
     }
     .resultTitle{
-      font-weight: 900;
+      font-weight: var(--fw-heading);
       font-size: 16px;
       color: var(--main);
       line-height: 1.15;
@@ -608,7 +618,7 @@
     /* 注意書き：PCでは“補足”に見えるように */
     .result-card .mode3Note{
       font-size: 12px;
-      font-weight: 600;
+      font-weight: var(--fw-regular);
       color: #6b7a8a;
       line-height: 1.45;
       margin-top: 8px;
@@ -642,7 +652,7 @@
   
   .result-card .tileName{
     font-size: 8px;
-    font-weight: 700;
+    font-weight: var(--fw-strong);
     width: 100%;
     overflow: hidden;
     text-overflow: clip;
@@ -696,7 +706,7 @@
   
   /* ラベル */
   .lvlLabel{
-    font-weight: 900;
+    font-weight: var(--fw-heading);
     font-size: 16px;
     color: #111;
     line-height: 1.2;
@@ -704,7 +714,7 @@
   .lvlReq{ color:#e74c3c; margin-right:6px; }
   .lvlNote{
     font-size:12px;
-    font-weight:700;
+    font-weight: var(--fw-strong);
     color: var(--muted);
     margin-top:6px;
     display:block;
@@ -749,7 +759,7 @@
   
   /* 単位 */
   .lvlUnit{
-    font-weight: 900;
+    font-weight: var(--fw-heading);
     color:#111;
     white-space: nowrap;
     font-size: 10px;
@@ -766,7 +776,7 @@
     border: 2px solid rgba(0,0,0,0.12);
     border-radius: 10px;
     padding: 4px 6px;
-    font-weight: 900;
+    font-weight: var(--fw-heading);
     outline: none;
     width: auto !important;
   
@@ -807,7 +817,7 @@
   }
   #tab3 .lvlOptName{
     font-size: 13px;
-    font-weight: 800;
+    font-weight: var(--fw-strong);
     color: var(--text);
   }
   
@@ -868,7 +878,7 @@
     border-radius: 10px;
     border: 2px solid rgba(0,0,0,0.16);
     background: #fff;
-    font-weight: 900;
+    font-weight: var(--fw-heading);
     font-size: 13px;
     cursor: pointer;
     line-height: 1;
@@ -899,7 +909,7 @@
     border: 1px solid #fadbd8;
     background: #fff;
     color: var(--danger);
-    font-weight: 800;
+    font-weight: var(--fw-strong);
     font-size: 13px;
     cursor: pointer;
     line-height: 34px;
@@ -922,7 +932,7 @@
     width: 46%;
     height: 62px;
     font-size: 28px;
-    font-weight: 900;
+    font-weight: var(--fw-heading);
     display:flex;
     align-items:center;
     justify-content:center;
@@ -954,14 +964,14 @@
     font-size: 14px;
   }
   .lvlResult .lvResTitle{
-    font-weight: 900;
+    font-weight: var(--fw-heading);
     font-size: 15px;
     margin-bottom: 8px;
     color: var(--main);
   }
   .lvlResult .lvResSubTitle{
     margin-top: 10px;
-    font-weight: 900;
+    font-weight: var(--fw-heading);
     color:#111;
     padding-top: 8px;
     border-top: 1px solid rgba(0,0,0,0.10);
@@ -974,9 +984,9 @@
     border-bottom: 1px solid rgba(0,0,0,0.08);
   }
   .lvlResult .lvResRow:last-child{ border-bottom:none; }
-  .lvlResult .lvResKey{ font-weight: 900; color:#111; }
-  .lvlResult .lvResVal{ font-weight: 900; color:#111; white-space: nowrap; }
-  .lvlWarn{ color:#e74c3c; font-weight:900; margin-top:10px; }
+  .lvlResult .lvResKey{ font-weight: var(--fw-heading); color:#111; }
+  .lvlResult .lvResVal{ font-weight: var(--fw-heading); color:#111; white-space: nowrap; }
+  .lvlWarn{ color:#e74c3c; font-weight: var(--fw-heading); margin-top:10px; }
 
   /* =========================
      tab3：ボタンを1つにして中央寄せ＆少し細く
@@ -1038,7 +1048,7 @@
   }
   #tab3 .lvlOptName{
     font-size: 11px;
-    font-weight: 900;
+    font-weight: var(--fw-heading);
     color: var(--muted);
     margin-bottom: 6px;
     white-space: nowrap;
@@ -1180,7 +1190,7 @@
     <button id="openDocs"
       style="background:none; border:none; color:#fff; cursor:pointer; display:flex; align-items:center; gap:6px; padding:6px 8px;">
       <span style="font-size:18px; line-height:1;">📚</span>
-      <span style="font-size:12px; font-weight:800;">お役立ち資料集</span>
+      <span style="font-size:12px; font-weight: var(--fw-strong);">お役立ち資料集</span>
     </button>
 
     <button id="openNotice"
@@ -1471,7 +1481,7 @@
   </div>
 
   <div class="nav-item" onclick="switchTab('tab4', this)">
-    <span class="nav-icon">🌕</span>
+    <span class="nav-icon">🌙</span>
     <span>月齢カレンダー</span>
   </div>
 </nav>
@@ -1484,9 +1494,9 @@
   <div class="card" style="max-width:520px; width:100%; position:relative;">
 
     <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:12px;">
-      <div style="font-weight:900;">📖 お役立ち資料集</div>
+      <div style="font-weight: var(--fw-heading);">📖 お役立ち資料集</div>
       <button id="closeDocs"
-        style="background:none; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-weight:800; cursor:pointer;">
+        style="background:none; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-weight: var(--fw-strong); cursor:pointer;">
         閉じる
       </button>
     </div>
@@ -1495,7 +1505,7 @@
     <div style="display:flex; flex-direction:column; gap:12px;">
 
       <div style="border:1px solid var(--line); border-radius:14px; padding:12px;">
-        <div style="font-weight:900; margin-bottom:8px;">エナジー効率の良いレシピ一覧</div>
+        <div style="font-weight: var(--fw-heading); margin-bottom:8px;">エナジー効率の良いレシピ一覧</div>
         <div class="row">
           <button class="primary" type="button" onclick="openDoc('エナジー効率の良いレシピ一覧.png')">開く</button>
           <a href="images/エナジー効率の良いレシピ一覧.png" download style="text-decoration:none;">
@@ -1505,7 +1515,7 @@
       </div>
 
       <div style="border:1px solid var(--line); border-radius:14px; padding:12px;">
-        <div style="font-weight:900; margin-bottom:8px;">きのみタイプ強さランキング</div>
+        <div style="font-weight: var(--fw-heading); margin-bottom:8px;">きのみタイプ強さランキング</div>
         <div class="row">
           <button class="primary" type="button" onclick="openDoc('きのみタイプ強さランキング.png')">開く</button>
           <a href="images/きのみタイプ強さランキング.png" download style="text-decoration:none;">
@@ -1515,7 +1525,7 @@
       </div>
 
       <div style="border:1px solid var(--line); border-radius:14px; padding:12px;">
-        <div style="font-weight:900; margin-bottom:8px;">お香で呼べるポケモンかけらランキング</div>
+        <div style="font-weight: var(--fw-heading); margin-bottom:8px;">お香で呼べるポケモンかけらランキング</div>
         <div class="row">
           <button class="primary" type="button" onclick="openDoc('お香で呼べるポケモンかけらランキング.png')">開く</button>
           <a href="images/お香で呼べるポケモンかけらランキング.png" download style="text-decoration:none;">
@@ -1534,9 +1544,9 @@
          background:rgba(0,0,0,0.7); z-index:3000; align-items:center; justify-content:center; padding:14px;">
   <div class="card" style="max-width:900px; width:100%; max-height:92vh; overflow:auto; position:relative;">
     <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:12px;">
-      <div id="docViewerTitle" style="font-weight:900;">資料</div>
+      <div id="docViewerTitle" style="font-weight: var(--fw-heading);">資料</div>
       <button id="closeDocViewer"
-        style="background:none; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-weight:800; cursor:pointer;">
+        style="background:none; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-weight: var(--fw-strong); cursor:pointer;">
         戻る
       </button>
     </div>
@@ -1552,7 +1562,7 @@
          background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; padding:20px;">
   <div class="card" style="max-width:400px; width:100%; position:relative;">
 
-    <div style="font-weight:900; margin-bottom:12px; border-bottom:1px solid var(--line); padding-bottom:8px;">
+    <div style="font-weight: var(--fw-heading); margin-bottom:12px; border-bottom:1px solid var(--line); padding-bottom:8px;">
       ご利用上の注意
     </div>
 
@@ -1563,7 +1573,7 @@
     </p>
 
     <div style="font-size:13px; color:var(--text); line-height:1.6; margin-bottom:20px;">
-      <div style="font-weight:900; margin-bottom:6px;">出典：</div>
+      <div style="font-weight: var(--fw-heading); margin-bottom:6px;">出典：</div>
       <ul style="margin:0 0 0 18px; padding:0;">
         <li>Pokémon Sleep 公式サイト</li>
         <li>RaenonXポケスリ攻略ツール</li>
