@@ -828,74 +828,61 @@
     text-align: center !important;
   }
   
-/* PC表示（900px以上）: 赤線のガイドラインに基づく完全整列 */
-@media (min-width: 900px) {
-  /* 1. 共通の親Grid設定：全行の「縦の線」をここで固定する */
-  #tab3 .lvlRow {
-    display: grid !important;
-    /* [左ラベル 140px] [中央コンテンツ 1fr] [右入力エリア 120px] */
-    grid-template-columns: 140px 1fr 120px !important;
-    gap: 0 10px; /* 横の間隔 */
-    align-items: center;
-    padding: 10px 0;
+/* PC表示（900px以上）：タブ③の縦ラインを統一（赤線基準） */
+@media (min-width: 900px){
+
+  /* 1) 全行：左ラベル幅を固定して「縦ライン」を固定 */
+  #tab3 .lvlRow{
+    grid-template-columns: 260px 1fr !important; /* ←ここが基準線（縦線） */
+    gap: 14px !important;
+    align-items: center !important;
+    padding: 6px 0 !important;
   }
 
-  /* 2. オプションセクションの特殊構造をGridに適合させる */
-  #tab3 .lvlRowOpt {
-    display: grid !important;
-    grid-template-columns: 140px 1fr 120px !important;
-    grid-column: 1 / span 3; /* 行全体を占有 */
+  /* 2) 性格/経験値タイプ（今は1列指定になっているので、PCでは2列に戻して揃える） */
+  #tab3 .lvlRowFull{
+    grid-template-columns: 260px 1fr !important;
+    align-items: center !important;
+  }
+  #tab3 .lvlRowFull .lvlLabel{
+    margin-bottom: 0 !important;
   }
 
-  /* 3. 各項目のカラム配置指定 */
-  /* 【左カラム: 項目名】 */
-  #tab3 .lvlLabel,
-  #tab3 .lvlOptName {
-    grid-column: 1;
-    justify-self: start;
-    white-space: nowrap;
+  /* 3) 右側（入力ブロック）は常に幅100%で、右端を揃える */
+  #tab3 .lvlInput{
+    width: 100% !important;
+    grid-template-columns: 1fr auto !important; /* 左(クイック/説明) + 右(入力) */
+    align-items: center !important;
   }
 
-  /* 【中央カラム: ラジオボタンなど】 */
-  #tab3 .lvlInput,
-  #tab3 .lvlBoostRadios {
-    grid-column: 2;
-    justify-self: start; /* 赤線の「中央開始ライン」に左端を揃える */
+  /* 4) 入力＋単位は右端にピタッ */
+  #tab3 .lvlInputRight{
+    justify-content: end !important;
   }
 
-  /* 【右カラム: 入力欄＋単位】 */
-  #tab3 .lvlInputRight,
-  #tab3 .lvlBoostCountLine {
-    grid-column: 3;
-    justify-self: end; /* 右端の赤線ラインに右揃え */
+  /* 5) ブースト個数の行も右端揃え */
+  #tab3 .lvlBoostCountLine{
     display: flex !important;
-    align-items: center;
+    justify-content: flex-end !important;
   }
 
-  /* 4. 入力エリアの内部構造調整 */
+  /* 6) オプション：各行を「左=項目名 / 右=入力」で、右端を他行と一致 */
+  #tab3 .lvlOptLines{
+    width: 100% !important;
+  }
+  #tab3 .lvlOptLine{
+    width: 100% !important;
+    grid-template-columns: 1fr auto !important;
+  }
+
+  /* 7) “display: contents” で崩れていたのを確実に無効化（保険） */
   #tab3 .lvlBoostLine,
   #tab3 .lvlOptLines,
-  #tab3 .lvlOptLine {
-    display: contents !important; /* 子要素を直接lvlRowのGridに乗せる魔法のプロパティ */
-  }
-
-  /* 5. 入力欄のサイズと余白の統一（睡眠EXPボーナス等含む） */
-  #tab3 .lvlIn4,
-  #tab3 .lvlInBoost,
-  #tab3 .lvlIn3,
-  #tab3 .lvlIn1 {
-    width: 6ch !important;
-    height: 32px;
-    text-align: center !important;
-    margin-right: 6px; /* 単位（個・日など）との間隔 */
-    box-sizing: border-box;
-  }
-
-  /* 6. 縦位置の微調整（ブースト等） */
-  #tab3 .lvlBoostRadios {
-    margin-top: 0 !important; /* 縦のズレを解消 */
+  #tab3 .lvlOptLine{
+    display: initial !important;
   }
 }
+
     
   /* クリア1個のときは確実に中央寄せ */
   #tab3 .lvlButtons.lvlButtonsSingle{
