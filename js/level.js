@@ -64,34 +64,31 @@ function toNum(v) {
     return Math.max(min, Math.min(max, Math.trunc(n)));
   }
 
-  function baseCandyExp(level, nature) {
-    let band;
-    if (level < 25) band = "1_25";
-    else if (level < 30) band = "25_30";
-    else band = "30_plus";
-  
-    const table = {
-      "1_25": { none: 35, up: 41, down: 29 },
-      "25_30": { none: 30, up: 35, down: 25 },
-      "30_plus": { none: 25, up: 30, down: 21 },
-    };
-    return table[band][nature] ?? table[band].none;
-  }
+  /**
+   * アメ1個あたりの基礎EXPを性格補正込みで算出
+   * 数値は検証データに基づき、以下の固定値を使用します
+   */
+  function getCandyExp(level, natureKey, boostMul) {
+    let base = 25;
+    if (level < 25) base = 35;
+    else if (level < 30) base = 30;
 
-  function calcTotalNeedExp(lvNow, lvTarget, typeKey) {
-    let sum = 0;
-    for (let to = lvNow + 1; to <= lvTarget; to++) {
-      const row = expTable.get(to);
-      if (!row) continue;
-      sum += (row[typeKey] ?? row.normal);
-    }
-    return sum;
+    let natureMul = 1.0;
+    if (natureKey === "up") natureMul = 1.18;
+    if (natureKey === "down") natureMul = 0.82;
+
+    // 1個ずつの獲得EXPは四捨五入される
+    let gain = Math.round(base * natureMul);
+    return gain * boostMul;
   }
 
   function simulateCandiesAndShards(opts) {
     const { lvNow, lvTarget, typeKey, natureKey, initialProgress, boostKind, boostCount } = opts;
-    let candies = 0, shards = 0, lv = lvNow;
-    let currentExp = initialProgress; 
+    
+    let candies = 0;
+    let shards = 0;
+    let lv = lvNow;
+    let currentExp = initialProgress;
 
     let boostRemain = Math.max(0, boostCount || 0);
     const boostExpMul = (boostKind === "none") ? 1 : 2;
@@ -101,25 +98,36 @@ function toNum(v) {
       const targetLv = lv + 1;
       const row = expTable.get(targetLv);
       if (!row) break;
+      
       const needStep = (row[typeKey] ?? row.normal);
 
+      // このレベル（targetLv）に到達するまでアメを投入
       while (currentExp < needStep) {
         const useBoost = (boostRemain > 0 && boostKind !== "none");
-        const gain = Math.floor(baseCandyExp(lv, natureKey) * (useBoost ? boostExpMul : 1));
-        const shardCost = (shardTable.get(targetLv) || 0) * (useBoost ? boostShardMul : 1);
-        
-        candies++; 
-        shards += shardCost; 
+        const bMul = useBoost ? boostExpMul : 1;
+        const sMul = useBoost ? boostShardMul : 1;
+
+        const gain = getCandyExp(lv, natureKey, bMul);
+        const shardCost = (shardTable.get(targetLv) || 0) * sMul;
+
+        candies++;
+        shards += shardCost;
         currentExp += gain;
-        
+
         if (useBoost) boostRemain--;
       }
-      currentExp -= needStep; 
+
+      // レベルアップ処理：余剰EXPを次に持ち越し
+      currentExp -= needStep;
       lv++;
     }
-    return { candiesTotal: candies, shardsTotal: Math.round(shards) };
+
+    return { candiesTotal: candies, shardsTotal: shards };
   }
 
+  /* =========================
+   * UI & Event Listeners
+   * ========================= */
   const el = id => document.getElementById(id);
   const getRadio = name => document.querySelector(`input[name="${name}"]:checked`)?.value ?? null;
 
@@ -148,25 +156,30 @@ function toNum(v) {
     const boostCount = clampInt(el("lvBoostCount")?.value || 0, 0, 9999);
     const miniCount = clampInt(el("lvMiniBoostCount")?.value || 0, 0, 9999);
 
-    // 進捗（すでに持っている経験値）の計算
+    // 現在のレベル内での進捗EXPを計算
     const rowNext = expTable.get(lvNow + 1);
     const needForNextLevel = rowNext ? (rowNext[typeKey] ?? rowNext.normal) : 0;
     let initialProgress = 0;
-    // 「次のレベルまで」が現在の必要量より小さい場合のみ有効
     if (progressExp > 0 && progressExp < needForNextLevel) {
       initialProgress = needForNextLevel - progressExp;
     }
 
-    // 表示用の必要経験値（合計 - すでに持っている分）
-    const totalExpNeeded = Math.max(0, calcTotalNeedExp(lvNow, lvTarget, typeKey) - initialProgress);
+    // 表示用の総必要経験値
+    let totalExpNeeded = 0;
+    for (let i = lvNow + 1; i <= lvTarget; i++) {
+        const r = expTable.get(i);
+        totalExpNeeded += (r ? (r[typeKey] ?? r.normal) : 0);
+    }
+    totalExpNeeded = Math.max(0, totalExpNeeded - initialProgress);
 
+    // シミュレーション実行
     const simNormal = simulateCandiesAndShards({ 
       lvNow, lvTarget, typeKey, natureKey, initialProgress, boostKind: "none" 
     });
 
     let html = `<div class="lvResTitle">計算結果</div>`;
-    html += `<div class="lvResRow"><div class="lvResKey">実質必要経験値</div><div class="lvResVal">${totalExpNeeded.toLocaleString()} pt</div></div>`;
-    html += `<div class="lvResRow"><div class="lvResKey">不足アメ数</div><div class="lvResVal">${Math.max(0, simNormal.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
+    html += `<div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">${totalExpNeeded.toLocaleString()} pt</div></div>`;
+    html += `<div class="lvResRow"><div class="lvResKey">必要なアメの数</div><div class="lvResVal">${Math.max(0, simNormal.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
     html += `<div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量</div><div class="lvResVal">${simNormal.shardsTotal.toLocaleString()}</div></div>`;
 
     if (boostCount > 0) {
@@ -174,7 +187,7 @@ function toNum(v) {
         lvNow, lvTarget, typeKey, natureKey, initialProgress, boostKind: "full", boostCount 
       });
       html += `<div class="lvResSubTitle">アメブースト時 (x2 / かけらx5)</div>`;
-      html += `<div class="lvResRow"><div class="lvResKey">不足アメ数</div><div class="lvResVal">${Math.max(0, simBoost.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
+      html += `<div class="lvResRow"><div class="lvResKey">必要なアメの数</div><div class="lvResVal">${Math.max(0, simBoost.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
       html += `<div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量</div><div class="lvResVal">${simBoost.shardsTotal.toLocaleString()}</div></div>`;
     }
     if (miniCount > 0) {
@@ -182,7 +195,7 @@ function toNum(v) {
         lvNow, lvTarget, typeKey, natureKey, initialProgress, boostKind: "mini", boostCount: miniCount 
       });
       html += `<div class="lvResSubTitle">ミニアメブースト時 (x2 / かけらx4)</div>`;
-      html += `<div class="lvResRow"><div class="lvResKey">不足アメ数</div><div class="lvResVal">${Math.max(0, simMini.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
+      html += `<div class="lvResRow"><div class="lvResKey">必要なアメの数</div><div class="lvResVal">${Math.max(0, simMini.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
       html += `<div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量</div><div class="lvResVal">${simMini.shardsTotal.toLocaleString()}</div></div>`;
     }
     showResult(html);
