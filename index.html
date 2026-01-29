@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>食材ストック計算</title>
 
-  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-GNGLETKNNR"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -14,1162 +13,692 @@
     gtag('config', 'G-GNGLETKNNR');
   </script>
 
-  <link rel="apple-touch-icon" sizes="180x180" href="images/アイコン.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="images/アイコン.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="images/アイコン.png">
-  <link rel="manifest" href="manifest.webmanifest">
-
-  <meta name="theme-color" content="#007bff">
-  <meta name="background-color" content="#f5f8fa">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="食材ストック">
-
   <style>
-    :root {
-      --bg: #f5f8fa;
-      --card: #ffffff;
-      --main: #007bff;
-      --main-soft: #eaf4ff;
-      --text: #2c3e50;
-      --muted: #5d6d7e;
-      --line: #d6e0ea;
-      --danger: #e74c3c;
+    :root{
+      --main:#2c3e50;
+      --bg:#f5f6f7;
+      --card:#ffffff;
+      --text:#111;
+      --muted:#6c757d;
+      --danger:#e74c3c;
     }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
       background: var(--bg);
       color: var(--text);
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
+      padding-bottom: 84px;
     }
 
-    header {
-      padding: 10px 20px;
-      background: var(--main);
-      color: #fff;
+    header{
       position: sticky;
       top: 0;
-      z-index: 100;
-      display: flex;
+      z-index: 999;
+      background: #1e88e5;
+      color:#fff;
+      padding: 10px 14px;
+      display:flex;
+      align-items:center;
       justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      gap: 10px;
     }
-    .title-text { font-weight: 800; letter-spacing: 0.03em; font-size: 18px; }
-    .ver-text { font-size: 11px; font-weight: 400; opacity: 0.8; margin-top: 2px; }
 
-    main {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 16px;
-      display: flex;
+    .title-text{
+      font-weight: 900;
+      font-size: 18px;
+      line-height: 1.1;
+    }
+
+    .ver-text{
+      margin-top: 2px;
+      font-weight: 800;
+      font-size: 12px;
+      opacity: .9;
+    }
+
+    main{
+      padding: 14px;
+    }
+
+    .card{
+      background: var(--card);
+      border-radius: 18px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .sectionTitle{
+      font-weight: 900;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 2px solid rgba(0,0,0,0.12);
+      font-weight: 900;
+      font-size: 12px;
+      background:#fff;
+      color:#111;
+    }
+
+    .settingsHeaderRow{
+      display:flex;
+      align-items:flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    #modeBlock{
+      display:flex;
+      align-items:flex-start;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .modeInner{
+      display:flex;
       flex-direction: column;
-      gap: 16px;
-      padding-bottom: 100px;
+      align-items: flex-start;
+      gap: 6px;
     }
 
-    .tab-content { display: none; }
-    .tab-content.active {
-      display: flex;
+    .modeTitle{
+      font-weight: 900;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .modeRadios{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+    }
+
+    .radioPill{
+      display:inline-flex;
+      gap: 6px;
+      align-items:center;
+      font-weight: 900;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .radioPill input{
+      transform: translateY(1px);
+    }
+
+    #tab2 .pokedexWrap{
+      display:flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 10px;
     }
 
-    .bottom-nav {
+    .pokeTopRow{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .searchBox{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .searchBox input{
+      border: 2px solid rgba(0,0,0,0.12);
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-weight: 800;
+      outline: none;
+      background:#fff;
+      min-width: 220px;
+    }
+
+    .selectBox{
+      border: 2px solid rgba(0,0,0,0.12);
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-weight: 800;
+      outline:none;
+      background:#fff;
+    }
+
+    .btn{
+      border: none;
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-weight: 900;
+      cursor: pointer;
+      line-height: 1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      user-select: none;
+    }
+
+    .btnPrimary{
+      background: var(--main);
+      color: #fff;
+    }
+
+    .btnDanger{
+      background: #fff;
+      border: 2px solid var(--danger);
+      color: var(--danger);
+    }
+
+    .divider{
+      height: 1px;
+      background: rgba(0,0,0,0.10);
+      margin: 12px 0;
+    }
+
+    .tabs{
       position: fixed;
       bottom: 0;
       left: 0;
-      width: 100%;
-      height: 65px;
+      right: 0;
       background: #fff;
-      border-top: 1px solid var(--line);
-      display: flex;
+      border-top: 1px solid rgba(0,0,0,0.12);
+      display:flex;
       justify-content: space-around;
-      align-items: center;
-      z-index: 1000;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-      padding-bottom: env(safe-area-inset-bottom);
+      align-items:center;
+      padding: 8px 6px;
+      z-index: 999;
     }
 
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      color: var(--muted);
-      font-size: 10px;
-      font-weight: 700;
-      cursor: pointer;
+    .tabBtn{
       flex: 1;
-      padding: 8px 0;
-    }
-    .nav-item.active { color: var(--main); }
-    .nav-icon { font-size: 20px; }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-    }
-
-    .result-card {
-      border: 2px solid var(--main);
-      background: #ffffff;
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 4px 20px rgba(0,123,255,0.1);
-      overflow: hidden;
-    }
-
-    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    .grid5 {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
-      gap: 8px;
-      width: 100%;
-    }
-
-    label { font-size: 11px; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px; }
-
-    select, input[type="number"] {
-      padding: 10px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      font-size: 14px;
-      width: 100%;
-      background: #fff;
-      color: var(--text);
-    }
-
-    select.emphSelect{
-      font-weight: 800;
-      border: 2px solid var(--main);
-      background: #fff;
-      box-shadow: 0 6px 14px rgba(0,0,0,.08);
-    }
-
-    /* =========================================================
-       モード②：2行目以降の「カテゴリは変更できません」を見た目で伝える
-    ========================================================= */
-    .recipeRow.catLocked .catSel{
-      background: #f3f6fa !important;
-      border-color: #e3eaf2 !important;
-      color: #8a97a6 !important;
-      box-shadow: none !important;
-    }
-    
-    .recipeRow.catLocked .catSel.emphSelect{
-      border: 1px solid #e3eaf2 !important;
-      box-shadow: none !important;
-      font-weight: 400 !important;
-    }
-
-    select:disabled{
-      background: #f3f6fa !important;   /* ← catLocked と同じ */
-      border-color: #e3eaf2 !important;
-      color: #8a97a6 !important;
-      box-shadow: none !important;
-      font-weight: 400 !important;      /* 通常の字体 */
-      opacity: 1 !important;            /* ブラウザ既定の薄さを無効化 */
-    }
-    
-    label.emphLabel{
-      font-weight: 900;
-      color: var(--text);
-    }
-    
-    button {
-      padding: 10px 16px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      font-weight: 800;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    button.primary { background: var(--main); color: #fff; border-color: var(--main); }
-    button.danger { color: var(--danger); border-color: #fadbd8; background: #fff; }
-
-    .badge { font-size: 12px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); font-weight: 700; }
-    #summaryBadge { background: var(--main-soft); color: var(--main); border: 1px solid #cce5ff; }
-    .total-badge { background: var(--main); color: #fff; border: none; padding: 6px 16px; }
-
-    .tile {
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 6px 3px;
-      display: flex;
+      display:flex;
       flex-direction: column;
+      align-items:center;
+      justify-content:center;
       gap: 4px;
-      background: #fff;
-      align-items: center;
-      text-align: center;
-      min-height: 95px;
-      justify-content: space-between;
-      overflow: hidden;
-    }
-    .icon { width: 30px; height: 30px; object-fit: contain; }
-    .tileName { font-size: 8px; font-weight: 700; width: 100%; overflow: hidden; text-overflow: clip; white-space: nowrap; }
-
-    .chkLabel {
-      font-size: 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      width: 100%;
-      height: 24px;
-      margin: 0;
-      padding: 0 4px;
-    }
-    .exChk {
-      margin: 0;
-      cursor: pointer;
-      width: 13px;
-      height: 13px;
-    }
-
-    /* NCピカチュウオプション：条件列に自然に馴染ませる */
-    .ncPikaOpt{
-      margin-top: 6px;
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    
-    .repInputRow {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 2px;
-      width: 100%;
-      padding: 0 4px;
-    }
-    .repQty {
-      width: 100% !important;
-      height: 24px !important;
-      padding: 0 2px !important;
-      font-size: 14px !important;
-      font-weight: 800 !important;
-      text-align: center;
-      border-radius: 6px !important;
-    }
-
-    .recipeRow {
-      border: 1px solid var(--line);
-      background: #fcfdfe;
-      border-radius: 16px;
-      padding: 16px;
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: flex-end;
-      margin-bottom: 12px;
-      position: relative;
-    }
-    .removeBtn {
-      position: absolute;
-      top: -8px;
-      right: -8px;
-      border: 1px solid var(--line);
-      background: #fff;
-      color: var(--danger);
-      width: 26px;
-      height: 26px;
-      padding: 0;
-      line-height: 24px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      cursor: pointer;
-    }
-
-    .preview { font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; width: 100%; align-items: center; }
-    .preview span { display: flex; align-items: center; background: var(--main-soft); color: var(--main); padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 1px solid #d0e7ff; }
-
-    /* カレンダー用 */
-    .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
-    .month-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 10px; }
-    .month-name { font-weight: 900; text-align: center; border-bottom: 1px solid var(--line); margin-bottom: 5px; color: var(--text); }
-
-    .days-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 2px;
-      align-items: center;
-      justify-items: center;
-    }
-
-    .day {
-      width: 100%;
-      aspect-ratio: 1/1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 10px;
-      position: relative;
-      border-radius: 4px;
-      transition: background 0.2s;
-      line-height: 1;
-      padding-top: 1px;
-    }
-
-    .gsd { background-color: #add8e6; color: #000; border-radius: 4px; }
-    .nmd { background-color: #000080; color: #fff; border-radius: 4px; }
-
-    .dow { font-size: 8px; margin-bottom: 1px; }
-    .dow:nth-child(6) { color: #007bff !important; }
-    .dow:nth-child(7) { color: #e74c3c !important; }
-    .day-sat { color: #007bff !important; }
-    .day-sun { color: #e74c3c !important; }
-    .day-holiday { color: #ff8c00 !important; font-weight: 900; }
-
-    .day-today::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 16px;
-      height: 16px;
-      border: 1.5px solid #ff4757;
-      border-radius: 4px;
-      background-color: rgba(255, 71, 87, 0.1);
-      pointer-events: none;
-      z-index: 2;
-    }
-    @media (max-width: 480px) { .calendar-grid { grid-template-columns: repeat(2, 1fr); } }
-
-    /* フィールドメニュー用スタイル */
-    .field-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-    .field-item {
-      border: 1px solid var(--line);
+      color: #999;
+      font-weight: 900;
+      font-size: 11px;
+      cursor:pointer;
+      user-select:none;
+      padding: 6px 4px;
       border-radius: 12px;
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
+    }
+
+    .tabBtn .ico{
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .tabBtn.active{
+      color: var(--main);
+    }
+
+    .tab-content{ display:none; }
+    .tab-content.active{ display:block; }
+
+    .noticeModal,
+    .docViewerModal{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 10000;
+      display:none;
+      padding: 16px;
       align-items: center;
-      text-align: center;
-      cursor: pointer;
+      justify-content: center;
+    }
+
+    .noticeModal.open,
+    .docViewerModal.open{
+      display:flex;
+    }
+
+    .modalCard{
+      width: min(920px, 100%);
+      max-height: 86vh;
       background: #fff;
-      transition: transform 0.1s, box-shadow 0.1s;
-    }
-    .field-item:active { transform: scale(0.98); background: var(--main-soft); }
-    .field-img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 8px; }
-    .field-name { font-size: 11px; font-weight: 800; color: var(--text); }
-
-    /* ===== 出現ポケモン一覧（tab2 詳細） ===== */
-    .field-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-    .field-header img { width: 56px; height: 56px; object-fit: contain; }
-    .field-title { font-weight: 900; font-size: 16px; color: var(--text); }
-
-    .energy-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
-    .energy-table th, .energy-table td { border: 1px solid var(--line); padding: 8px; text-align: center; }
-    .energy-table th { background: #f7f9fc; font-weight: 900; }
-
-    .sleep-section { margin-top: 14px; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff; }
-    .sleep-label { padding: 10px 12px; font-weight: 900; font-size: 13px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--line); }
-    .sleep-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 64px; padding: 6px 10px; border-radius: 10px; font-weight: 900; font-size: 12px; color: #111; }
-    .badge-uto { background: #ffe66a; }
-    .badge-suya { background: #aee7f2; }
-    .badge-gusu { background: #8fb3ff; color: #0b1b3a; }
-
-    .poke-grid { padding: 10px 10px 12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 8px; }
-    .poke-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .poke-item img { width: 44px; height: 44px; object-fit: contain; }
-    .poke-name { font-size: 9px; font-weight: 800; color: var(--muted); text-align: center; line-height: 1.2; word-break: keep-all; }
-
-    /* =========================================================
-       ここから：レイアウトを「安定版」に1本化
-    ========================================================= */
-
-    /* セクション見出し（青縦線）を全端末で統一 */
-    .sectionTitle{
-      font-weight: 900;
-      font-size: 14px;
-      border-left: 5px solid var(--main);
-      padding-left: 10px;
-      color: var(--text);
-      margin-bottom: 6px;
-    }
-
-    /* =========================================================
-       1日当たりの獲得量：見出し行を「条件設定」と同じ列幅で揃える
-       - 左：見出し（160px）
-       - 中：NCピカ（1fr） ← ここに置くことで「モード」とX位置が揃う
-       - 右：空（160px）
-    ========================================================= */
-    .replenishHeaderRow{
-      display: grid;
-      grid-template-columns: 160px 1fr 160px;
-      gap: 12px;
-      align-items: center; /* ← start → center に変更（高さ揃え） */
-    }
-    
-    /* スマホ時：条件設定と同じく 140px / 1fr に */
-    @media (max-width: 520px){
-      .replenishHeaderRow{
-        grid-template-columns: 140px 1fr;
-      }
-    }
-    
-    .ncPikaOpt{
-      justify-content: flex-start !important;
-      height: auto !important;
-      padding: 0 !important;
-      /* 視覚的ベースライン補正 */
-      transform: translateY(-6px);
-    }
-    
-    /* 条件設定ヘッダー（cond / mode / actions）共通 */
-    .settingsHeaderRow{
-      display:grid;
-      grid-template-columns: 160px 1fr 160px;
-      grid-template-areas: "cond mode actions";
-      gap: 12px;
-      align-items: start;
-    }
-    #condBlock{ grid-area: cond; }
-    #modeBlock{ grid-area: mode; }
-    #actionBlock{
-      grid-area: actions;
+      border-radius: 18px;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.20);
+      overflow: hidden;
       display:flex;
-      flex-direction:column;
+      flex-direction: column;
+    }
+
+    .modalHead{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
       gap: 10px;
-      align-items: flex-start; /* ★stretchさせない（ボタン巨大化防止） */
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(0,0,0,0.10);
     }
 
-    /* モード（PC/スマホ共通） */
-    #modeBlock .modeInner{
-      display:flex;
-      flex-direction:column;
-      align-items:flex-start;
-      gap: 10px;
-      width:100%;
-    }
-    #modeBlock .modeTitle{
-      font-weight: 900;
-      font-size: 14px;
-      color: var(--muted);
-      margin-bottom: 2px;
-    }
-    .modeLabel{
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      line-height: 1.4;
-    }
-    .modeLabel input[type="radio"]{
-      appearance: none;
-      -webkit-appearance: none;
-      width: 16px;
-      height: 16px;
-      border: 2px solid #3b82f6; /* 青 */
-      border-radius: 50%;
-      display: inline-grid;
-      place-content: center;
-      margin: 0;
-      transform: translateY(-1px); /* ← ラジオボタンの位置調整 */
-    }
-
-    .modeLabel input[type="radio"]::before{
-      content: "";
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      transform: scale(0);
-      transition: transform 0.1s ease-in-out;
-      background-color: #3b82f6;
-    }
-    
-    .modeLabel input[type="radio"]:checked::before{
-      transform: scale(1);
-    }
-
-    
-    /* action buttons：21食/21食バッジと“同じ系統”のサイズ感 */
-    #actionBlock > button{
-      width: auto !important;
-      height: 34px !important;
-      padding: 0 16px !important;
-      font-size: 13px !important;
-      line-height: 34px !important;
-      border-radius: 999px !important;
-    }
-
-    /* 計算結果：ヘッダ固定（下に落ちない） */
-    .resultHeader{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap: nowrap;
-    }
-    .resultTitle{
+    .modalHeadTitle{
       font-weight: 900;
       font-size: 16px;
-      color: var(--main);
-      line-height: 1.15;
     }
 
-    /* 注意書き：PC/スマホで小さめ統一（でも極端に小さくしない） */
-    .mode3Note{
-      white-space: normal;
-      word-break: break-word;
-    }
-    
-    @media (max-width: 520px){
-      .mode3Note{
-        font-size: 9px;
-        line-height: 1.25;
-      }
+    .modalClose{
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      border: none;
+      cursor:pointer;
+      font-weight: 900;
+      background: #f1f3f5;
+      line-height: 1;
     }
 
-
-    /* スマホ：cond左 / mode右 / actions左下 */
-    @media (max-width: 520px){
-      .settingsHeaderRow{
-        grid-template-columns: 140px 1fr;
-        grid-template-areas:
-          "cond  mode"
-          "actions mode";
-      }
-      #modeBlock{ padding-left: 8px; } 
-      #actionBlock{ width: 140px; }
-      
-      /* モード文言：スマホでは1行固定にする */
-      .modeLabel{
-        white-space: nowrap;          /* 折り返し禁止 */
-        font-size: 12px;              /* ②③が2行になるのを防ぐため少し小さく */
-      }
-    
-      /* スマホ：n食/n食（badge）に寄せたサイズへ。2ボタンを完全に同寸化 */
-      #actionBlock > button{
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        box-sizing: border-box !important;
-    
-        height: 30px !important;
-        padding: 0 20px !important;
-        font-size: 12px !important;
-        line-height: 1 !important;
-        border-radius: 999px !important;
-    
-        min-width: 90px !important;
-      }
-    }
-    
-
-
-    /* =========================================================
-       PC見栄え：計算結果カードをまとめて整える（他には影響しない）
-    ========================================================= */
-    
-    /* 計算結果カード全体 */
-    .result-card{
-      padding: 18px;
-    }
-    
-    /* ヘッダー（計算結果 / 総合計） */
-    .result-card .resultHeader{
-      align-items: center;
-      gap: 14px;
-    }
-    
-    .result-card .resultTitle{
-      font-size: 18px;
-      letter-spacing: .02em;
-    }
-    
-    .result-card .total-badge{
+    .modalBody{
+      padding: 14px;
+      overflow: auto;
       font-size: 13px;
-      padding: 8px 16px;
-      border-radius: 999px;
+      line-height: 1.6;
+    }
+
+    #tab3 #levelCard{
+      max-width: 940px;
+      margin: 0 auto;
+    }
+
+    #tab3 .lvlForm{
+      display:flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #tab3 .lvlRow{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 4px 0;
+    }
+
+    #tab3 .lvlRowFull{
+      grid-template-columns: 1fr;
+    }
+
+    #tab3 .lvlDivider{
+      height: 1px;
+      background: rgba(0,0,0,0.12);
+      margin: 6px 0;
+    }
+
+    #tab3 .lvlRowFull .lvlLabel{ margin-bottom: 6px; }
+
+    .lvlLabel{
+      font-weight: 900;
+      font-size: 16px;
+      color: #111;
+      line-height: 1.2;
+    }
+
+    .lvlReq{ color:#e74c3c; margin-right:6px; }
+
+    .lvlNote{
+      font-size:12px;
+      font-weight:700;
+      color: var(--muted);
+      margin-top:6px;
+      display:block;
+    }
+
+    .lvlRadios{
+      display:flex;
+      gap:18px;
+      flex-wrap:nowrap;
+      overflow-x:auto;
+      -webkit-overflow-scrolling: touch;
+      align-items:center;
+      justify-content:flex-start;
+    }
+
+    .lvlRadios::-webkit-scrollbar{ display:none; }
+    .lvlRadio{ white-space: nowrap; }
+
+    .lvlRadio input[type="radio"]{
+      margin: 0 6px 0 0;
+      transform: translateY(4px);
+    }
+
+    .lvlInput{
+      display: grid;
+      grid-template-columns: 1fr auto;
+      column-gap: 10px;
+      align-items: start;
+    }
+
+    .lvlInputRight{
+      display: inline-grid;
+      grid-template-columns: auto auto;
+      gap: 6px;
+      align-items: center;
+      justify-content: end;
       white-space: nowrap;
     }
-    
-    /* 注意書き：PCでは“補足”に見えるように */
-    .result-card .mode3Note{
-      font-size: 12px;
-      font-weight: 600;
-      color: #6b7a8a;
-      line-height: 1.45;
-      margin-top: 8px;
+
+    .lvlUnit{
+      font-weight: 900;
+      color:#111;
+      white-space: nowrap;
+      font-size: 10px;
+      opacity: .85;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
     }
-    
-    /* 区切り線：少し上品に */
-    .result-card .resultDivider{
-      margin: 14px 0 14px;
-      opacity: .18;
+
+    .lvlInput input{
+      border: 2px solid rgba(0,0,0,0.12);
+      border-radius: 10px;
+      padding: 4px 6px;
+      font-weight: 900;
+      outline: none;
+      width: auto !important;
+      line-height: 1;
     }
-    
-  /* =========================================================
-     計算結果：PCでも他タブと「完全に同じカード寸法」に固定
-     （= .grid5 / .tile のベース定義へ戻す）
-  ========================================================= */
-  .result-card .grid5{
-    grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
-    gap: 8px;
-  }
-  
-  .result-card .tile{
-    padding: 6px 3px;
-    min-height: 95px;
-    border-radius: 12px;
-  }
-  
-  .result-card .icon{
-    width: 30px;
-    height: 30px;
-  }
-  
-  .result-card .tileName{
-    font-size: 8px;
-    font-weight: 700;
-    width: 100%;
-    overflow: hidden;
-    text-overflow: clip;
-    white-space: nowrap;
-  }
-  
-  /* 注意書き：消えたように見えないよう、中央寄せ＆余白 */
-  .result-card .mode3Note{
-    margin-top: 10px;
-  }
 
-  /* =========================
-     レベルシミュレーター（tab3）- 1本化（見た目は現状維持）
-  ========================= */
-  
-  #levelCard{ max-width: 760px; margin: 0 auto; }
-  @media (min-width: 900px){
-    #levelCard{ box-shadow: 0 6px 24px rgba(0,0,0,0.04); }
-  }
-  
-  .lvlForm{ display:flex; flex-direction:column; gap:12px; }
-  
-  .lvlDivider{
-    height:2px;
-    background: rgba(0,0,0,0.18);
-    border-radius: 999px;
-    margin: 10px 0;
-  }
-  
-  /* 行：左ラベル / 右入力群（現状の列幅を維持） */
-  .lvlRow{
-    display:grid;
-    grid-template-columns: 1fr 260px;
-    gap: 10px;
-    align-items: start;
-    padding: 4px 0;
-  }
-  @media (max-width: 520px){
-    .lvlRow{ grid-template-columns: 1fr 230px; }
-    .lvlLabel{ font-size: 14px; }
-    .lvlRadio{ font-size: 12px; }
-    .lvlQuick{ max-width: 150px; }
-  }
-  
-  /* 性格/経験値タイプ：1列 */
-  .lvlRowFull{
-    grid-template-columns: 1fr !important;
-    align-items: start;
-  }
-  .lvlRowFull .lvlLabel{ margin-bottom: 6px; }
-  
-  /* ラベル */
-  .lvlLabel{
-    font-weight: 900;
-    font-size: 16px;
-    color: #111;
-    line-height: 1.2;
-  }
-  .lvlReq{ color:#e74c3c; margin-right:6px; }
-  .lvlNote{
-    font-size:12px;
-    font-weight:700;
-    color: var(--muted);
-    margin-top:6px;
-    display:block;
-  }
-  
-  /* ラジオ：1行固定 */
-  .lvlRadios{
-    display:flex;
-    gap:18px;
-    flex-wrap:nowrap;
-    overflow-x:auto;
-    -webkit-overflow-scrolling: touch;
-    align-items:center;
-    justify-content:flex-start;
-  }
-  .lvlRadios::-webkit-scrollbar{ display:none; }
-  .lvlRadio{ white-space: nowrap; }
-  
-  /* ラジオ位置（現状：少し下げる＝4px） */
-  .lvlRadio input[type="radio"]{
-    margin: 0 6px 0 0;
-    transform: translateY(4px);
-  }
-  
-  /* 入力側：左=クイック、右=入力＋単位 */
-  .lvlInput{
-    display: grid;
-    grid-template-columns: 1fr auto;
-    column-gap: 10px;
-    align-items: start;
-  }
-  
-  /* 右：入力＋単位 */
-  .lvlInputRight{
-    display: inline-grid;
-    grid-template-columns: auto auto;  /* input | unit */
-    gap: 6px;
-    align-items: center;              /* 現状維持：縦ズレ防止 */
-    justify-content: end;
-    white-space: nowrap;
-  }
-  
-  /* 単位 */
-  .lvlUnit{
-    font-weight: 900;
-    color:#111;
-    white-space: nowrap;
-    font-size: 10px;
-    opacity: .85;
-  
-    /* 現状維持：ベースライン差を吸収 */
-    line-height: 1;
-    display: inline-flex;
-    align-items: center;
-  }
-  
-  /* 入力（共通） */
-  .lvlInput input{
-    border: 2px solid rgba(0,0,0,0.12);
-    border-radius: 10px;
-    padding: 4px 6px;
-    font-weight: 900;
-    outline: none;
-    width: auto !important;
-  
-    /* 現状維持：機種差で縦がズレるのを抑える */
-    line-height: 1;
-  }
-  
-  /* 入力幅（現状の“最終上書き”結果を維持） */
-  #tab3 .lvlIn2{
-    width: 6ch !important;
-    text-align: center !important;
-  }
-  #tab3 .lvlIn4,
-  #tab3 .lvlInBoost{
-    width: 8ch !important;
-    text-align: center !important;
-  }
+    #tab3 .lvlIn2{
+      width: 6ch !important;
+      text-align: center !important;
+    }
 
-  /* ブースト：2行目を「クイック + 入力」にする */
-  #tab3 .lvlBoostLine{
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 10px;
-    align-items: start;
-  }
-  
-  /* オプション：枠なしで3行・左揃え */
-  #tab3 .lvlOptLines{
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  #tab3 .lvlOptLine{
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 10px;
-    align-items: center;
-  }
-  #tab3 .lvlOptName{
-    font-size: 13px;
-    font-weight: 800;
-    color: var(--text);
-  }
-  
-  /* 3桁入力の横幅 */
-  #tab3 .lvlIn3{
-    width: 5ch !important;
-    text-align: center !important;
-  }
+    #tab3 .lvlIn4,
+    #tab3 .lvlInBoost{
+      width: 8ch !important;
+      text-align: center !important;
+    }
 
-  /* 1桁入力（睡眠EXPボーナス用） */
-  #tab3 .lvlIn1{
-    width: 3.5ch !important;
-    text-align: center !important;
-  }
+    #tab3 .lvlBoostLine{
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: start;
+    }
 
-  /* クリア1個のときは確実に中央寄せ */
-  #tab3 .lvlButtons.lvlButtonsSingle{
-    justify-content: center !important;
-  }
-  
-  /* 角丸が他のbutton定義に負けた時の保険 */
-  #tab3 #lvClear{
-    border-radius: 28px !important;
-  }
-    
-  /* クイック（通常） */
-  .lvlQuick{
-    display:flex;
-    gap: 4px;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    max-width: none;
-  }
-  
-  /* レベル用：3列 */
-  .lvlQuickLv{
-    display: grid;
-    grid-template-columns: repeat(3, 36px);
-    gap: 4px;
-    justify-content: start;
-    max-width: none;
-  }
-  
-  /* ブースト/ミニ：クイックを3列グリッド化（現状のまま） */
-  .lvlQuick:has(.lvlQuickBtn[data-boost]),
-  .lvlQuick:has(.lvlQuickBtn[data-mini]){
-    display: grid;
-    grid-template-columns: repeat(3, 36px);
-    gap: 4px;
-    justify-content: start;
-    max-width: none;
-  }
-  
-  /* クイックボタン（現状維持サイズ） */
-  .lvlQuickBtn{
-    width: 36px;
-    height: 28px;
-    border-radius: 10px;
-    border: 2px solid rgba(0,0,0,0.16);
-    background: #fff;
-    font-weight: 900;
-    font-size: 13px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 0;
-  }
-  .lvlQuickBtn:active{ transform: translateY(1px); }
-  
-  /* ブースト行：元は縦積み指定（HTMLの class は残す）が、最終上書きで“2列”に戻している */
-  .lvlInputStack{
-    grid-template-columns: 1fr !important;
-    row-gap: 10px;
-  }
-  
-  /* ★最終上書き：ブースト2行だけ「上段に上げる」＝現状維持 */
-  #tab3 .lvlRow .lvlInputStack{
-    grid-template-columns: 1fr auto !important;
-    align-items: start !important;
-  }
-  #tab3 .lvlInputStack .lvlInputRight{
-    align-self: start !important;
-    margin-top: 0 !important;
-  }
-  
-  /* 小クリア（現状：角丸四角形寄り） */
-  .lvlMiniClear{
-    height: 34px;
-    padding: 0 18px;
-    border: 1px solid #fadbd8;
-    background: #fff;
-    color: var(--danger);
-    font-weight: 800;
-    font-size: 13px;
-    cursor: pointer;
-    line-height: 34px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-  /* 最終上書き：角丸指定（現状維持） */
-  #tab3 .lvlMiniClear{ border-radius: 18px !important; }
-  .lvlMiniClear:active{ transform: translateY(1px); }
-  
-  /* 下部ボタン（計算/クリア） */
-  .lvlButtons{
-    display:flex;
-    justify-content: space-between;
-    gap: 16px;
-    margin-top: 10px;
-  }
-  .lvlBigBtn{
-    width: 46%;
-    height: 62px;
-    font-size: 28px;
-    font-weight: 900;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:0;
-    line-height: 1;
-  
-    /* 文字が1px下に見える端末向け微調整 */
-    transform: translateY(-1px);
-  }
-  /* 最終上書き：角丸＆フォントサイズ（現状維持） */
-  #tab3 .lvlBigBtn{
-    border-radius: 28px !important;
-    font-size: 30px !important;
-  }
-  
-  .lvlClearBtn{
-    background:#fff;
-    border: 4px solid #e74c3c;
-    color: #e74c3c;
-  }
-  
-  /* 結果 */
-  .lvlResult{
-    margin-top: 12px;
-    border: 2px solid var(--main);
-    background: #fff;
-    border-radius: 16px;
-    padding: 14px;
-    font-size: 14px;
-  }
-  .lvlResult .lvResTitle{
-    font-weight: 900;
-    font-size: 15px;
-    margin-bottom: 8px;
-    color: var(--main);
-  }
-  .lvlResult .lvResSubTitle{
-    margin-top: 10px;
-    font-weight: 900;
-    color:#111;
-    padding-top: 8px;
-    border-top: 1px solid rgba(0,0,0,0.10);
-  }
-  .lvlResult .lvResRow{
-    display:flex;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(0,0,0,0.08);
-  }
-  .lvlResult .lvResRow:last-child{ border-bottom:none; }
-  .lvlResult .lvResKey{ font-weight: 900; color:#111; }
-  .lvlResult .lvResVal{ font-weight: 900; color:#111; white-space: nowrap; }
-  .lvlWarn{ color:#e74c3c; font-weight:900; margin-top:10px; }
+    #tab3 .lvlOptLines{
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-  /* =========================
-     tab3：ボタンを1つにして中央寄せ＆少し細く
-  ========================= */
-  #tab3 .lvlButtonsSingle{
-    justify-content: center;
-    gap: 0;
-  }
-  #tab3 .lvlButtonsSingle #lvClear{
-    width: 40% !important;   /* 46% → 約8〜9割 */
-    max-width: 360px;
-    min-width: 220px;
-  }
+    #tab3 .lvlOptLine{
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
 
-  /* =========================
-     tab3：結果ラベル横のアイコン
-  ========================= */
-  #tab3 .lvIcon{
-    width: 16px;
-    height: 16px;
-    object-fit: contain;
-    vertical-align: middle;
-    margin-right: 6px;
-    transform: translateY(1px);
-  }
+    #tab3 .lvlOptName{
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
+    }
 
-  /* =========================
-     tab3：ブースト（ラジオ＋クイック＋入力）を縦積み
-  ========================= */
-  #tab3 .lvlBoostWrap{
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: 100%;
-  }
-  #tab3 .lvlBoostLine{
-    display: grid;
-    grid-template-columns: 1fr auto;
-    column-gap: 10px;
-    align-items: start;
-  }
+    #tab3 .lvlIn3{
+      width: 5ch !important;
+      text-align: center !important;
+    }
 
-  /* =========================
-     tab3：オプション3項目（小さめ）
-  ========================= */
-  #tab3 .lvlOptGrid{
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
-  }
-  @media (max-width: 520px){
-    #tab3 .lvlOptGrid{ grid-template-columns: 1fr; }
-  }
-  #tab3 .lvlOptItem{
-    border: 1px solid rgba(0,0,0,0.10);
-    border-radius: 12px;
-    padding: 10px;
-    background: #fff;
-  }
-  #tab3 .lvlOptName{
-    font-size: 11px;
-    font-weight: 900;
-    color: var(--muted);
-    margin-bottom: 6px;
-    white-space: nowrap;
-  }
-  #tab3 .lvlIn3{
-    width: 5ch !important;      /* 3桁想定の小さめ */
-    text-align: center !important;
-  }
-    
-  /* placeholder（tab3 内は全部薄グレー：現状維持） */
-  #tab3 input:placeholder-shown{ color: #c0c6cf; }
-  #tab3 input::placeholder{ color: #c0c6cf; opacity: 1; }
-  
-  /* スマホ微調整（現状維持） */
-  @media (max-width: 520px){
-    .lvlInput{ column-gap: 8px; }
-    .lvlInputRight{ gap: 6px; }
-  
-    .lvlQuickLv{
-      grid-template-columns: repeat(3, 34px);
+    #tab3 .lvlIn1{
+      width: 3.5ch !important;
+      text-align: center !important;
+    }
+
+    #tab3 .lvlButtons.lvlButtonsSingle{
+      justify-content: center !important;
+    }
+
+    #tab3 #lvClear{
+      border-radius: 28px !important;
+    }
+
+    .lvlQuick{
+      display:flex;
       gap: 4px;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      max-width: none;
     }
+
+    .lvlQuickLv{
+      display: grid;
+      grid-template-columns: repeat(3, 36px);
+      gap: 4px;
+      justify-content: start;
+      max-width: none;
+    }
+
     .lvlQuick:has(.lvlQuickBtn[data-boost]),
     .lvlQuick:has(.lvlQuickBtn[data-mini]){
-      grid-template-columns: repeat(3, 34px);
+      display: grid;
+      grid-template-columns: repeat(3, 36px);
       gap: 4px;
+      justify-content: start;
+      max-width: none;
     }
-  
+
     .lvlQuickBtn{
-      width: 34px;
+      width: 36px;
       height: 28px;
       border-radius: 10px;
+      border: 2px solid rgba(0,0,0,0.16);
+      background: #fff;
+      font-weight: 900;
+      font-size: 13px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+    }
+
+    .lvlQuickBtn:active{ transform: translateY(1px); }
+
+    .lvlInputStack{
+      grid-template-columns: 1fr !important;
+      row-gap: 10px;
+    }
+
+    #tab3 .lvlRow .lvlInputStack{
+      grid-template-columns: 1fr auto !important;
+      align-items: start !important;
+    }
+
+    #tab3 .lvlInputStack .lvlInputRight{
+      align-self: start !important;
+      margin-top: 0 !important;
+    }
+
+    .lvlMiniClear{
+      height: 34px;
+      padding: 0 18px;
+      border: 1px solid #fadbd8;
+      background: #fff;
+      color: var(--danger);
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      line-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #tab3 .lvlMiniClear{ border-radius: 18px !important; }
+    .lvlMiniClear:active{ transform: translateY(1px); }
+
+    .lvlButtons{
+      display:flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .lvlBigBtn{
+      width: 46%;
+      height: 62px;
+      font-size: 28px;
+      font-weight: 900;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0;
+      line-height: 1;
+      transform: translateY(-1px);
+    }
+
+    #tab3 .lvlBigBtn{
+      border-radius: 28px !important;
+      font-size: 30px !important;
+    }
+
+    .lvlClearBtn{
+      background:#fff;
+      border: 4px solid #e74c3c;
+      color: #e74c3c;
+    }
+
+    .lvlResult{
+      margin-top: 12px;
+      border: 2px solid var(--main);
+      background: #fff;
+      border-radius: 16px;
+      padding: 14px;
+      font-size: 14px;
+    }
+
+    .lvlResult .lvResTitle{
+      font-weight: 900;
+      font-size: 15px;
+      margin-bottom: 8px;
+      color: var(--main);
+    }
+
+    .lvlResult .lvResSubTitle{
+      margin-top: 10px;
+      font-weight: 900;
+      color:#111;
+      padding-top: 8px;
+      border-top: 1px solid rgba(0,0,0,0.10);
+    }
+
+    .lvlResult .lvResRow{
+      display:flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .lvlResult .lvResRow:last-child{ border-bottom:none; }
+
+    .lvlResult .lvResKey{
+      font-weight: 800;
+      color:#111;
+    }
+
+    .lvlResult .lvResVal{
+      font-weight: 900;
+      text-align: right;
+      color:#111;
+      white-space: nowrap;
+    }
+
+    .lvlWarn{
+      margin-top: 8px;
+      font-weight: 900;
+      color: var(--danger);
       font-size: 13px;
     }
-  }
 
-  /* レベルシミュレーター：小さいクリアボタンを非表示（機能は残す） */
-  #tab3 #lvClearOptional{
-    display: none;
-  }    
+    .lvUp{ color: #e67e22; }
+    .lvDown{ color: #3498db; }
 
-  /* 小クリアの“行”ごと消す（ボタンだけ消すと行のpaddingが残るため） */
-  #tab3 .lvlRow:has(#lvClearOptional){
-    display: none;
-  }
-  
-  /* 区切り線まわりの余白を上下一致に近づける（必要なら微調整） */
-  #tab3 .lvlDivider{
-    margin: 10px 0 6px;  /* 下だけ少し詰める */
-  }
-
-  /* PC：タブ③（レベルシミュレーター）のカード幅を他タブと同じにする */
-  @media (min-width: 900px){
-    #tab3 #levelCard{
-      max-width: none !important;
-      width: 100% !important;
-      margin: 0 !important; /* 中央寄せを解除 */
-    }
-  }
-
-  /* ===== タブ③：スピンボタン制御（PC向け） ===== */
-  @media (min-width: 900px){
-  
-    /* ▼ 下側（区切り線より下の任意入力）＝スピンを消す */
-    #tab3 #lvProgressExp::-webkit-outer-spin-button,
-    #tab3 #lvProgressExp::-webkit-inner-spin-button,
-    #tab3 #lvCandyOwned::-webkit-outer-spin-button,
-    #tab3 #lvCandyOwned::-webkit-inner-spin-button,
-    #tab3 #lvBoostCount::-webkit-outer-spin-button,
-    #tab3 #lvBoostCount::-webkit-inner-spin-button,
-      margin: 0;
-    }
-    /* Firefox用 */
-    #tab3 #lvProgressExp,
-    #tab3 #lvCandyOwned,
-    #tab3 #lvBoostCount,
-    }
-  
-    /* ▲ 上側（区切り線より上のレベル入力）＝普段から見える寄りにする */
-    #tab3 #lvNow::-webkit-outer-spin-button,
-    #tab3 #lvNow::-webkit-inner-spin-button,
-    #tab3 #lvTarget::-webkit-outer-spin-button,
-    #tab3 #lvTarget::-webkit-inner-spin-button{
-      opacity: 1; /* “常時表示寄り” */
+    @media (min-width: 900px){
+      #tab3 #levelCard{
+        max-width: none !important;
+        width: 100% !important;
+        margin: 0 !important;
+      }
     }
 
-    /* ブースト：個数入力を右寄せで1行に */
-    #tab3 .lvlBoostCountLine{
-      display:flex;
-      justify-content:flex-end;
-      margin-top: 8px;
-    }
-    
-    /* 結果カードの右上カーブに×を被せる */
-    #tab3 .lvlResult{ position: relative; }
-    #tab3 .lvResultClose{
-      position: absolute !important;
-      top: -12px !important;
-      right: -12px !important;
-      z-index: 10;
-    }
-    
-    /* ブースト行だけ：上寄せにして、ラジオを「ブーストの下」に見せる */
-    #tab3 .lvlRowBoost{
-      align-items: flex-start;
-    }
-    #tab3 .lvlRowBoost .lvlBoostRadios{
-      margin-top: 6px;
-      justify-content: flex-start;
-      gap: 18px;
-      flex-wrap: nowrap;
-    }
+    @media (min-width: 900px){
+      #tab3 #lvProgressExp::-webkit-outer-spin-button,
+      #tab3 #lvProgressExp::-webkit-inner-spin-button,
+      #tab3 #lvCandyOwned::-webkit-outer-spin-button,
+      #tab3 #lvCandyOwned::-webkit-inner-spin-button,
+      #tab3 #lvBoostCount::-webkit-outer-spin-button,
+      #tab3 #lvBoostCount::-webkit-inner-spin-button{
+        -webkit-appearance: none;
+        margin: 0;
+      }
 
+      #tab3 #lvProgressExp,
+      #tab3 #lvCandyOwned,
+      #tab3 #lvBoostCount{
+        -moz-appearance: textfield;
+      }
 
-    /* tab3：ブースト/オプションが中央寄りに見えるのを防止（幅を100%に固定） */
-    #tab3 .lvlBoostRadios { width: 100%; justify-content: flex-start; }
-    #tab3 .lvlOptLines { width: 100%; }
-    #tab3 .lvlOptLine  { width: 100%; }
+      #tab3 #lvNow::-webkit-outer-spin-button,
+      #tab3 #lvNow::-webkit-inner-spin-button,
+      #tab3 #lvTarget::-webkit-outer-spin-button,
+      #tab3 #lvTarget::-webkit-inner-spin-button{
+        opacity: 1;
+      }
 
-    #tab3 .lvlOptLines,
-    #tab3 .lvlOptLine{
-      width: 100%;
+      #tab3 .lvlBoostCountLine{
+        display:flex;
+        justify-content:flex-end;
+        margin-top: 8px;
+      }
+
+      #tab3 .lvlResult{ position: relative; }
+
+      #tab3 .lvResultClose{
+        position: absolute !important;
+        top: -12px !important;
+        right: -12px !important;
+        z-index: 10;
+      }
+
+      #tab3 .lvlRowBoost{
+        align-items: flex-start;
+      }
+
+      #tab3 .lvlRowBoost .lvlBoostRadios{
+        margin-top: 6px;
+        justify-content: flex-start;
+        gap: 18px;
+        flex-wrap: nowrap;
+      }
+
+      #tab3 .lvlBoostRadios { width: 100%; justify-content: flex-start; }
+      #tab3 .lvlOptLines { width: 100%; }
+      #tab3 .lvlOptLine  { width: 100%; }
+
+      #tab3 .lvlOptLines,
+      #tab3 .lvlOptLine{
+        width: 100%;
+      }
     }
-
-  }
-    
   </style>
 </head>
 
 <body>
-
 <header>
   <div>
     <div id="headerTitle" class="title-text">食材ストック計算</div>
@@ -1192,7 +721,6 @@
   <div id="tab1" class="tab-content active">
     <section class="card">
       <div class="settingsHeaderRow">
-        <!-- 条件設定 -->
         <div id="condBlock">
           <div class="sectionTitle">条件設定</div>
           <span class="badge" id="summaryBadge">合計 0食 / 21食</span>
@@ -1201,100 +729,54 @@
         <div id="modeBlock">
           <div class="modeInner">
             <div class="modeTitle">モードを選択してください</div>
-
-            <label class="modeLabel">
-              <input type="radio" name="calcMode" id="calcMode1" value="mode1">
-              <span>① 同じレシピを21食作り続ける</span>
-            </label>
-
-            <label class="modeLabel">
-              <input type="radio" name="calcMode" id="calcMode2" value="mode2">
-              <span>② 2種以上のレシピを組み合わせて21食作る</span>
-            </label>
-
-            <label class="modeLabel">
-              <input type="radio" name="calcMode" id="calcMode3" value="mode3">
-              <span>③ 別カテゴリーのレシピを組み合わせる</span>
-            </label>
+            <div class="modeRadios">
+              <label class="radioPill"><input type="radio" name="calcMode" id="calcMode1" value="mode1"> モード①</label>
+              <label class="radioPill"><input type="radio" name="calcMode" id="calcMode2" value="mode2"> モード②</label>
+              <label class="radioPill"><input type="radio" name="calcMode" id="calcMode3" value="mode3"> モード③</label>
+            </div>
           </div>
         </div>
-
-        <!-- +追加 / クリア -->
-        <div id="actionBlock">
-          <button id="clearAll" class="danger">クリア</button>
-          <button id="addRecipe" class="primary">+ 追加</button>
-        </div>
       </div>
 
-      <div id="recipeList" style="margin-top:10px;"></div>
-    </section>
+      <div class="divider"></div>
 
-    <section class="card">
-      <div class="sectionTitle">計算から除外</div>
-      <div id="excludeGrid" class="grid5"></div>
-    </section>
-
-    <section class="card">
-      <div class="replenishHeaderRow">
-        <!-- 左：見出し -->
-        <div>
-          <div class="sectionTitle">1日当たりの獲得量</div>
-        </div>
-    
-        <!-- 中：NCピカ（「モード」列と同じX位置に揃う） -->
-        <div>
-          <label class="chkLabel ncPikaOpt">
-            <input type="checkbox" id="optNcPika">
-            NCピカチュウの獲得分を差し引く
-          </label>
-        </div>
-    
-        <!-- 右：空（PCのみ。スマホではgridが2列になるので自然に無視されます） -->
-        <div></div>
-      </div>
-    
-      <div id="replenishGrid" class="grid5"></div>
-    </section>
-
-
-
-    <!-- ✅ 計算結果：HTML構造を正常化（枠ズレ/下寄り/注意書き消え対策） -->
-    <section class="result-card">
-      <div class="resultHeader">
-        <div class="resultTitle">計算結果</div>
-        <span class="badge total-badge" id="totalBadge">総合計 0個</span>
+      <div id="actionBlock">
+        <button class="btn btnPrimary primary" id="addRecipeBtn">追加</button>
+        <button class="btn btnDanger danger" id="clearAllBtn">クリア</button>
       </div>
 
-      <div id="mode3Note" class="mode3Note">
-        ※異なるカテゴリーのレシピ間で重複している食材は、各レシピ中で最も多く使われている食材の個数を参照して計算しています
-      </div>
-
-      <div class="resultDivider"></div>
-      <div id="resultGrid" class="grid5"></div>
+      <div id="recipeRows"></div>
+      <div id="ingredientsSummary"></div>
     </section>
   </div>
 
   <div id="tab2" class="tab-content">
-    <div id="fieldMenu">
-      <section class="card">
-        <div class="field-grid"></div>
-      </section>
-    </div>
-    <div id="fieldDetail" style="display:none;">
-      <button onclick="backToMenu()" style="margin-bottom:10px; padding:6px 12px; background:none; border:1px solid var(--line); border-radius:8px; font-size:12px; color:var(--muted);">← 戻る</button>
-      <div id="detailContent"></div>
-    </div>
+    <section class="card">
+      <div class="sectionTitle">出現ポケモン一覧</div>
+      <div class="pokedexWrap">
+        <div class="pokeTopRow">
+          <div class="searchBox">
+            <input id="pokeSearch" type="text" placeholder="検索（ポケモン名 / 食材 / きのみ）">
+            <select id="pokeIsland" class="selectBox">
+              <option value="">島：すべて</option>
+            </select>
+            <select id="pokeSort" class="selectBox">
+              <option value="default">並び順：デフォルト</option>
+              <option value="name">名前順</option>
+            </select>
+            <button class="btn btnPrimary" id="pokeClear">クリア</button>
+          </div>
+        </div>
+        <div id="pokeList"></div>
+      </div>
+    </section>
   </div>
 
   <div id="tab3" class="tab-content">
-    <section class="card" id="levelCard">
-  
-      <!-- 入力エリア -->
+    <section id="levelCard" class="card">
+      <div class="sectionTitle">経験値シミュレーター</div>
+
       <div class="lvlForm">
-      
-        <!-- ===== 必須（上側）===== -->
-      
-        <!-- 今のレベル（65ボタン削除 / 1〜64入力） -->
         <div class="lvlRow">
           <div class="lvlLabel"><span class="lvlReq">*</span> 今のレベル</div>
           <div class="lvlInput">
@@ -1305,16 +787,14 @@
               <button type="button" class="lvlQuickBtn" data-now="55">55</button>
               <button type="button" class="lvlQuickBtn" data-now="60">60</button>
             </div>
-      
+
             <div class="lvlInputRight">
-              <input id="lvNow" class="lvlIn2" type="number" min="1" max="64" inputmode="numeric"
-                     placeholder="xx">
+              <input id="lvNow" class="lvlIn2" type="number" min="1" max="64" inputmode="numeric" placeholder="xx">
               <span class="lvlUnit">レベル</span>
             </div>
           </div>
         </div>
-      
-        <!-- 目標レベル（2〜65入力） -->
+
         <div class="lvlRow">
           <div class="lvlLabel"><span class="lvlReq">*</span> 目標のレベル</div>
           <div class="lvlInput">
@@ -1326,16 +806,14 @@
               <button type="button" class="lvlQuickBtn" data-target="60">60</button>
               <button type="button" class="lvlQuickBtn" data-target="65">65</button>
             </div>
-      
+
             <div class="lvlInputRight">
-              <input id="lvTarget" class="lvlIn2" type="number" min="2" max="65" inputmode="numeric"
-                     placeholder="xx">
+              <input id="lvTarget" class="lvlIn2" type="number" min="2" max="65" inputmode="numeric" placeholder="xx">
               <span class="lvlUnit">レベル</span>
             </div>
           </div>
         </div>
-      
-        <!-- 性格 -->
+
         <div class="lvlRow lvlRowFull">
           <div class="lvlLabel"><span class="lvlReq">*</span> 性格</div>
           <div class="lvlRadios">
@@ -1344,247 +822,186 @@
             <label class="lvlRadio"><input type="radio" name="lvNature" value="down"> <span class="lvDown">EXP↓</span></label>
           </div>
         </div>
-      
-        <!-- 経験値タイプ -->
+
         <div class="lvlRow lvlRowFull">
           <div class="lvlLabel"><span class="lvlReq">*</span> 経験値タイプ</div>
           <div class="lvlRadios">
             <label class="lvlRadio"><input type="radio" name="lvType" value="normal"> ふつう</label>
             <label class="lvlRadio"><input type="radio" name="lvType" value="600"> 600族</label>
-            <label class="lvlRadio"><input type="radio" name="lvType" value="semi"> 準伝説</label>
-            <label class="lvlRadio"><input type="radio" name="lvType" value="legend"> 伝説 / 幻</label>
+            <label class="lvlRadio"><input type="radio" name="lvType" value="legend"> 準伝説</label>
+            <label class="lvlRadio"><input type="radio" name="lvType" value="legend_dream"> 伝説/幻</label>
           </div>
         </div>
-      
+
         <div class="lvlDivider"></div>
-      
-        <!-- ===== 任意（下側）===== -->
-      
-        <!-- 小クリア：専用の1段（右側に置く） -->
-        <div class="lvlRow">
-          <div class="lvlLabel"></div>
-          <div class="lvlInput" style="grid-template-columns: 1fr 118px; column-gap:8px;">
-            <div></div>
-            <button id="lvClearOptional" type="button" class="lvlMiniClear" style="justify-self:end;">クリア</button>
-          </div>
-        </div>
-        
-        <!-- 次のレベルまでの経験値：入力だけの段（縦ラインが安定する） -->
+
         <div class="lvlRow">
           <div class="lvlLabel">次のレベルまでの経験値</div>
           <div class="lvlInput">
             <div></div>
             <div class="lvlInputRight">
-              <input id="lvProgressExp" class="lvlIn4" type="number" min="1" max="9999" inputmode="numeric"
-                     placeholder="xxxx">
+              <input id="lvProgressExp" class="lvlIn4" type="number" min="1" max="9999" inputmode="numeric" placeholder="xxxx">
               <span class="lvlUnit">pt</span>
             </div>
           </div>
         </div>
 
-
-      
-        <!-- アメ所持数（1〜9999） -->
         <div class="lvlRow">
           <div class="lvlLabel">ポケモンのアメ所持数</div>
           <div class="lvlInput">
             <div></div>
             <div class="lvlInputRight">
-              <input id="lvCandyOwned" class="lvlIn4" type="number" min="1" max="9999" inputmode="numeric"
-                     placeholder="xxxx">
+              <input id="lvCandyOwned" class="lvlIn4" type="number" min="1" max="9999" inputmode="numeric" placeholder="xxxx">
               <span class="lvlUnit">個</span>
             </div>
           </div>
         </div>
 
-        <!-- オプション（経験値タイプと同じ構造：見出し→中身） -->
-        <div class="lvlRow lvlRowFull">
-          <div class="lvlLabel">オプション</div>
-        
-          <div class="lvlOptLines">
-            <div class="lvlOptLine">
-              <div class="lvlOptName">睡眠</div>
-              <div class="lvlInputRight">
-                <input id="lvSleepDays" class="lvlIn3"
-                       type="number" min="1" max="999" inputmode="numeric"
-                       placeholder="xxx">
-                <span class="lvlUnit">日</span>
-              </div>
+        <div class="lvlRow lvlRowBoost">
+          <div class="lvlLabel">ブースト</div>
+          <div class="lvlInput lvlInputStack">
+            <div class="lvlBoostRadios lvlRadios">
+              <label class="lvlRadio"><input type="radio" name="lvBoostKind" value="full"> アメブースト</label>
+              <label class="lvlRadio"><input type="radio" name="lvBoostKind" value="mini"> ミニアメブースト</label>
             </div>
-        
-            <div class="lvlOptLine">
-              <div class="lvlOptName">睡眠EXPボーナス</div>
+
+            <div class="lvlBoostCountLine">
               <div class="lvlInputRight">
-                <input id="lvSleepBonus" class="lvlIn1"
-                       type="number" min="1" max="5" inputmode="numeric"
-                       placeholder="x">
-                <span class="lvlUnit">体</span>
-              </div>
-            </div>
-        
-            <div class="lvlOptLine">
-              <div class="lvlOptName">せいちょうのおこう</div>
-              <div class="lvlInputRight">
-                <input id="lvGrowthIncense" class="lvlIn3"
-                       type="number" min="1" max="999" inputmode="numeric"
-                       placeholder="xxx">
+                <input id="lvBoostCount" class="lvlInBoost" type="number" min="1" max="9999" inputmode="numeric" placeholder="xxxx">
                 <span class="lvlUnit">個</span>
               </div>
             </div>
           </div>
         </div>
 
+        <div class="lvlDivider"></div>
 
-        <!-- 結果（常に表示） -->
+        <div class="lvlRow">
+          <div class="lvlLabel">オプション</div>
+          <div class="lvlOptLines">
+            <div class="lvlOptLine">
+              <div class="lvlOptName">睡眠</div>
+              <div class="lvlInputRight">
+                <input id="lvSleepDays" class="lvlIn3" type="number" min="1" max="999" inputmode="numeric" placeholder="xxx">
+                <span class="lvlUnit">日</span>
+              </div>
+            </div>
+
+            <div class="lvlOptLine">
+              <div class="lvlOptName">睡眠EXPボーナス</div>
+              <div class="lvlInputRight">
+                <input id="lvSleepBonus" class="lvlIn1" type="number" min="1" max="5" inputmode="numeric" placeholder="x">
+                <span class="lvlUnit">体</span>
+              </div>
+            </div>
+
+            <div class="lvlOptLine">
+              <div class="lvlOptName">せいちょうのおこう</div>
+              <div class="lvlInputRight">
+                <input id="lvGrowthIncense" class="lvlIn3" type="number" min="1" max="999" inputmode="numeric" placeholder="xxx">
+                <span class="lvlUnit">個</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lvlButtons">
+          <button id="lvCalc" class="btn btnPrimary lvlBigBtn">計算</button>
+          <button id="lvClear" class="btn lvlBigBtn lvlClearBtn">クリア</button>
+        </div>
+
         <div id="lvResult" class="lvlResult"></div>
-      
       </div>
     </section>
   </div>
 
-  
   <div id="tab4" class="tab-content">
     <section class="card">
-      <div style="display: flex; gap: 10px; margin-bottom: 10px; font-size: 11px;">
-        <span style="display:flex; align-items:center; gap:4px;"><span style="width:12px; height:12px; background:#add8e6; display:inline-block; border-radius:2px;"></span>Good Sleep Day</span>
-        <span style="display:flex; align-items:center; gap:4px;"><span style="width:12px; height:12px; background:#000080; display:inline-block; border-radius:2px;"></span>New Moon Day</span>
-      </div>
-      <div id="yearCalendar" class="calendar-grid"></div>
+      <div class="sectionTitle">月齢カレンダー</div>
+      <div id="calendarWrap"></div>
     </section>
   </div>
 </main>
 
-<nav class="bottom-nav">
-  <div class="nav-item active" onclick="switchTab('tab1', this)">
-    <span class="nav-icon">🍎</span>
-    <span>食材ストック計算</span>
+<div class="noticeModal" id="noticeModal">
+  <div class="modalCard">
+    <div class="modalHead">
+      <div class="modalHeadTitle">注意事項</div>
+      <button class="modalClose" id="closeNotice">×</button>
+    </div>
+    <div class="modalBody" id="noticeBody"></div>
   </div>
+</div>
 
-  <div class="nav-item" onclick="switchTab('tab2', this)">
-    <span class="nav-icon">🐾</span>
-    <span>出現ポケモン一覧</span>
+<div class="docViewerModal" id="docViewerModal">
+  <div class="modalCard">
+    <div class="modalHead">
+      <div class="modalHeadTitle">お役立ち資料集</div>
+      <button class="modalClose" id="closeDocs">×</button>
+    </div>
+    <div class="modalBody" id="docViewerBody"></div>
   </div>
+</div>
 
-  <div class="nav-item" onclick="switchTab('tab3', this)">
-    <span class="nav-icon">🔍</span>
-    <span>レベルシミュレーター</span>
-  </div>
-
-  <div class="nav-item" onclick="switchTab('tab4', this)">
-    <span class="nav-icon">🌕</span>
-    <span>月齢カレンダー</span>
-  </div>
+<nav class="tabs">
+  <div class="tabBtn active" data-tab="tab1"><div class="ico">🍅</div><div>食材ストック計算</div></div>
+  <div class="tabBtn" data-tab="tab2"><div class="ico">🔎</div><div>出現ポケモン一覧</div></div>
+  <div class="tabBtn" data-tab="tab3"><div class="ico">🔎</div><div>経験値シミュレーター</div></div>
+  <div class="tabBtn" data-tab="tab4"><div class="ico">🌙</div><div>月齢カレンダー</div></div>
 </nav>
 
+<script src="./js/app.js"></script>
+<script src="./js/level.js"></script>
+<script src="./js/pokedex.js"></script>
+<script src="./js/calendar.js"></script>
 
-<!-- お役立ち資料集モーダル -->
-<div id="docsModal"
-  style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-         background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; padding:20px;">
-  <div class="card" style="max-width:520px; width:100%; position:relative;">
+<script>
+  (function(){
+    const tabs = document.querySelectorAll(".tabBtn");
+    const contents = document.querySelectorAll(".tab-content");
 
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:12px;">
-      <div style="font-weight:900;">📖 お役立ち資料集</div>
-      <button id="closeDocs"
-        style="background:none; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-weight:800; cursor:pointer;">
-        閉じる
-      </button>
-    </div>
+    function setTab(id){
+      contents.forEach(c => c.classList.toggle("active", c.id === id));
+      tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === id));
+      const title = document.getElementById("headerTitle");
+      if (title){
+        if (id === "tab1") title.textContent = "食材ストック計算";
+        if (id === "tab2") title.textContent = "出現ポケモン一覧";
+        if (id === "tab3") title.textContent = "経験値シミュレーター";
+        if (id === "tab4") title.textContent = "月齢カレンダー";
+      }
 
-    <!-- 資料一覧 -->
-    <div style="display:flex; flex-direction:column; gap:12px;">
+      if (id === "tab3" && window.LevelTab && typeof window.LevelTab.init === "function") {
+        window.LevelTab.init();
+      }
+    }
 
-      <div style="border:1px solid var(--line); border-radius:14px; padding:12px;">
-        <div style="font-weight:900; margin-bottom:8px;">エナジー効率の良いレシピ一覧</div>
-        <div class="row">
-          <button class="primary" type="button" onclick="openDoc('エナジー効率の良いレシピ一覧.png')">開く</button>
-          <a href="images/エナジー効率の良いレシピ一覧.png" download style="text-decoration:none;">
-            <button type="button">保存</button>
-          </a>
-        </div>
-      </div>
+    tabs.forEach(btn => {
+      btn.addEventListener("click", () => setTab(btn.dataset.tab));
+    });
 
-      <div style="border:1px solid var(--line); border-radius:14px; padding:12px;">
-        <div style="font-weight:900; margin-bottom:8px;">きのみタイプ強さランキング</div>
-        <div class="row">
-          <button class="primary" type="button" onclick="openDoc('きのみタイプ強さランキング.png')">開く</button>
-          <a href="images/きのみタイプ強さランキング.png" download style="text-decoration:none;">
-            <button type="button">保存</button>
-          </a>
-        </div>
-      </div>
+    const openNotice = document.getElementById("openNotice");
+    const closeNotice = document.getElementById("closeNotice");
+    const noticeModal = document.getElementById("noticeModal");
+    if (openNotice && closeNotice && noticeModal){
+      openNotice.addEventListener("click", () => noticeModal.classList.add("open"));
+      closeNotice.addEventListener("click", () => noticeModal.classList.remove("open"));
+      noticeModal.addEventListener("click", (e) => {
+        if (e.target === noticeModal) noticeModal.classList.remove("open");
+      });
+    }
 
-      <div style="border:1px solid var(--line); border-radius:14px; padding:12px;">
-        <div style="font-weight:900; margin-bottom:8px;">お香で呼べるポケモンかけらランキング</div>
-        <div class="row">
-          <button class="primary" type="button" onclick="openDoc('お香で呼べるポケモンかけらランキング.png')">開く</button>
-          <a href="images/お香で呼べるポケモンかけらランキング.png" download style="text-decoration:none;">
-            <button type="button">保存</button>
-          </a>
-        </div>
-      </div>
-
-    </div><!-- /資料一覧 -->
-  </div>
-</div>
-
-<!-- お役立ち資料：画像ビューア（アプリ内） -->
-<div id="docViewerModal"
-  style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-         background:rgba(0,0,0,0.7); z-index:3000; align-items:center; justify-content:center; padding:14px;">
-  <div class="card" style="max-width:900px; width:100%; max-height:92vh; overflow:auto; position:relative;">
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:12px;">
-      <div id="docViewerTitle" style="font-weight:900;">資料</div>
-      <button id="closeDocViewer"
-        style="background:none; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-weight:800; cursor:pointer;">
-        戻る
-      </button>
-    </div>
-
-    <img id="docViewerImg" src="" alt=""
-      style="width:100%; height:auto; border-radius:12px; border:1px solid var(--line); background:#fff;">
-  </div>
-</div>
-
-<!-- ご利用上の注意 -->
-<div id="noticeModal"
-  style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-         background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; padding:20px;">
-  <div class="card" style="max-width:400px; width:100%; position:relative;">
-
-    <div style="font-weight:900; margin-bottom:12px; border-bottom:1px solid var(--line); padding-bottom:8px;">
-      ご利用上の注意
-    </div>
-
-    <p style="font-size:13px; color:var(--text); line-height:1.6; margin-bottom:14px;">
-      このアプリは非公式であり、
-      <strong>ﾈﾃﾙ.exe（@suiminloop.bsky.social）</strong>が個人で作ったものです。<br>
-      ご利用いただく際は自己責任でお願いします🙇
-    </p>
-
-    <div style="font-size:13px; color:var(--text); line-height:1.6; margin-bottom:20px;">
-      <div style="font-weight:900; margin-bottom:6px;">出典：</div>
-      <ul style="margin:0 0 0 18px; padding:0;">
-        <li>Pokémon Sleep 公式サイト</li>
-        <li>RaenonXポケスリ攻略ツール</li>
-        <li>ポケモンスリープ攻略・検証 Wiki*</li>
-      </ul>
-    </div>
-
-    <button id="closeNotice" class="primary" style="width:100%;">閉じる</button>
-  </div>
-</div>
-
-
-
-<!-- JS 読み込み -->
-<script src="data/ingredients.js"></script>
-<script src="data/recipes.js"></script>
-<script src="data/fields.js"></script>
-<script src="js/level.js"></script>
-<script src="js/calendar.js"></script>
-<script src="js/pokedex.js"></script>
-<script src="js/app.js"></script>
-
+    const openDocs = document.getElementById("openDocs");
+    const closeDocs = document.getElementById("closeDocs");
+    const docViewerModal = document.getElementById("docViewerModal");
+    if (openDocs && closeDocs && docViewerModal){
+      openDocs.addEventListener("click", () => docViewerModal.classList.add("open"));
+      closeDocs.addEventListener("click", () => docViewerModal.classList.remove("open"));
+      docViewerModal.addEventListener("click", (e) => {
+        if (e.target === docViewerModal) docViewerModal.classList.remove("open");
+      });
+    }
+  })();
+</script>
 </body>
 </html>
