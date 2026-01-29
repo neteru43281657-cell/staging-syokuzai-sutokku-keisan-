@@ -685,13 +685,13 @@ header {
   /* 行：左ラベル / 右入力群（現状の列幅を維持） */
   .lvlRow{
     display:grid;
-    grid-template-columns: 1fr 260px;
+    grid-template-columns: minmax(0, 1fr) minmax(140px, 260px);
     gap: 10px;
     align-items: start;
     padding: 4px 0;
   }
   @media (max-width: 520px){
-    .lvlRow{ grid-template-columns: 1fr 230px; }
+    .lvlRow{ grid-template-columns: minmax(0, 1fr) minmax(120px, 200px); }
     .lvlLabel{ font-size: 14px; }
     .lvlRadio{ font-size: 12px; }
     .lvlQuick{ max-width: 150px; }
@@ -771,22 +771,15 @@ header {
     align-items: center;
   }
   
-  /* 入力（共通） */
-  .lvlInput input{
-    border: 2px solid rgba(0,0,0,0.12);
-    border-radius: 10px;
-    padding: 4px 6px;
-    font-weight: var(--fw-heading);
-    outline: none;
-    width: auto !important;
-
-  /* オプション等：.lvlInput を経由しない input にも共通装飾を適用（見た目統一） */
+  /* 入力（共通）：.lvlInput 経由／経由しない input も同じ見た目にする */
+  .lvlInput input,
   #tab3 .lvlInputRight input{
     border: 2px solid rgba(0,0,0,0.12);
     border-radius: 10px;
     padding: 4px 6px;
     font-weight: var(--fw-heading);
     outline: none;
+    width: auto !important;
     line-height: 1;
   }
     
