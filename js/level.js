@@ -62,7 +62,6 @@ function toNum(v) {
   /* =========================
    * 必要EXP（タイプ倍率）算出：累計→丸め→差分
    * ========================= */
-
   const TYPE_MUL = {
     normal: 1.0,
     "600": 1.5,
@@ -78,7 +77,7 @@ function toNum(v) {
 
     needStepCache = new Map();
 
-    // ふつう（normal）はそのまま（exp_table の normal 列を使う）
+    // normal列はそのまま
     const normalMap = new Map();
     for (let lv = 2; lv <= 65; lv++) {
       const row = expTable.get(lv);
@@ -86,15 +85,15 @@ function toNum(v) {
     }
     needStepCache.set("normal", normalMap);
 
-    // 累計（ふつう）を作る
-    const cumNormal = [0]; // index unused
+    // 累計（normal）
+    const cumNormal = [0];
     let sum = 0;
     for (let lv = 2; lv <= 65; lv++) {
       sum += normalMap.get(lv) || 0;
       cumNormal[lv] = sum;
     }
 
-    // 600 / semi / legend を「累計→丸め→差分」で生成
+    // 600 / semi / legend：累計→丸め→差分
     ["600", "semi", "legend"].forEach(typeKey => {
       const mul = TYPE_MUL[typeKey] || 1.0;
 
@@ -125,24 +124,47 @@ function toNum(v) {
   }
 
   /* =========================
-   * Input helpers / toggles
+   * DOM helpers
    * ========================= */
   const el = id => document.getElementById(id);
   const getRadio = name => document.querySelector(`input[name="${name}"]:checked`)?.value ?? null;
 
-  function setVal(inputEl, v) {
-    if (!inputEl) return;
-    inputEl.value = String(v);
-    inputEl.dispatchEvent(new Event("input", { bubbles: true }));
-    inputEl.dispatchEvent(new Event("change", { bubbles: true }));
+  // 入力値を安全に「数字のみ・桁数制限・範囲制限」
+  function enforceDigitsAndRange(input, maxDigits, min, max) {
+    if (!input) return;
+    const raw = (input.value ?? "").toString();
+
+    // 空欄は許容（none状態）
+    if (raw.trim() === "") return;
+
+    // 数字以外を削除
+    let digits = raw.replace(/[^\d]/g, "");
+    if (digits.length > maxDigits) digits = digits.slice(0, maxDigits);
+
+    if (digits === "") {
+      input.value = "";
+      return;
+    }
+
+    let v = parseInt(digits, 10);
+    if (!Number.isFinite(v)) {
+      input.value = "";
+      return;
+    }
+
+    // 0は許容しない（指定が 1〜 のため）
+    v = Math.max(min, Math.min(max, v));
+    input.value = String(v);
   }
+
+  // ブースト個数：ユーザーが手入力したかどうか
+  let boostCountTouched = false;
 
   // 同じラジオをもう一度押したら解除できるようにする（ブースト用）
   function enableToggleRadio(name) {
     const radios = Array.from(document.querySelectorAll(`input[name="${name}"]`));
     if (!radios.length) return;
 
-    // 初期状態の記録
     radios.forEach(r => { r.dataset.wasChecked = r.checked ? "1" : "0"; });
 
     radios.forEach(r => {
@@ -151,17 +173,13 @@ function toNum(v) {
         if (r.checked && r.dataset.wasChecked === "1") {
           r.checked = false;
           r.dataset.wasChecked = "0";
-          // 他の wasChecked も 0 に
           radios.forEach(x => { if (x !== r) x.dataset.wasChecked = "0"; });
-          // change を発火して再計算
           r.dispatchEvent(new Event("change", { bubbles: true }));
           e.preventDefault();
           return;
         }
-
-        // 選び直し：他は0、このラジオを1
+        // 選び直し
         radios.forEach(x => x.dataset.wasChecked = "0");
-        // click の時点で checked になっているので即反映
         r.dataset.wasChecked = "1";
       });
     });
@@ -181,7 +199,7 @@ function toNum(v) {
     if (natureKey === "up") natureMul = 1.18;
     if (natureKey === "down") natureMul = 0.82;
 
-    // 1個あたりは四捨五入
+    // (base * nature) を四捨五入 → ブースト倍率
     const gain = Math.round(base * natureMul);
     return gain * boostMul;
   }
@@ -243,10 +261,15 @@ function toNum(v) {
   /* =========================
    * Result rendering
    * ========================= */
-  function showResult(html) {
+  function showResult(innerHtml) {
     const box = el("lvResult");
     if (!box) return;
-    box.innerHTML = html;
+
+    // 結果欄右上に ×（タブ①の removeBtn デザイン流用）
+    box.innerHTML = `
+      <button id="lvResultClear" class="removeBtn lvResultClose" title="クリア">×</button>
+      ${innerHtml}
+    `;
     box.style.display = "block";
   }
 
@@ -254,10 +277,20 @@ function toNum(v) {
    * Main calc
    * ========================= */
   async function onCalc() {
+    // 入力制限を都度適用（空欄はOK）
+    enforceDigitsAndRange(el("lvNow"), 2, 1, 64);
+    enforceDigitsAndRange(el("lvTarget"), 2, 2, 65);
+    enforceDigitsAndRange(el("lvProgressExp"), 4, 1, 9999);
+    enforceDigitsAndRange(el("lvCandyOwned"), 4, 1, 9999);
+    enforceDigitsAndRange(el("lvBoostCount"), 4, 1, 9999);
+    enforceDigitsAndRange(el("lvSleepDays"), 3, 1, 999);
+    enforceDigitsAndRange(el("lvSleepBonus"), 1, 1, 5);
+    enforceDigitsAndRange(el("lvGrowthIncense"), 3, 1, 999);
+
     const nowRaw = (el("lvNow")?.value ?? "").trim();
     const targetRaw = (el("lvTarget")?.value ?? "").trim();
 
-    // 未入力でも「計算結果」だけは表示（案内文は出さない）
+    // 未入力でも計算結果枠だけ表示（案内文は出さない）
     if (!nowRaw || !targetRaw) {
       showResult(`<div class="lvResTitle">計算結果</div>`);
       return;
@@ -267,7 +300,10 @@ function toNum(v) {
     const lvTarget = clampInt(targetRaw, 2, 65);
 
     if (lvTarget <= lvNow) {
-      showResult(`<div class="lvResTitle">計算結果</div><div class="lvlWarn">「目標のレベル」は「今のレベル」より大きい値にしてください</div>`);
+      showResult(
+        `<div class="lvResTitle">計算結果</div>
+         <div class="lvlWarn">「目標のレベル」は「今のレベル」より大きい値にしてください</div>`
+      );
       return;
     }
 
@@ -276,16 +312,28 @@ function toNum(v) {
     const natureKey = getRadio("lvNature") || "none";
     const typeKey = getRadio("lvType") || "normal";
 
-    const progressExp = clampInt(el("lvProgressExp")?.value || 0, 0, 9999);
-    const candyOwned = clampInt(el("lvCandyOwned")?.value || 0, 0, 9999);
+    const progressExp = toNum(el("lvProgressExp")?.value || 0); // 空欄は0扱い
+    const candyOwned = toNum(el("lvCandyOwned")?.value || 0);   // 空欄は0扱い
 
     const boostKind = getRadio("lvBoostKind") || "none"; // 未選択=none
-    const boostCount = clampInt(el("lvBoostCount")?.value || 0, 0, 9999);
+
+    // ★③：ブーストが選択された瞬間は「9999個扱い」で計算
+    // ユーザーが個数を編集したら、その値で計算
+    let boostCountEff = 0;
+    if (boostKind !== "none") {
+      if (!boostCountTouched) {
+        boostCountEff = 9999;
+      } else {
+        // touched後は入力値を採用（空欄なら0＝ブーストなし個数）
+        boostCountEff = toNum(el("lvBoostCount")?.value || 0);
+        boostCountEff = clampInt(boostCountEff, 0, 9999);
+      }
+    }
 
     // オプション
-    const sleepDays = clampInt(el("lvSleepDays")?.value || 0, 0, 999);
-    const sleepBonus = clampInt(el("lvSleepBonus")?.value || 0, 0, 5);
-    const incense = clampInt(el("lvGrowthIncense")?.value || 0, 0, 999);
+    const sleepDays = toNum(el("lvSleepDays")?.value || 0);
+    const sleepBonus = toNum(el("lvSleepBonus")?.value || 0);
+    const incense = toNum(el("lvGrowthIncense")?.value || 0);
 
     // 次レベル必要EXP
     const needForNextLevel = getNeedStep(lvNow + 1, typeKey);
@@ -305,7 +353,7 @@ function toNum(v) {
     // freeExp（睡眠など）を算出し、上限を totalSteps にする
     let freeExp = 0;
     if (sleepDays > 0) {
-      const perDay = 100 + 14 * sleepBonus;
+      const perDay = 100 + 14 * sleepBonus; // 100 + 14*体
       freeExp = perDay * sleepDays;
 
       if (incense > 0) {
@@ -337,34 +385,36 @@ function toNum(v) {
     html += `<div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${Math.max(0, simNormal.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
     html += `<div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨</div><div class="lvResVal">${simNormal.shardsTotal.toLocaleString()}</div></div>`;
 
-
-    // 選択中ブーストのみ表示（種類選択 + 個数>0）
-    if (boostKind !== "none" && boostCount > 0) {
+    // ブースト（選択されている場合は常に表示）
+    if (boostKind !== "none") {
       const simBoost = simulateCandiesAndShards({
         lvNow, lvTarget, typeKey, natureKey,
         initialProgress,
         freeExp,
         boostKind: boostKind === "mini" ? "mini" : "full",
-        boostCount
+        boostCount: boostCountEff
       });
 
       const subtitle = (boostKind === "mini")
-        ? `ミニブースト時 (x2 / かけらx4)`
+        ? `ミニアメブースト時 (x2 / かけらx4)`
         : `アメブースト時 (x2 / かけらx5)`;
 
-    html += `<div class="lvResSubTitle">${subtitle}</div>`;
-    html += `<div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${Math.max(0, simBoost.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
-    html += `<div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨</div><div class="lvResVal">${simBoost.shardsTotal.toLocaleString()}</div></div>`;
+      // 9999仮定で計算していることが伝わるよう、個数も表示に出す（邪魔なら削除OK）
+      const countLabel = (!boostCountTouched) ? `（個数：9999仮定）` : ``;
 
+      html += `<div class="lvResSubTitle">${subtitle} ${countLabel}</div>`;
+      html += `<div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${Math.max(0, simBoost.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
+      html += `<div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨</div><div class="lvResVal">${simBoost.shardsTotal.toLocaleString()}</div></div>`;
     }
 
     showResult(html);
   }
 
   /* =========================
-   * Clear
+   * Clear (×ボタンで呼ぶ)
    * ========================= */
   function clearAll() {
+    // 入力欄はすべて空に
     [
       "lvNow",
       "lvTarget",
@@ -376,17 +426,20 @@ function toNum(v) {
       "lvGrowthIncense"
     ].forEach(id => {
       const x = el(id);
-      if (!x) return;
-      if (id === "lvBoostCount") x.value = "0";
-      else x.value = "";
+      if (x) x.value = "";
     });
 
-    // ブースト：両方解除
-    document.querySelectorAll('input[name="lvBoostKind"]').forEach(r => {
-      r.checked = false;
-      r.dataset.wasChecked = "0";
+    // ラジオは全解除（none状態）
+    ["lvNature", "lvType", "lvBoostKind"].forEach(name => {
+      document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+        r.checked = false;
+        r.dataset.wasChecked = "0";
+      });
     });
 
+    boostCountTouched = false;
+
+    // 結果欄も初期表示に
     onCalc();
   }
 
@@ -397,44 +450,33 @@ function toNum(v) {
     // ブーストラジオを「押し直し解除」に
     enableToggleRadio("lvBoostKind");
 
-    // クリア
-    el("lvClear")?.addEventListener("click", clearAll);
-
-    // クイック（レベル/ブースト）
-    document.getElementById("tab3")?.addEventListener("click", (e) => {
-      const btn = e.target.closest(".lvlQuickBtn");
-      if (!btn) return;
-
-      if (btn.dataset.now) setVal(el("lvNow"), btn.dataset.now);
-      if (btn.dataset.target) setVal(el("lvTarget"), btn.dataset.target);
-
-      if (btn.dataset.boost) {
-        setVal(el("lvBoostCount"), btn.dataset.boost);
-
-        // ブーストが未選択ならアメブーストを選択
-        const checked = document.querySelector('input[name="lvBoostKind"]:checked');
-        if (!checked) {
-          const rFull = document.querySelector('input[name="lvBoostKind"][value="full"]');
-          if (rFull) {
-            rFull.checked = true;
-            document.querySelectorAll('input[name="lvBoostKind"]').forEach(x => x.dataset.wasChecked = "0");
-            rFull.dataset.wasChecked = "1";
-          }
-        }
-        onCalc();
-      }
+    // 結果欄×ボタン（innerHTMLで作り直されるので委譲）
+    el("lvResult")?.addEventListener("click", (e) => {
+      const t = e.target;
+      if (t && t.id === "lvResultClear") clearAll();
     });
 
-    // 入力するたびに自動計算
+    // ブースト個数：ユーザーが編集したら以降はその値を使う
+    el("lvBoostCount")?.addEventListener("input", () => {
+      boostCountTouched = true;
+      onCalc();
+    });
+
+    // 入力するたびに自動計算（ブースト個数は上で専用処理済）
     const tab = document.getElementById("tab3");
     if (tab) {
       tab.addEventListener("input", (e) => {
         const t = e.target;
         if (!t) return;
-        if (t.matches("#lvNow,#lvTarget,#lvProgressExp,#lvCandyOwned,#lvBoostCount,#lvSleepDays,#lvSleepBonus,#lvGrowthIncense")) {
+
+        // boostCountは専用処理済なので除外（2重呼び出し防止）
+        if (t.id === "lvBoostCount") return;
+
+        if (t.matches("#lvNow,#lvTarget,#lvProgressExp,#lvCandyOwned,#lvSleepDays,#lvSleepBonus,#lvGrowthIncense")) {
           onCalc();
         }
       });
+
       tab.addEventListener("change", (e) => {
         const t = e.target;
         if (!t) return;
@@ -457,4 +499,3 @@ function toNum(v) {
   };
 
 })();
-
