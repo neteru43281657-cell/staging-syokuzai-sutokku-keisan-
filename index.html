@@ -817,6 +817,21 @@
     text-align: center !important;
   }
 
+  /* 1桁入力（睡眠EXPボーナス用） */
+  #tab3 .lvlIn1{
+    width: 3.5ch !important;
+    text-align: center !important;
+  }
+
+  /* クリア1個のときは確実に中央寄せ */
+  #tab3 .lvlButtons.lvlButtonsSingle{
+    justify-content: center !important;
+  }
+  
+  /* 角丸が他のbutton定義に負けた時の保険 */
+  #tab3 #lvClear{
+    border-radius: 28px !important;
+  }
     
   /* クイック（通常） */
   .lvlQuick{
@@ -1397,7 +1412,7 @@
               <div class="lvlOptLine">
                 <div class="lvlOptName">睡眠EXPボーナス</div>
                 <div class="lvlInputRight">
-                  <input id="lvSleepBonus" class="lvlIn2"
+                  <input id="lvSleepBonus" class="lvlIn1"
                          type="number" min="1" max="5" inputmode="numeric"
                          placeholder="x">
                   <span class="lvlUnit">体</span>
@@ -1405,20 +1420,6 @@
               </div>
 
               <div class="lvlOptLine">
-                <div class="lvlOptName">せいちょうのおこう</div>
-                <div class="lvlInputRight">
-                  <input id="lvGrowthIncense" class="lvlIn3"
-                         type="number" min="1" max="999" inputmode="numeric"
-                         placeholder="xxx">
-                  <span class="lvlUnit">個</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-
-              <div class="lvlOptItem">
                 <div class="lvlOptName">せいちょうのおこう</div>
                 <div class="lvlInputRight">
                   <input id="lvGrowthIncense" class="lvlIn3"
