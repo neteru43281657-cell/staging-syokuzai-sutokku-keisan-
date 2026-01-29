@@ -978,6 +978,60 @@
   .lvlResult .lvResVal{ font-weight: 900; color:#111; white-space: nowrap; }
   .lvlWarn{ color:#e74c3c; font-weight:900; margin-top:10px; }
 
+  /* =========================================================
+     LvSim 最終上書き（2026-01-29）
+     ① Lv入力：2桁相当の幅に固定
+     ② 次Lvpt/アメ所持：見た目は4桁幅（入力制限はJSで4桁）
+     ③ ブースト個数：4桁幅 + 縦ズレ解消
+     ④ 計算/クリア：角丸四角形（丸すぎNG・円形NG）
+  ========================================================= */
+  
+  /* --- 入力幅（pxではなく “ch” で文字数に合わせる） --- */
+  #tab3 .lvlIn2{
+    width: 2.6ch !important;      /* 2桁想定（余白込み） */
+    text-align: center !important;
+  }
+  
+  #tab3 .lvlIn4,
+  #tab3 .lvlInBoost{
+    width: 4.8ch !important;      /* 4桁想定（余白込み） */
+    text-align: right !important;
+  }
+  
+  /* number入力の見た目を安定（機種差で横に伸びるのを抑える） */
+  #tab3 .lvlInput input{
+    padding: 4px 6px !important;
+    line-height: 1 !important;
+  }
+  
+  /* 単位のベースラインでズレないように */
+  #tab3 .lvlUnit{
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+  }
+  
+  /* ③ ブースト個数だけ下に落ちて見える対策（右側を中央揃えに固定） */
+  #tab3 .lvlInputRight{
+    align-items: center !important;
+  }
+  
+  /* --- ② クイックボタン：いまのサイズ感を維持（必要なら微調整可） --- */
+  /* 既に1.2倍になっているので、ここでは触りません */
+  
+  /* --- ④ 下部の計算/クリア：角丸四角形に（丸すぎ・円形にしない） --- */
+  /* ※あなたのCSS内で .lvlBigBtn が2回定義されており、後ろの border-radius:22px が効いています。
+     ここで “より丸く” しつつ pill(999px)にはしない値に固定します。 */
+  #tab3 .lvlBigBtn{
+    border-radius: 28px !important;  /* 高さ62pxに対して、角が最大限丸い長方形 */
+    font-size: 30px !important;
+  }
+  
+  /* ④ 小さいクリアも同系統（角丸四角形）に寄せる（タブ①と完全一致ではなく、統一感優先） */
+  #tab3 .lvlMiniClear{
+    border-radius: 18px !important;  /* 高さ34pxに対して、丸い角丸四角形 */
+  }
+    
   </style>
 </head>
 
@@ -1252,7 +1306,7 @@
       
         <!-- ボタン -->
         <div class="lvlButtons">
-          <button id="lvCalc" class="primary lvlBigBtn">計 算</button>
+          <button id="lvCalc" class="primary lvlBigBtn">計算</button>
           <button id="lvClear" class="lvlBigBtn lvlClearBtn">クリア</button>
         </div>
       
