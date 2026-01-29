@@ -262,53 +262,64 @@ function roundHalfUp(x) {
   }
 
   function bindQuickButtons() {
-    // 今のレベル
-    document.querySelectorAll(".lvlQuickBtn[data-now]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const v = Number(btn.getAttribute("data-now") || 0);
-        const now = el("lvNow");
-        if (!now) return;
-        if (Number.isFinite(v) && v >= 1 && v <= 64) now.value = String(v);
-      });
-    });
-
-    // 目標レベル
-    document.querySelectorAll(".lvlQuickBtn[data-target]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const v = Number(btn.getAttribute("data-target") || 0);
-        const target = el("lvTarget");
-        if (!target) return;
-        if (Number.isFinite(v) && v >= 2 && v <= 65) target.value = String(v);
-      });
-    });
-
-    // アメブースト（入力したらミニは0にする：択一）
-    document.querySelectorAll(".lvlQuickBtn[data-boost]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const v = Number(btn.getAttribute("data-boost") || 0);
-        const boost = el("lvBoostCount");
-        const mini = el("lvMiniBoostCount");
-        if (!boost || !mini) return;
-        if (Number.isFinite(v) && v >= 0 && v <= 9999) {
-          boost.value = String(v);
-          if (v > 0) mini.value = "0";
+    // 既存の「個別 addEventListener」をやめて、親でまとめて拾う（PCでも安定）
+    const root = document.getElementById("tab3") || document;
+  
+    // 値を入れた後、input/change を発火して「桁数制限」なども確実に走らせる
+    const setVal = (inputEl, v) => {
+      if (!inputEl) return;
+      inputEl.value = String(v);
+  
+      // inputイベント（enforceDigitsやUI更新のため）
+      inputEl.dispatchEvent(new Event("input", { bubbles: true }));
+      inputEl.dispatchEvent(new Event("change", { bubbles: true }));
+    };
+  
+    root.addEventListener("click", (e) => {
+      const btn = e.target.closest?.(".lvlQuickBtn");
+      if (!btn) return;
+  
+      // ボタンの意図しない挙動を止める
+      e.preventDefault();
+  
+      // 今のレベル
+      if (btn.dataset.now != null) {
+        const v = Number(btn.dataset.now);
+        if (Number.isFinite(v) && v >= 1 && v <= 64) {
+          setVal(el("lvNow"), v);
         }
-      });
-    });
-
-    // ミニアメブースト（入力したらアメブーストは0にする：択一）
-    document.querySelectorAll(".lvlQuickBtn[data-mini]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const v = Number(btn.getAttribute("data-mini") || 0);
-        const boost = el("lvBoostCount");
-        const mini = el("lvMiniBoostCount");
-        if (!boost || !mini) return;
-        if (Number.isFinite(v) && v >= 0 && v <= 9999) {
-          mini.value = String(v);
-          if (v > 0) boost.value = "0";
+        return;
+      }
+  
+      // 目標レベル
+      if (btn.dataset.target != null) {
+        const v = Number(btn.dataset.target);
+        if (Number.isFinite(v) && v >= 2 && v <= 65) {
+          setVal(el("lvTarget"), v);
         }
-      });
-    });
+        return;
+      }
+  
+      // アメブースト（入力したらミニは0にする：択一）
+      if (btn.dataset.boost != null) {
+        const v = Number(btn.dataset.boost);
+        if (Number.isFinite(v) && v >= 0 && v <= 9999) {
+          setVal(el("lvBoostCount"), v);
+          if (v > 0) setVal(el("lvMiniBoostCount"), 0);
+        }
+        return;
+      }
+  
+      // ミニアメブースト（入力したらアメブーストは0にする：択一）
+      if (btn.dataset.mini != null) {
+        const v = Number(btn.dataset.mini);
+        if (Number.isFinite(v) && v >= 0 && v <= 9999) {
+          setVal(el("lvMiniBoostCount"), v);
+          if (v > 0) setVal(el("lvBoostCount"), 0);
+        }
+        return;
+      }
+    }, { passive: false });
   }
 
   function bindExclusiveInputs() {
@@ -347,31 +358,30 @@ function roundHalfUp(x) {
     if (typeNormal) typeNormal.checked = true;
   }
 
-  function onCalc() {
-      hideResult();
+  async function onCalc() {
+    hideResult();
   
-      const nowRaw = (el("lvNow")?.value ?? "").trim();
-      const targetRaw = (el("lvTarget")?.value ?? "").trim();
+    const nowRaw = (el("lvNow")?.value ?? "").trim();
+    const targetRaw = (el("lvTarget")?.value ?? "").trim();
   
-      // ★ 何も入力していない（必須が空）の場合は何も出力しない
-      if (!nowRaw || !targetRaw) return;
+    // ★ 何も入力していない（必須が空）の場合は何も出力しない
+    if (!nowRaw || !targetRaw) return;
   
-      const lvNow = clampInt(nowRaw, LV_MIN, LV_MAX);      // 1〜64
-      const lvTarget = clampInt(targetRaw, 2, LV_MAX);     // 2〜65
-      const natureKey = getRadio("lvNature") || "none";
-      const typeKey = getRadio("lvType") || "normal";
-
-
+    const lvNow = clampInt(nowRaw, LV_MIN, LV_MAX);      // 1〜64
+    const lvTarget = clampInt(targetRaw, 2, LV_MAX);     // 2〜65
+    const natureKey = getRadio("lvNature") || "none";
+    const typeKey = getRadio("lvType") || "normal";
+  
     // 任意入力：未入力は0扱い
     const progressExpRaw = el("lvProgressExp")?.value;
     const candyOwnedRaw = el("lvCandyOwned")?.value;
-
+  
     const progressExp = progressExpRaw ? clampInt(progressExpRaw, 1, 9999) : 0;
     const candyOwned = candyOwnedRaw ? clampInt(candyOwnedRaw, 1, 9999) : 0;
-
+  
     const boostCount = clampInt(el("lvBoostCount")?.value || 0, 0, 9999);
     const miniCount  = clampInt(el("lvMiniBoostCount")?.value || 0, 0, 9999);
-
+  
     // 入力チェック
     if (lvNow < 1 || lvNow > 64) {
       showResult(`<div class="lvlWarn">「今のレベル」は 1〜64 で入力してください</div>`);
@@ -389,7 +399,7 @@ function roundHalfUp(x) {
       showResult(`<div class="lvlWarn">ブーストは「アメブースト / ミニアメブースト」のどちらか一方のみ入力してください</div>`);
       return;
     }
-
+  
     await loadTablesOnce();
 
     // 必要経験値（ブーストに関係なし）
@@ -465,6 +475,7 @@ function roundHalfUp(x) {
   };
 
 })();
+
 
 
 
