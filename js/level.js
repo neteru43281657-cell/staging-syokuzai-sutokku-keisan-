@@ -334,8 +334,9 @@ function toNum(v) {
 
     let html = `<div class="lvResTitle">計算結果</div>`;
     html += `<div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">${totalExpNeeded.toLocaleString()} pt</div></div>`;
-    html += `<div class="lvResRow"><div class="lvResKey"><img class="lvIcon" src="images/アメ_透過.png" alt="">必要なアメの数</div><div class="lvResVal">${Math.max(0, simNormal.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
-    html += `<div class="lvResRow"><div class="lvResKey"><img class="lvIcon" src="images/ゆめのかけら_透過.png" alt="">必要なゆめのかけら量</div><div class="lvResVal">${simNormal.shardsTotal.toLocaleString()}</div></div>`;
+    html += `<div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${Math.max(0, simNormal.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
+    html += `<div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨</div><div class="lvResVal">${simNormal.shardsTotal.toLocaleString()}</div></div>`;
+
 
     // 選択中ブーストのみ表示（種類選択 + 個数>0）
     if (boostKind !== "none" && boostCount > 0) {
@@ -351,9 +352,10 @@ function toNum(v) {
         ? `ミニブースト時 (x2 / かけらx4)`
         : `アメブースト時 (x2 / かけらx5)`;
 
-      html += `<div class="lvResSubTitle"><img class="lvIcon" src="images/アメブースト_透過.png" alt="">${subtitle}</div>`;
-      html += `<div class="lvResRow"><div class="lvResKey"><img class="lvIcon" src="images/アメ_透過.png" alt="">必要なアメの数</div><div class="lvResVal">${Math.max(0, simBoost.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
-      html += `<div class="lvResRow"><div class="lvResKey"><img class="lvIcon" src="images/ゆめのかけら_透過.png" alt="">必要なゆめのかけら量</div><div class="lvResVal">${simBoost.shardsTotal.toLocaleString()}</div></div>`;
+    html += `<div class="lvResSubTitle">${subtitle}</div>`;
+    html += `<div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${Math.max(0, simBoost.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
+    html += `<div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨</div><div class="lvResVal">${simBoost.shardsTotal.toLocaleString()}</div></div>`;
+
     }
 
     showResult(html);
@@ -455,3 +457,4 @@ function toNum(v) {
   };
 
 })();
+
