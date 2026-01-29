@@ -296,14 +296,17 @@ function toNum(v) {
 
     const nowRaw = (el("lvNow")?.value ?? "").trim();
     const targetRaw = (el("lvTarget")?.value ?? "").trim();
+
     const natureSel = getRadio("lvNature");
     const typeSel = getRadio("lvType");
-    
-    // 必須4項目が揃うまで、結果は一切出さない
+
+    // 必須（*）：今のレベル / 目標のレベル / 性格 / 経験値タイプ
+    // すべて揃うまで計算結果は一切出さない（但し書きも出さない）
     if (!nowRaw || !targetRaw || !natureSel || !typeSel) {
       hideResult();
       return;
     }
+
 
 
     const lvNow = clampInt(nowRaw, 1, 64);
@@ -318,6 +321,9 @@ function toNum(v) {
     }
 
     await loadTablesOnce();
+
+    const natureKey = natureSel;
+    const typeKey = typeSel;
 
     const progressExp = toNum(el("lvProgressExp")?.value || 0); // 空欄は0扱い
     const candyOwned = toNum(el("lvCandyOwned")?.value || 0);   // 空欄は0扱い
@@ -525,5 +531,4 @@ function toNum(v) {
   };
 
 })();
-
 
