@@ -198,6 +198,37 @@ function roundHalfUp(x) {
   const getRadio = name =>
     document.querySelector(`input[name="${name}"]:checked`)?.value ?? null;
 
+  // ===== 入力桁数を強制（type=numberでも8桁入力できてしまう対策）=====
+  function enforceDigits(el, maxDigits) {
+    if (!el) return;
+  
+    el.addEventListener("input", () => {
+      // numberでも "e" や "+" が入ることがあるので数字以外を除去
+      let v = String(el.value ?? "").replace(/[^\d]/g, "");
+  
+      // 桁数制限
+      if (v.length > maxDigits) v = v.slice(0, maxDigits);
+  
+      // max属性も尊重（念のため）
+      const maxAttr = el.getAttribute("max");
+      if (maxAttr) {
+        const maxNum = parseInt(maxAttr, 10);
+        const nowNum = v === "" ? NaN : parseInt(v, 10);
+        if (!Number.isNaN(nowNum) && nowNum > maxNum) v = String(maxNum);
+      }
+  
+      el.value = v;
+    });
+  }
+  
+  // ★ 桁数制限したい項目
+  enforceDigits(document.getElementById("lvProgressExp"), 4);
+  enforceDigits(document.getElementById("lvCandyOwned"), 4);
+  enforceDigits(document.getElementById("lvBoostCount"), 4);
+  enforceDigits(document.getElementById("lvMiniBoostCount"), 4);
+  enforceDigits(document.getElementById("lvNow"), 2);
+  enforceDigits(document.getElementById("lvTarget"), 2);
+  
   function showResult(html) {
     const box = el("lvResult");
     if (!box) return;
@@ -427,6 +458,7 @@ function roundHalfUp(x) {
   };
 
 })();
+
 
 
 
