@@ -1152,6 +1152,11 @@
       flex-wrap: wrap;
     }
 
+    /* tab3：ブースト/オプションが中央寄りに見えるのを防止（幅を100%に固定） */
+    #tab3 .lvlBoostRadios { width: 100%; justify-content: flex-start; }
+    #tab3 .lvlOptLines { width: 100%; }
+    #tab3 .lvlOptLine  { width: 100%; }
+
   }
     
   </style>
@@ -1387,19 +1392,21 @@
         </div>
 
         <!-- ブースト（クイック廃止／ラジオはブーストの下） -->
-        <div class="lvlRow lvlRowBoost">
-          <div class="lvlLabel">ブースト</div>
-          <div class="lvlInput" style="grid-template-columns:1fr;">
-            <div class="lvlRadios lvlBoostRadios">
-              <label class="lvlRadio">
-                <input type="radio" name="lvBoostKind" value="full"> アメブースト
-              </label>
-              <label class="lvlRadio">
-                <input type="radio" name="lvBoostKind" value="mini"> ミニアメブースト
-              </label>
-            </div>
-        
-            <div class="lvlBoostCountLine">
+          <!-- ブースト（ラジオ左 / 個数右 を1行で揃える） -->
+          <div class="lvlRow lvlRowBoost">
+            <div class="lvlLabel">ブースト</div>
+          
+            <!-- ここを 2カラムにする（左=ラジオ、右=個数入力） -->
+            <div class="lvlInput" style="grid-template-columns: 1fr auto; column-gap: 10px; align-items: center;">
+              <div class="lvlRadios lvlBoostRadios">
+                <label class="lvlRadio">
+                  <input type="radio" name="lvBoostKind" value="full"> アメブースト
+                </label>
+                <label class="lvlRadio">
+                  <input type="radio" name="lvBoostKind" value="mini"> ミニアメブースト
+                </label>
+              </div>
+          
               <div class="lvlInputRight">
                 <input id="lvBoostCount" class="lvlInBoost"
                        type="number" inputmode="numeric"
@@ -1408,7 +1415,6 @@
               </div>
             </div>
           </div>
-        </div>
 
 
         <div class="lvlDivider"></div>
