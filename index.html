@@ -662,30 +662,7 @@
   ========================= */
 
   /* タブ3専用のクリーンなスタイル定義 */
-  /* --- タブ3 再構築スタイル (最終調整版) --- */
-  #tab3 .lvlForm { display: flex; flex-direction: column; gap: 16px; font-family: inherit; }
-  #tab3 .lvlGroup { display: flex; flex-direction: column; gap: 14px; }
-  #tab3 .lvlDivider { height: 1px; background: var(--line); margin: 4px 0; opacity: 0.6; }
-  
-  /* 1行の基本レイアウト */
-  #tab3 .lvlRow {
-    display: flex;
-    justify-content: space-between;
-    align-items: center; /* 垂直方向中央 */
-    gap: 12px;
-  }
-  
-  #tab3 .lvlLabel {
-    font-weight: 900;
-    font-size: 14px;
-    color: var(--text);
-    flex: 1;
-  }
-  
-  #tab3 .lvlReq { color: var(--danger); margin-right: 4px; }
-  
-  /* 右側の入力・クイックボタン群 */
-/* --- タブ3 再定義 --- */
+  /* --- タブ3 再定義 (最終調整版) --- */
   #tab3 .lvlForm { display: flex; flex-direction: column; gap: 16px; font-family: inherit; }
   #tab3 .lvlGroup { display: flex; flex-direction: column; gap: 14px; }
   #tab3 .lvlDivider { height: 1px; background: var(--line); margin: 4px 0; opacity: 0.6; }
@@ -698,7 +675,7 @@
   #tab3 .lvlRowTop { align-items: flex-start !important; padding-top: 4px; }
   #tab3 .lvlRight { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 
-  /* クイックボタンを横3列・縦2列に固定 */
+  /* クイックボタン：3列・白背景固定 */
   #tab3 .lvlGrid3 {
     display: grid !important;
     grid-template-columns: repeat(3, 38px) !important;
@@ -706,30 +683,48 @@
     justify-content: flex-end !important;
   }
   #tab3 .lvlQuickBtn {
-    width: 38px; height: 28px; border-radius: 10px; border: 1px solid var(--line);
+    width: 38px; height: 28px; border-radius: 10px; border: 1px solid var(--line) !important;
     background: #fff !important; font-size: 11px; font-weight: 800;
-    display: flex; align-items: center; justify-content: center; color: var(--muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; color: var(--muted) !important; cursor: pointer;
   }
 
-  /* プレースホルダーの色を薄く */
-  #tab3 input::placeholder { color: #d1d5db; opacity: 1; }
+  /* 入力欄：PC版のプレースホルダーズレとスピンボタン対策 */
+  #tab3 input[type="number"] {
+    -moz-appearance: textfield;
+    line-height: normal !important;
+    vertical-align: middle;
+  }
+  #tab3 input[type="number"]::-webkit-outer-spin-button,
+  #tab3 input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  #tab3 input::placeholder { color: #d1d5db; opacity: 1; font-size: 11px; }
+
+  /* ラジオボタンと文字の垂直位置調整 (1px上げる) */
+  #tab3 .lvlRadio input[type="radio"] {
+    margin: 0;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+  }
+  #tab3 .lvlRadio span { vertical-align: middle; margin-left: 4px; }
 
   /* 性格・タイプ用の縦並び */
   #tab3 .lvlRowStack { display: flex; flex-direction: column; gap: 10px; padding: 4px 0; }
   #tab3 .lvlRadios { display: flex; gap: 12px; justify-content: flex-end; }
   #tab3 .lvlRowStack .lvlRadios { justify-content: flex-start; padding-left: 4px; }
-  #tab3 .lvlRadio { font-size: 12px; font-weight: 800; display: flex; align-items: center; gap: 4px; cursor: pointer; color: var(--text); }
+  #tab3 .lvlRadio { font-size: 12px; font-weight: 800; display: flex; align-items: center; cursor: pointer; color: var(--text); }
 
   /* ブースト行 */
   #tab3 .lvlBoostRow { display: grid; grid-template-columns: 1fr auto; align-items: center; row-gap: 8px; }
   #tab3 .lvlBoostRow .lvlBoostRadios { grid-column: 1 / -1; display: flex; gap: 16px; justify-content: flex-start; padding-left: 4px; }
 
-  /* 入力欄サイズ 3/4 */
+  /* 入力欄サイズ (PC版プレースホルダー対応で少し拡張) */
   #tab3 .lvlInputWrapper { display: flex; align-items: center; gap: 4px; justify-content: flex-end; }
-  #tab3 input[type="number"] { border: 1px solid var(--line); border-radius: 10px; padding: 6px 4px; text-align: center; font-weight: 900; width: 60px; }
-  #tab3 .lvlInMain { width: 45px; }
-  #tab3 .lvlInSub { width: 60px; }
-  #tab3 .lvlInMini { width: 45px; }
+  #tab3 .lvlInMain { width: 50px; }
+  #tab3 .lvlInSub { width: 65px; }
+  #tab3 .lvlInMini { width: 50px; }
   #tab3 .lvlUnit { font-size: 11px; font-weight: 800; white-space: nowrap; }
 
   /* オプション */
@@ -737,13 +732,24 @@
   #tab3 .lvlOptLine { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
   #tab3 .lvlOptName { font-size: 12px; font-weight: 800; color: var(--muted); }
 
-  /* 計算結果 */
+  /* 計算結果 (フォント統一・区切り線) */
   #tab3 .lvlResult { margin-top: 12px; border: 2px solid var(--main); background: #ffffff; border-radius: 16px; padding: 16px; display: none; position: relative; }
   #tab3 .lvResTitle { font-weight: 900; font-size: 16px; color: var(--main); margin-bottom: 12px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
   #tab3 .lvResRow { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
   #tab3 .lvResKey { font-weight: 800; font-size: 13px; color: var(--muted); }
   #tab3 .lvResVal { font-weight: 900; font-size: 14px; }
+  #tab3 .lvResSubTitle {
+    margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--line);
+    width: 100%; display: block; font-weight: 900; font-size: 13px; color: var(--main);
+  }
 
+  /* スマホ調整 */
+  @media (max-width: 520px) {
+    #tab3 .lvlLabel { font-size: 13px; }
+    #tab3 .lvlRight { gap: 6px; }
+    #tab3 .lvlQuickBtn { width: 34px; font-size: 10px; }
+    #tab3 .lvlRadio { font-size: 11px; }
+  }
 
 </style>
 </head>
