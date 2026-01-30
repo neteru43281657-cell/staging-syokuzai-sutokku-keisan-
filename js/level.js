@@ -73,6 +73,22 @@ function toNum(v) {
     return needStepCache?.get(typeKey)?.get(targetLv) || 0;
   }
 
+  // 入力制限：負の数と 'e' を防止
+  function enforceInputGuard(input, maxDigits, min, max) {
+    if (!input) return;
+    input.addEventListener('keydown', (e) => {
+      if (e.key === '-' || e.key === 'e') e.preventDefault();
+    });
+    input.addEventListener('input', () => {
+      let val = input.value;
+      if (val === "") return;
+      let n = parseInt(val, 10);
+      if (isNaN(n) || n < min) input.value = min;
+      else if (n > max) input.value = max;
+      if (input.value.length > maxDigits) input.value = input.value.slice(0, maxDigits);
+    });
+  }
+
   function getCandyExp(level, natureKey, boostMul) {
     let base = level < 25 ? 35 : (level < 30 ? 30 : 25);
     let natureMul = natureKey === "up" ? 1.18 : (natureKey === "down" ? 0.82 : 1.0);
@@ -116,11 +132,11 @@ function toNum(v) {
       return;
     }
 
-    const lvNow = Math.max(1, Math.min(64, parseInt(nowRaw)));
-    const lvTarget = Math.max(2, Math.min(65, parseInt(targetRaw)));
+    const lvNow = parseInt(nowRaw);
+    const lvTarget = parseInt(targetRaw);
 
     if (lvTarget <= lvNow) {
-      el("lvResult").innerHTML = `<div class="lvResTitle">計算結果</div><div style="color:red; font-size:12px;">目標レベルは今のレベルよりも大きい値にしてください</div>`;
+      el("lvResult").innerHTML = `<div class="lvResTitle">計算結果</div><div style="color:red; font-weight:bold; font-size:12px;">目標レベルは現在より大きくしてください</div>`;
       el("lvResult").style.display = "block";
       return;
     }
@@ -165,6 +181,17 @@ function toNum(v) {
 
   function bindOnce() {
     const tab3 = document.getElementById("tab3");
+    
+    // 入力ガードの設定
+    enforceInputGuard(el("lvNow"), 2, 1, 64);
+    enforceInputGuard(el("lvTarget"), 2, 2, 65);
+    enforceInputGuard(el("lvProgressExp"), 4, 0, 9999);
+    enforceInputGuard(el("lvCandyOwned"), 4, 0, 9999);
+    enforceInputGuard(el("lvBoostCount"), 4, 0, 9999);
+    enforceInputGuard(el("lvSleepDays"), 3, 0, 999);
+    enforceInputGuard(el("lvSleepBonus"), 1, 0, 5);
+    enforceInputGuard(el("lvGrowthIncense"), 3, 0, 999);
+
     tab3.addEventListener("input", e => {
       if (e.target.id === "lvBoostCount") boostCountTouched = true;
       onCalc();
@@ -180,6 +207,5 @@ function toNum(v) {
     });
   }
 
-  window.LevelTab = { init() { bindOnce(); onCalc(); } };
+  window.LevelTab = { init() { if(!window.__LV_BOUND__){ window.__LV_BOUND__=true; bindOnce(); } onCalc(); } };
 })();
-
