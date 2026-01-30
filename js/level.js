@@ -415,7 +415,9 @@ function toNum(v) {
       // 9999仮定で計算していることが伝わるよう、個数も表示に出す（邪魔なら削除OK）
       const countLabel = (!boostCountTouched) ? `（個数：9999仮定）` : ``;
 
-      html += `<div class="lvResSubTitle">${subtitle} ${countLabel}</div>`;
+    if (boostKind !== "none") {
+      const subtitle = (boostKind === "mini") ? `ミニアメブースト時` : `アメブースト時`;
+      html += `<div class="lvResSubTitle">${subtitle}</div>`;
       html += `<div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${Math.max(0, simBoost.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
       html += `<div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨</div><div class="lvResVal">${simBoost.shardsTotal.toLocaleString()}</div></div>`;
     }
@@ -531,4 +533,5 @@ function toNum(v) {
   };
 
 })();
+
 
