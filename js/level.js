@@ -127,8 +127,10 @@ function toNum(v) {
     const natureSel = getRadio("lvNature");
     const typeSel = getRadio("lvType");
 
+    // 必須項目が未入力の場合は計算結果だけリセットして枠は残す
     if (!nowRaw || !targetRaw || !natureSel || !typeSel) {
-      el("lvResult").style.display = "none";
+      el("lvResult").innerHTML = `<div id="lvResultClear" class="lvResultClose">×</div><div class="lvResTitle">計算結果</div>`;
+      el("lvResultClear").onclick = clearAll;
       return;
     }
 
@@ -136,8 +138,8 @@ function toNum(v) {
     const lvTarget = parseInt(targetRaw);
 
     if (lvTarget <= lvNow) {
-      el("lvResult").innerHTML = `<div class="lvResTitle">計算結果</div><div style="color:red; font-weight:bold; font-size:12px;">目標のレベルは今のレベルより大きい値にしてください</div>`;
-      el("lvResult").style.display = "block";
+      el("lvResult").innerHTML = `<div id="lvResultClear" class="lvResultClose">×</div><div class="lvResTitle">計算結果</div><div style="color:red; font-weight:bold; font-size:12px;">目標のレベルは今のレベルより大きい値にしてください</div>`;
+      el("lvResultClear").onclick = clearAll;
       return;
     }
 
@@ -175,11 +177,7 @@ function toNum(v) {
       html += `<div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨</div><div class="lvResVal">${simBoost.shardsTotal.toLocaleString()}</div></div>`;
     }
 
-    // ⑥ ×ボタンの設置と描画
     el("lvResult").innerHTML = `<div id="lvResultClear" class="lvResultClose">×</div>` + html;
-    el("lvResult").style.display = "block";
-
-    // ×ボタンに全削除機能を紐付け
     el("lvResultClear").onclick = clearAll;
   }
 
@@ -193,7 +191,9 @@ function toNum(v) {
       r.checked = (r.value === "none" || r.value === "normal");
     });
     boostCountTouched = false;
-    el("lvResult").style.display = "none";
+    // 枠は消さず中身だけリセット
+    el("lvResult").innerHTML = `<div id="lvResultClear" class="lvResultClose">×</div><div class="lvResTitle">計算結果</div>`;
+    el("lvResultClear").onclick = clearAll;
   }
 
   function bindOnce() {
@@ -220,9 +220,10 @@ function toNum(v) {
         if (btn.dataset.target) el("lvTarget").value = btn.dataset.target;
         onCalc();
       }
+      // 直接×ボタンが押された場合のリッスン
+      if (e.target.id === "lvResultClear") clearAll();
     });
   }
 
   window.LevelTab = { init() { if(!window.__LV_BOUND__){ window.__LV_BOUND__=true; bindOnce(); } onCalc(); } };
 })();
-
