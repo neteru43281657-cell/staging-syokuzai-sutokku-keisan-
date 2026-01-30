@@ -159,20 +159,23 @@ function toNum(v) {
   }
 
   async function onCalc() {
-    // 各項目の最小値を「0」に修正（ここがズレの最大の原因）
+    // 入力制限（桁数＆範囲）※空欄はそのまま許可
     enforceDigitsAndRange(el("lvNow"), 2, 1, 64);
     enforceDigitsAndRange(el("lvTarget"), 2, 2, 65);
-    enforceDigitsAndRange(el("lvProgressExp"), 4, 0, 9999);
-    enforceDigitsAndRange(el("lvCandyOwned"), 4, 0, 9999);
-    enforceDigitsAndRange(el("lvBoostCount"), 4, 0, 9999);
-    enforceDigitsAndRange(el("lvSleepDays"), 3, 0, 999);
-    enforceDigitsAndRange(el("lvSleepBonus"), 1, 0, 5);
-    enforceDigitsAndRange(el("lvGrowthIncense"), 3, 0, 999);
+
+    enforceDigitsAndRange(el("lvProgressExp"), 4, 1, 9999);
+    enforceDigitsAndRange(el("lvCandyOwned"), 4, 1, 9999);
+    enforceDigitsAndRange(el("lvBoostCount"), 4, 1, 9999);
+
+    enforceDigitsAndRange(el("lvSleepDays"), 3, 1, 999);
+    enforceDigitsAndRange(el("lvSleepBonus"), 1, 1, 5);
+    enforceDigitsAndRange(el("lvGrowthIncense"), 3, 1, 999);
 
     const nowRaw = el("lvNow")?.value.trim();
     const targetRaw = el("lvTarget")?.value.trim();
     const natureSel = getRadio("lvNature");
     const typeSel = getRadio("lvType");
+
 
     if (!nowRaw || !targetRaw || !natureSel || !typeSel) {
       const box = el("lvResult");
@@ -191,7 +194,10 @@ function toNum(v) {
 
     await loadTablesOnce();
 
-    const progressExp = toNum(el("lvProgressExp")?.value);
+    // ---- 入力値（空欄は 0 扱いにするが、「進捗差し引き」は空欄なら無効にする） ----
+    const progressRaw = el("lvProgressExp")?.value.trim() || "";
+    const progressExp = progressRaw ? toNum(progressRaw) : 0;
+
     const candyOwned = toNum(el("lvCandyOwned")?.value);
     const boostKind = getRadio("lvBoostKind") || "none";
     let boostCountEff = boostCountTouched ? toNum(el("lvBoostCount")?.value) : 9999;
@@ -200,18 +206,29 @@ function toNum(v) {
     const sleepBonus = toNum(el("lvSleepBonus")?.value);
     const incense = toNum(el("lvGrowthIncense")?.value);
 
-    // 進捗（次のレベルまでに必要な残りの量）を「既に稼いだ量」に変換
-    let initialProgress = Math.max(0, getNeedStep(lvNow + 1, typeSel) - progressExp);
+    // 進捗（「次のレベルまでの経験値」＝残り）を「既に稼いだ量」に変換
+    const needForNextLevel = getNeedStep(lvNow + 1, typeSel);
+
+    let initialProgress = 0;
+    // 空欄なら差し引かない／入力があり、かつ範囲内のときだけ差し引く
+    if (progressRaw && progressExp > 0 && progressExp < needForNextLevel) {
+      initialProgress = needForNextLevel - progressExp;
+    }
 
     // 総必要EXP（単純合計）
     let totalSteps = 0;
     for (let i = lvNow + 1; i <= lvTarget; i++) totalSteps += getNeedStep(i, typeSel);
 
-    // freeExp (睡眠) の計算：linear方式（おこうは日数分のみ倍増）に修正
-    let usedIncense = Math.min(sleepDays, incense);
-    let perDayBase = 100 + 14 * sleepBonus;
-    let freeExp = perDayBase * (sleepDays + usedIncense);
+    // freeExp（睡眠/ボーナス/おこう）
+    // 1日 = (100 + 14*睡眠EXPボーナス)
+    // おこう = 計算式の最後を *2（個数分）＝ 2^incense 倍
+    const perDayBase = 100 + 14 * sleepBonus;
+    const incenseMul = Math.pow(2, Math.max(0, incense));
+    let freeExp = perDayBase * Math.max(0, sleepDays) * incenseMul;
+
+    // freeExp が総必要EXPを超えるのは防ぐ
     freeExp = Math.min(freeExp, totalSteps);
+
 
     const totalExpNeeded = Math.max(0, totalSteps - initialProgress - freeExp);
 
@@ -269,3 +286,4 @@ function toNum(v) {
     }
   };
 })();
+
