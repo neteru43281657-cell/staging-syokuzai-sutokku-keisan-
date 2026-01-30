@@ -875,14 +875,22 @@
     grid-template-columns: 1fr auto !important;
   }
 
-  /* 7) “display: contents” で崩れていたのを確実に無効化（保険） */
-  #tab3 .lvlBoostLine,
-  #tab3 .lvlOptLines,
-  #tab3 .lvlOptLine{
-    display: initial !important;
+  /* “display: contents” の解除は「正しいdisplay」で戻す */
+  #tab3 .lvlBoostLine{ display: grid !important; }
+  
+  #tab3 .lvlOptLines{
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
   }
-}
-
+  
+  #tab3 .lvlOptLine{
+    display: grid !important;
+    grid-template-columns: 1fr auto !important; /* 左=項目名 / 右=入力 */
+    gap: 10px !important;
+    align-items: center !important;
+  }
+  
     
   /* クリア1個のときは確実に中央寄せ */
   #tab3 .lvlButtons.lvlButtonsSingle{
@@ -1169,13 +1177,16 @@
     #tab3 #lvCandyOwned::-webkit-outer-spin-button,
     #tab3 #lvCandyOwned::-webkit-inner-spin-button,
     #tab3 #lvBoostCount::-webkit-outer-spin-button,
-    #tab3 #lvBoostCount::-webkit-inner-spin-button,
+    #tab3 #lvBoostCount::-webkit-inner-spin-button{
+      -webkit-appearance: none;
       margin: 0;
     }
-    /* Firefox用 */
+  
+    /* Firefox用（スピン非表示） */
     #tab3 #lvProgressExp,
     #tab3 #lvCandyOwned,
-    #tab3 #lvBoostCount,
+    #tab3 #lvBoostCount{
+      -moz-appearance: textfield;
     }
   
     /* ▲ 上側（区切り線より上のレベル入力）＝普段から見える寄りにする */
@@ -1185,14 +1196,14 @@
     #tab3 #lvTarget::-webkit-inner-spin-button{
       opacity: 1; /* “常時表示寄り” */
     }
-
+  
     /* ブースト：個数入力を右寄せで1行に */
     #tab3 .lvlBoostCountLine{
       display:flex;
       justify-content:flex-end;
       margin-top: 8px;
     }
-    
+  
     /* 結果カードの右上カーブに×を被せる */
     #tab3 .lvlResult{ position: relative; }
     #tab3 .lvResultClose{
@@ -1201,11 +1212,9 @@
       right: -12px !important;
       z-index: 10;
     }
-    
+  
     /* ブースト行だけ：上寄せにして、ラジオを「ブーストの下」に見せる */
-    #tab3 .lvlRowBoost{
-      align-items: flex-start;
-    }
+    #tab3 .lvlRowBoost{ align-items: flex-start; }
     #tab3 .lvlRowBoost .lvlBoostRadios{
       margin-top: 6px;
       justify-content: flex-start;
@@ -1213,6 +1222,7 @@
       flex-wrap: wrap;
     }
   }
+
 
   /* =========================
    * [PC] タブ③：オプション行だけ正しく整列（左=項目名 / 右=入力）
@@ -1249,28 +1259,35 @@
    * ========================= */
   @media (max-width: 520px){
   
-    /* ブースト行の入力側だけ、2段レイアウトにする（inline style を上書き） */
-    #tab3 .lvlRow:has(.lvlBoostRadios) .lvlInput{
+    /* ブースト行（.lvlRowBoost）だけを2段レイアウト化 */
+    #tab3 .lvlRowBoost .lvlInput{
       display: grid !important;
       grid-template-columns: 1fr auto !important;
       grid-template-rows: auto auto !important;
       row-gap: 8px !important;
+      align-items: start !important;
     }
   
     /* 右上：個数入力 */
-    #tab3 .lvlRow:has(.lvlBoostRadios) .lvlBoostCountLine{
+    #tab3 .lvlRowBoost .lvlBoostCountLine{
       grid-column: 2 !important;
       grid-row: 1 !important;
       justify-self: end !important;
       margin-top: 0 !important;
     }
   
-    /* 下段：ラジオ（2つ横並び） */
-    #tab3 .lvlRow:has(.lvlBoostRadios) .lvlBoostRadios{
+    /* 下段：ラジオ（左寄せ） */
+    #tab3 .lvlRowBoost .lvlBoostRadios{
       grid-column: 1 / -1 !important;
       grid-row: 2 !important;
       justify-content: flex-start !important;
+      margin-top: 0 !important;
       gap: 18px !important;
+    }
+  
+    /* ついでに：睡眠EXPボーナス（lvSleepBonus）が大きい問題を抑える */
+    #tab3 .lvlIn1{
+      width: 4ch !important;  /* ← “x体” をコンパクトに */
     }
   }
 
