@@ -505,18 +505,20 @@ function toNum(v) {
     const tab3 = document.getElementById("tab3");
     if (tab3) {
       tab3.addEventListener("click", (e) => {
+        // ボタンのクリックを確実に拾う
         const btn = e.target.closest(".lvlQuickBtn");
         if (!btn) return;
-
+    
         if (btn.dataset.now) {
-          el("lvNow").value = String(btn.dataset.now);
-          boostCountTouched = boostCountTouched; // no-op（他の状態維持）
-          onCalc();
+          const input = document.getElementById("lvNow");
+          if (input) input.value = btn.dataset.now;
         }
         if (btn.dataset.target) {
-          el("lvTarget").value = String(btn.dataset.target);
-          onCalc();
+          const input = document.getElementById("lvTarget");
+          if (input) input.value = btn.dataset.target;
         }
+        // 値が変わったら再計算をトリガー
+        onCalc();
       });
     }
     
@@ -533,5 +535,6 @@ function toNum(v) {
   };
 
 })();
+
 
 
