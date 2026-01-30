@@ -662,12 +662,11 @@
   ========================= */
 
   /* タブ3専用のクリーンなスタイル定義 */
-  /* --- タブ3 最終調整版 (スマホ最適化) --- */
+  /* --- タブ3 最終調整版 (常時表示対応) --- */
   #tab3 .lvlForm { display: flex; flex-direction: column; gap: 16px; font-family: inherit; }
   #tab3 .lvlGroup { display: flex; flex-direction: column; gap: 14px; }
   #tab3 .lvlDivider { height: 1px; background: var(--line); margin: 4px 0; opacity: 0.6; }
 
-  /* ③ フォントウェイトを全体的に強化 */
   #tab3 .lvlLabel { font-weight: 900; font-size: 14px; color: var(--text); flex: 1; }
   #tab3 .lvlReq { color: var(--danger); margin-right: 4px; }
 
@@ -689,13 +688,13 @@
     display: flex; align-items: center; justify-content: center; color: var(--muted) !important; cursor: pointer;
   }
 
-  /* ①, ② 入力欄：中央揃え、太字、プレースホルダー調整 */
+  /* 入力欄：中央揃え、太字、プレースホルダー調整 */
   #tab3 input[type="number"] {
     -moz-appearance: textfield;
     line-height: normal !important;
     vertical-align: middle;
-    text-align: center; /* ① 中央揃え */
-    font-weight: 900;    /* ② 太字 */
+    text-align: center;
+    font-weight: 900;
   }
   #tab3 input[type="number"]::-webkit-outer-spin-button,
   #tab3 input[type="number"]::-webkit-inner-spin-button {
@@ -704,13 +703,14 @@
   }
   #tab3 input::placeholder { color: #d1d5db; opacity: 1; font-size: 11px; text-align: center; font-weight: 900; }
 
-  /* ④ ラジオボタンの間隔と1pxの調整  これで調整  top: -2px; */
+  /* ラジオボタンの間隔と1pxの調整 */
   #tab3 .lvlRadio input[type="radio"] {
     margin: 0;
     vertical-align: middle;
     position: relative;
+    top: -1px;
   }
-  #tab3 .lvlRadio span { vertical-align: middle; margin-left: 8px; font-weight: 900; } /* 8pxあける */
+  #tab3 .lvlRadio span { vertical-align: middle; margin-left: 8px; font-weight: 900; }
 
   /* 性格・タイプ用の縦並び */
   #tab3 .lvlRowStack { display: flex; flex-direction: column; gap: 10px; padding: 4px 0; }
@@ -729,15 +729,15 @@
   #tab3 .lvlInMini { width: 50px; }
   #tab3 .lvlUnit { font-size: 11px; font-weight: 900; white-space: nowrap; }
 
-  /* ⑤ オプションラベルと睡眠の高さ合わせ */
+  /* オプションラベルと睡眠の高さ合わせ */
   #tab3 .lvlOptGroup .lvlRow { align-items: flex-start; }
   #tab3 .lvlOptGroup .lvlLabel { margin-top: 8px; }
   #tab3 .lvlOptItems { display: flex; flex-direction: column; gap: 10px; flex: 1.5; }
   #tab3 .lvlOptLine { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
   #tab3 .lvlOptName { font-size: 12px; font-weight: 900; color: var(--muted); }
 
-  /* ⑥ 計算結果と×ボタン */
-  #tab3 .lvlResult { margin-top: 12px; border: 2px solid var(--main); background: #ffffff; border-radius: 16px; padding: 16px; display: none; position: relative; }
+  /* 計算結果と×ボタン (display: blockで常時表示) */
+  #tab3 .lvlResult { margin-top: 12px; border: 2px solid var(--main); background: #ffffff; border-radius: 16px; padding: 16px; display: block; position: relative; min-height: 60px; }
   #tab3 .lvResTitle { font-weight: 900; font-size: 16px; color: var(--main); margin-bottom: 12px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
   #tab3 .lvResRow { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
   #tab3 .lvResKey { font-weight: 900; font-size: 13px; color: var(--muted); }
@@ -1006,7 +1006,10 @@
               </div>
             </div>
           </div>
-          <div id="lvResult" class="lvlResult"></div>
+          <div id="lvResult" class="lvlResult">
+            <div id="lvResultClear" class="lvResultClose">×</div>
+            <div class="lvResTitle">計算結果</div>
+          </div>
         </div>
       </section>
     </div>
