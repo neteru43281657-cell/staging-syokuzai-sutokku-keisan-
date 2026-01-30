@@ -136,7 +136,7 @@ function toNum(v) {
     const lvTarget = parseInt(targetRaw);
 
     if (lvTarget <= lvNow) {
-      el("lvResult").innerHTML = `<div class="lvResTitle">計算結果</div><div style="color:red; font-weight:bold; font-size:12px;">目標レベルは現在より大きくしてください</div>`;
+      el("lvResult").innerHTML = `<div class="lvResTitle">計算結果</div><div style="color:red; font-weight:bold; font-size:12px;">目標のレベルは今のレベルより大きい値にしてください</div>`;
       el("lvResult").style.display = "block";
       return;
     }
@@ -225,3 +225,4 @@ function toNum(v) {
 
   window.LevelTab = { init() { if(!window.__LV_BOUND__){ window.__LV_BOUND__=true; bindOnce(); } onCalc(); } };
 })();
+
