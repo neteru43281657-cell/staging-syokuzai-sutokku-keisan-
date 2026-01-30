@@ -194,6 +194,30 @@ function toNum(v) {
 
     await loadTablesOnce();
 
+  async function onCalc() {
+    await loadTablesOnce();
+
+    // 入力値の取得
+    const lvNow = toNum(el("lvNow").value);
+    const lvTarget = toNum(el("lvTarget").value);
+    const lvSleepDays = toNum(el("lvSleepDays").value); // 睡眠日数
+    const growthIncenseEl = el("lvGrowthIncense");      // おこうの入力要素
+    let lvGrowthIncense = toNum(growthIncenseEl.value);
+
+    // --- ① & ② 「せいちょうのおこう」の制限処理 ---
+    // おこうの数が睡眠日数を超えていたら、睡眠日数と同じ値に補正する
+    if (lvGrowthIncense > lvSleepDays) {
+      growthIncenseEl.value = String(lvSleepDays);
+      lvGrowthIncense = lvSleepDays; // 計算用の変数も更新
+    }
+    // ----------------------------------------------
+
+    // 既存のレベル逆転補正
+    if (lvNow > lvTarget) {
+      el("lvTarget").value = String(lvNow);
+    }
+
+    
     // ---- 入力値（空欄は 0 扱いにするが、「進捗差し引き」は空欄なら無効にする） ----
     const progressRaw = el("lvProgressExp")?.value.trim() || "";
     const progressExp = progressRaw ? toNum(progressRaw) : 0;
@@ -286,4 +310,5 @@ function toNum(v) {
     }
   };
 })();
+
 
