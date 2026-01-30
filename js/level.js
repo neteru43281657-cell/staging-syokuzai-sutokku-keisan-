@@ -51,7 +51,6 @@ function toNum(v) {
       if (p.length < 2) return;
       const lv = Number(p[0]);
       if (!Number.isFinite(lv)) return;
-      // 内部的には Normal(ふつう) 列のみを正として使用し、他は倍率計算する
       map.set(lv, { normal: toNum(p[1]) });
     });
     return map;
@@ -72,7 +71,6 @@ function toNum(v) {
     }
     needStepCache.set("normal", normalMap);
 
-    // 累計（Normal）を算出
     const cumNormal = [0];
     let sum = 0;
     for (let lv = 2; lv <= 65; lv++) {
@@ -80,7 +78,6 @@ function toNum(v) {
       cumNormal[lv] = sum;
     }
 
-    // 他タイプ：累計に倍率をかけて四捨五入し、その差分を取る（誤差蓄積防止）
     ["600", "semi", "legend"].forEach(typeKey => {
       const mul = TYPE_MUL[typeKey];
       const map = new Map();
@@ -99,9 +96,6 @@ function toNum(v) {
     return m ? (m.get(targetLv) || 0) : 0;
   }
 
-  /* =========================
-   * DOM helpers & Guard
-   * ========================= */
   const el = id => document.getElementById(id);
   const getRadio = name => document.querySelector(`input[name="${name}"]:checked`)?.value ?? null;
 
@@ -111,29 +105,21 @@ function toNum(v) {
     if (digits.length > maxDigits) digits = digits.slice(0, maxDigits);
     if (digits !== "") {
       let v = Math.max(min, Math.min(max, parseInt(digits, 10)));
-      // 入力中の利便性のため、末尾が0などの場合に強制上書きしないよう配慮
       if (input.value !== String(v)) input.value = String(v);
     }
   }
 
-  /* =========================
-   * EXP per candy
-   * ========================= */
   function getCandyExp(level, natureKey, boostMul) {
     let base = level < 25 ? 35 : (level < 30 ? 30 : 25);
     let natureMul = natureKey === "up" ? 1.18 : (natureKey === "down" ? 0.82 : 1.0);
-    // 性格補正をかけて四捨五入してからブースト倍率をかける（仕様）
     return Math.round(base * natureMul) * boostMul;
   }
 
-  /* =========================
-   * Simulator
-   * ========================= */
   function simulateCandiesAndShards(opts) {
     const { lvNow, lvTarget, typeKey, natureKey, initialProgress, freeExp, boostKind, boostCount } = opts;
     let candies = 0, shards = 0, lv = lvNow;
-    let currentExp = initialProgress + freeExp;
-    let boostRemain = Math.max(0, boostCount);
+    let currentExp = (initialProgress || 0) + (freeExp || 0);
+    let boostRemain = Math.max(0, boostCount || 0);
     
     const boostExpMul = 2;
     const boostShardMul = boostKind === "mini" ? 4 : (boostKind === "full" ? 5 : 1);
@@ -159,107 +145,64 @@ function toNum(v) {
   }
 
   async function onCalc() {
-    // 入力制限（桁数＆範囲）※空欄はそのまま許可
+    await loadTablesOnce();
+
+    // 入力項目のガード
     enforceDigitsAndRange(el("lvNow"), 2, 1, 64);
     enforceDigitsAndRange(el("lvTarget"), 2, 2, 65);
+    enforceDigitsAndRange(el("lvProgressExp"), 4, 0, 9999);
+    enforceDigitsAndRange(el("lvCandyOwned"), 4, 0, 9999);
+    enforceDigitsAndRange(el("lvBoostCount"), 4, 0, 9999);
+    enforceDigitsAndRange(el("lvSleepDays"), 3, 0, 999);
+    enforceDigitsAndRange(el("lvSleepBonus"), 1, 0, 5);
+    enforceDigitsAndRange(el("lvGrowthIncense"), 3, 0, 999);
 
-    enforceDigitsAndRange(el("lvProgressExp"), 4, 1, 9999);
-    enforceDigitsAndRange(el("lvCandyOwned"), 4, 1, 9999);
-    enforceDigitsAndRange(el("lvBoostCount"), 4, 1, 9999);
-
-    enforceDigitsAndRange(el("lvSleepDays"), 3, 1, 999);
-    enforceDigitsAndRange(el("lvSleepBonus"), 1, 1, 5);
-    enforceDigitsAndRange(el("lvGrowthIncense"), 3, 1, 999);
-
-    const nowRaw = el("lvNow")?.value.trim();
-    const targetRaw = el("lvTarget")?.value.trim();
-    const natureSel = getRadio("lvNature");
-    const typeSel = getRadio("lvType");
-
-
-    if (!nowRaw || !targetRaw || !natureSel || !typeSel) {
-      const box = el("lvResult");
-      if (box) box.style.display = "none";
-      return;
-    }
-
-    const lvNow = parseInt(nowRaw, 10);
-    const lvTarget = parseInt(targetRaw, 10);
-
-    if (lvTarget <= lvNow) {
-      el("lvResult").innerHTML = `<div class="lvResTitle">計算結果</div><div style="color:red; font-size:12px; font-weight:bold;">目標のレベルは今のレベルより大きい値にしてください</div>`;
-      el("lvResult").style.display = "block";
-      return;
-    }
-
-    await loadTablesOnce();
-
-  async function onCalc() {
-    await loadTablesOnce();
-
-    // 入力値の取得
     const lvNow = toNum(el("lvNow").value);
     const lvTarget = toNum(el("lvTarget").value);
-    const lvSleepDays = toNum(el("lvSleepDays").value); // 睡眠日数
-    const growthIncenseEl = el("lvGrowthIncense");      // おこうの入力要素
+    const lvSleepDays = toNum(el("lvSleepDays").value); // 基準となる睡眠日数
+    const growthIncenseEl = el("lvGrowthIncense");      // おこうの入力欄
     let lvGrowthIncense = toNum(growthIncenseEl.value);
 
-    // --- ① & ② 「せいちょうのおこう」の制限処理 ---
-    // おこうの数が睡眠日数を超えていたら、睡眠日数と同じ値に補正する
     if (lvGrowthIncense > lvSleepDays) {
       growthIncenseEl.value = String(lvSleepDays);
-      lvGrowthIncense = lvSleepDays; // 計算用の変数も更新
+      lvGrowthIncense = lvSleepDays;
     }
-    // ----------------------------------------------
 
-    // 既存のレベル逆転補正
     if (lvNow > lvTarget) {
       el("lvTarget").value = String(lvNow);
     }
 
-    
-    // ---- 入力値（空欄は 0 扱いにするが、「進捗差し引き」は空欄なら無効にする） ----
-    const progressRaw = el("lvProgressExp")?.value.trim() || "";
-    const progressExp = progressRaw ? toNum(progressRaw) : 0;
+    const nowRaw = el("lvNow").value.trim();
+    const targetRaw = el("lvTarget").value.trim();
+    const natureSel = getRadio("lvNature");
+    const typeSel = getRadio("lvType");
 
-    const candyOwned = toNum(el("lvCandyOwned")?.value);
-    const boostKind = getRadio("lvBoostKind") || "none";
-    let boostCountEff = boostCountTouched ? toNum(el("lvBoostCount")?.value) : 9999;
-
-    const sleepDays = toNum(el("lvSleepDays")?.value);
-    const sleepBonus = toNum(el("lvSleepBonus")?.value);
-    const incense = toNum(el("lvGrowthIncense")?.value);
-
-    // 進捗（「次のレベルまでの経験値」＝残り）を「既に稼いだ量」に変換
-    const needForNextLevel = getNeedStep(lvNow + 1, typeSel);
-
-    let initialProgress = 0;
-    // 空欄なら差し引かない／入力があり、かつ範囲内のときだけ差し引く
-    if (progressRaw && progressExp > 0 && progressExp < needForNextLevel) {
-      initialProgress = needForNextLevel - progressExp;
+    if (!nowRaw || !targetRaw || !natureSel || !typeSel) {
+      el("lvResult").innerHTML = `<div id="lvResultClear" class="lvResultClose">×</div><div class="lvResTitle">計算結果</div>`;
+      el("lvResultClear").onclick = clearAll;
+      return;
     }
 
-    // 総必要EXP（単純合計）
+    const progressExp = toNum(el("lvProgressExp").value);
+    const candyOwned = toNum(el("lvCandyOwned").value);
+    const boostKind = getRadio("lvBoostKind") || "none";
+    let boostCountEff = boostCountTouched ? toNum(el("lvBoostCount").value) : 9999;
+    const sleepBonus = toNum(el("lvSleepBonus").value);
+
+    let initialProgress = Math.max(0, getNeedStep(lvNow + 1, typeSel) - progressExp);
     let totalSteps = 0;
     for (let i = lvNow + 1; i <= lvTarget; i++) totalSteps += getNeedStep(i, typeSel);
 
-    // freeExp（睡眠/ボーナス/おこう）
-    // 1日 = (100 + 14*睡眠EXPボーナス)
-    // おこう = 計算式の最後を *2（個数分）＝ 2^incense 倍
-    const perDayBase = 100 + 14 * sleepBonus;
-    const incenseMul = Math.pow(2, Math.max(0, incense));
-    let freeExp = perDayBase * Math.max(0, sleepDays) * incenseMul;
-
-    // freeExp が総必要EXPを超えるのは防ぐ
+    // 睡眠EXPの計算（おこう分を加算）
+    let usedIncense = Math.min(lvSleepDays, lvGrowthIncense);
+    let perDayBase = 100 + 14 * sleepBonus;
+    let freeExp = perDayBase * (lvSleepDays + usedIncense);
     freeExp = Math.min(freeExp, totalSteps);
 
-
     const totalExpNeeded = Math.max(0, totalSteps - initialProgress - freeExp);
-
-    // シミュレーション実行
     const simNormal = simulateCandiesAndShards({ lvNow, lvTarget, typeKey: typeSel, natureKey: natureSel, initialProgress, freeExp, boostKind: "none", boostCount: 0 });
 
-    let html = `<div id="lvResultClear" class="lvResultClose">×</div><div class="lvResTitle">計算結果</div>`;
+    let html = `<div class="lvResTitle">計算結果</div>`;
     html += `<div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">${totalExpNeeded.toLocaleString()} pt</div></div>`;
     html += `<div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${Math.max(0, simNormal.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
     html += `<div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨</div><div class="lvResVal">${simNormal.shardsTotal.toLocaleString()}</div></div>`;
@@ -272,9 +215,20 @@ function toNum(v) {
       html += `<div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨</div><div class="lvResVal">${simBoost.shardsTotal.toLocaleString()}</div></div>`;
     }
 
-    el("lvResult").innerHTML = html;
-    el("lvResult").style.display = "block";
-    el("lvResultClear").onclick = LevelTab.clearAll;
+    el("lvResult").innerHTML = `<div id="lvResultClear" class="lvResultClose">×</div>` + html;
+    el("lvResultClear").onclick = clearAll;
+  }
+
+  function clearAll() {
+    ["lvNow", "lvTarget", "lvProgressExp", "lvCandyOwned", "lvBoostCount", "lvSleepDays", "lvSleepBonus", "lvGrowthIncense"].forEach(id => {
+      const x = el(id); if (x) x.value = "";
+    });
+    document.querySelectorAll('#tab3 input[type="radio"]').forEach(r => {
+      r.checked = (r.value === "none" || r.value === "normal");
+    });
+    boostCountTouched = false;
+    el("lvResult").innerHTML = `<div id="lvResultClear" class="lvResultClose">×</div><div class="lvResTitle">計算結果</div>`;
+    el("lvResultClear").onclick = clearAll;
   }
 
   function bindOnce() {
@@ -293,22 +247,9 @@ function toNum(v) {
         if (btn.dataset.target) el("lvTarget").value = btn.dataset.target;
         onCalc();
       }
+      if (e.target.id === "lvResultClear") clearAll();
     });
   }
 
-  window.LevelTab = {
-    init() { if (!window.__LV_BOUND__) { window.__LV_BOUND__ = true; bindOnce(); } onCalc(); },
-    clearAll() {
-      ["lvNow", "lvTarget", "lvProgressExp", "lvCandyOwned", "lvBoostCount", "lvSleepDays", "lvSleepBonus", "lvGrowthIncense"].forEach(id => {
-        const x = el(id); if (x) x.value = "";
-      });
-      document.querySelectorAll('#tab3 input[type="radio"]').forEach(r => {
-        r.checked = (r.value === "none" || r.value === "normal");
-      });
-      boostCountTouched = false;
-      onCalc();
-    }
-  };
+  window.LevelTab = { init() { if (!window.__LV_BOUND__) { window.__LV_BOUND__ = true; bindOnce(); } onCalc(); } };
 })();
-
-
