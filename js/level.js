@@ -73,7 +73,7 @@ function toNum(v) {
     return needStepCache?.get(typeKey)?.get(targetLv) || 0;
   }
 
-  // 入力制限：負の数と 'e' を防止
+  // 負の数・eのガード
   function enforceInputGuard(input, maxDigits, min, max) {
     if (!input) return;
     input.addEventListener('keydown', (e) => {
@@ -175,14 +175,30 @@ function toNum(v) {
       html += `<div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨</div><div class="lvResVal">${simBoost.shardsTotal.toLocaleString()}</div></div>`;
     }
 
-    el("lvResult").innerHTML = html;
+    // ⑥ ×ボタンの設置と描画
+    el("lvResult").innerHTML = `<div id="lvResultClear" class="lvResultClose">×</div>` + html;
     el("lvResult").style.display = "block";
+
+    // ×ボタンに全削除機能を紐付け
+    el("lvResultClear").onclick = clearAll;
+  }
+
+  function clearAll() {
+    // 全入力欄をリセット
+    ["lvNow", "lvTarget", "lvProgressExp", "lvCandyOwned", "lvBoostCount", "lvSleepDays", "lvSleepBonus", "lvGrowthIncense"].forEach(id => {
+      const x = el(id); if (x) x.value = "";
+    });
+    // 全ラジオを初期値へ
+    document.querySelectorAll('#tab3 input[type="radio"]').forEach(r => {
+      r.checked = (r.value === "none" || r.value === "normal");
+    });
+    boostCountTouched = false;
+    el("lvResult").style.display = "none";
   }
 
   function bindOnce() {
     const tab3 = document.getElementById("tab3");
     
-    // 入力ガードの設定
     enforceInputGuard(el("lvNow"), 2, 1, 64);
     enforceInputGuard(el("lvTarget"), 2, 2, 65);
     enforceInputGuard(el("lvProgressExp"), 4, 0, 9999);
