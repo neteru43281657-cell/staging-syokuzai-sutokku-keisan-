@@ -462,8 +462,37 @@ function toNum(v) {
    * Bind events
    * ========================= */
   function bindOnce() {
-    // ブーストラジオを「押し直し解除」に
-    enableToggleRadio("lvBoostKind");
+    // すべての入力項目とラジオボタンにイベントを貼る
+    const inputs = document.querySelectorAll('#tab3 input');
+    inputs.forEach(input => {
+      input.addEventListener('input', onCalc);
+      input.addEventListener('change', onCalc);
+    });
+  
+    // クイックボタンのクリック処理（機能復活）
+    const tab3 = document.getElementById("tab3");
+    if (tab3) {
+      tab3.addEventListener("click", (e) => {
+        const btn = e.target.closest(".lvlQuickBtn");
+        if (!btn) return;
+  
+        if (btn.dataset.now) {
+          const targetInput = document.getElementById("lvNow");
+          targetInput.value = btn.dataset.now;
+        }
+        if (btn.dataset.target) {
+          const targetInput = document.getElementById("lvTarget");
+          targetInput.value = btn.dataset.target;
+        }
+        
+        // ボタンを押した直後に計算を実行
+        onCalc();
+      });
+    }
+    
+    // 初回実行
+    onCalc();
+  }
 
     // 結果欄×ボタン（innerHTMLで作り直されるので委譲）
     el("lvResult")?.addEventListener("click", (e) => {
@@ -535,6 +564,7 @@ function toNum(v) {
   };
 
 })();
+
 
 
 
