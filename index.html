@@ -821,15 +821,21 @@
     color: var(--text);
   }
   
-  /* 3桁・1桁入力の横幅をレベル入力（lvlIn2）と統一 */
+  /* クラス名を併記して、睡眠EXPボーナス(lvlIn1)の幅を他のオプション(lvlIn3)に合わせる */
   #tab3 .lvlIn3,
   #tab3 .lvlIn1 {
-    width: 6ch !important; /* lvlIn2 と同じサイズへ拡大 */
+    width: 6ch !important; /* 文字数ベースで幅を固定 */
     text-align: center !important;
+    box-sizing: border-box !important;
   }
   
-/* PC表示（900px以上）：タブ③の縦ラインを統一（赤線基準） */
-@media (min-width: 900px){
+  /* PC表示時(900px以上)の微調整も統一 */
+  @media (min-width: 900px) {
+    #tab3 #lvSleepBonus, 
+    #tab3 .lvlIn1 {
+      width: 6ch !important; /* ここが小さくなっていたのを修正 */
+    }
+  }
 
   /* 1) 全行：左ラベル幅を固定して「縦ライン」を固定 */
   #tab3 .lvlRow{
@@ -1303,29 +1309,36 @@
     }
   }
 
-  @media (max-width: 520px){
-    /* ブースト：1行目右に個数、2行目にラジオ（希望レイアウト） */
-    #tab3 .lvlRowBoost .lvlInput{
-      display: grid !important;
-      grid-template-columns: 1fr auto !important;
-      grid-template-rows: auto auto !important;
-      column-gap: 10px !important;
-      row-gap: 8px !important;
-      align-items: start !important;
-    }
-
-    #tab3 .lvlRowBoost .lvlBoostCountLine{
-      grid-column: 2 !important;
-      grid-row: 1 !important;
-      justify-self: end !important;
-    }
-
-    #tab3 .lvlRowBoost .lvlBoostRadios{
-      grid-column: 1 / -1 !important;
-      grid-row: 2 !important;
-      justify-content: flex-start !important;
-    }
+/* @media (max-width: 520px) 内を修正 */
+@media (max-width: 520px) {
+  /* ブースト行の親要素 */
+  #tab3 .lvlRowBoost .lvlInput {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important; /* 左：余白 / 右：入力欄 */
+    grid-template-rows: auto auto !important;   /* 1段目：入力行 / 2段目：ラジオ行 */
+    column-gap: 10px !important;
+    row-gap: 12px !important; /* 段落間の余白 */
+    align-items: center !important; /* 1段目内のy軸を中央揃え */
   }
+
+  /* 1段目右：個数入力欄 */
+  #tab3 .lvlRowBoost .lvlBoostCountLine {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    justify-self: end !important;
+    margin: 0 !important; /* 余計なマージンを排除 */
+  }
+
+  /* 2段目：ラジオボタンを左端から横並びに */
+  #tab3 .lvlRowBoost .lvlBoostRadios {
+    grid-column: 1 / -1 !important; /* 横幅いっぱい使う */
+    grid-row: 2 !important;
+    display: flex !important;
+    justify-content: flex-start !important; /* 左寄せ */
+    gap: 18px !important;
+    margin: 0 !important;
+  }
+}
 
 </style>
 </head>
