@@ -658,685 +658,109 @@
   }
 
   /* =========================
-     経験値シミュレータ―（tab3）- 1本化（見た目は現状維持）
+     経験値シミュレータ―（tab3）
   ========================= */
-  
-  /* 他のタブの .card と条件を統一 */
-  #levelCard {
-    max-width: none;
-    margin: 0;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  @media (min-width: 900px){
-    #levelCard{ box-shadow: 0 6px 24px rgba(0,0,0,0.04); }
-  }
-  
-  .lvlForm{ display:flex; flex-direction:column; gap:12px; }
-  
-  .lvlDivider{
-    height:2px;
-    background: rgba(0,0,0,0.18);
-    border-radius: 999px;
-    margin: 10px 0;
-  }
-  
-  /* 行：左ラベル / 右入力群（現状の列幅を維持） */
-  .lvlRow{
-    display:grid;
-    grid-template-columns: minmax(0, 1fr) minmax(120px, 260px);
-    gap: 10px;
-    align-items: start;
-    padding: 4px 0;
-  }
-  @media (max-width: 520px){
-    .lvlRow{ grid-template-columns: minmax(0, 1fr) minmax(120px, 200px); }
-    .lvlLabel{ font-size: 14px; }
-    .lvlRadio{ font-size: 12px; }
-    .lvlQuick{ max-width: 150px; }
-  }
-  
-  /* 性格/経験値タイプ：1列 */
-  .lvlRowFull{
-    grid-template-columns: 1fr !important;
-    align-items: start;
-  }
-  .lvlRowFull .lvlLabel{ margin-bottom: 6px; }
-  
-  /* ラベル */
-  .lvlLabel{
-    font-weight: 900;
-    font-size: 16px;
-    color: #111;
-    line-height: 1.2;
-  }
-  .lvlReq{ color:#e74c3c; margin-right:6px; }
-  .lvlNote{
-    font-size:12px;
-    font-weight:700;
-    color: var(--muted);
-    margin-top:6px;
-    display:block;
-  }
-  
-  /* ラジオ：1行固定 */
-  .lvlRadios{
-    display:flex;
-    gap:18px;
-    flex-wrap:nowrap;
-    overflow-x:auto;
-    -webkit-overflow-scrolling: touch;
-    align-items:center;
-    justify-content:flex-start;
-  }
-  .lvlRadios::-webkit-scrollbar{ display:none; }
-  .lvlRadio{ white-space: nowrap; }
-  
-  /* ラジオ位置（現状：少し下げる＝4px） */
-  .lvlRadio input[type="radio"]{
-    margin: 0 6px 0 0;
-    transform: translateY(4px);
-  }
-  
-  /* 入力側：左=クイック、右=入力＋単位 */
-  .lvlInput{
-    display: grid;
-    grid-template-columns: 1fr auto;
-    column-gap: 10px;
-    align-items: start;
-  }
-  
-  /* 右：入力＋単位 */
-  .lvlInputRight{
-    display: inline-grid;
-    grid-template-columns: auto auto;  /* input | unit */
-    gap: 6px;
-    align-items: center;              /* 現状維持：縦ズレ防止 */
-    justify-content: end;
-    white-space: nowrap;
-  }
-  
-  /* 単位 */
-  .lvlUnit{
-    font-weight: 900;
-    color:#111;
-    white-space: nowrap;
-    font-size: 10px;
-    opacity: .85;
-  
-    /* 現状維持：ベースライン差を吸収 */
-    line-height: 1;
-    display: inline-flex;
-    align-items: center;
-  }
-  
-  /* 入力（共通） */
-  .lvlInput input,
-  .lvlInputRight input{
-    border: 2px solid rgba(0,0,0,0.12);
-    border-radius: 10px;
-    padding: 4px 6px;
-    font-weight: 900;
-    outline: none;
-    width: auto !important;
-  
-    /* 現状維持：機種差で縦がズレるのを抑える */
-    line-height: 1;
-  }
-  
-  /* 入力幅（現状の“最終上書き”結果を維持） */
-  #tab3 .lvlIn2{
-    width: 6ch !important;
-    text-align: center !important;
-  }
-  #tab3 .lvlIn4,
-  #tab3 .lvlInBoost{
-    width: 8ch !important;
-    text-align: center !important;
-  }
 
-  /* ブースト：2行目を「クイック + 入力」にする */
-  #tab3 .lvlBoostLine{
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 10px;
-    align-items: start;
-  }
+  /* タブ3専用のクリーンなスタイル定義 */
+  #tab3 .lvlForm { display: flex; flex-direction: column; gap: 16px; }
+  #tab3 .lvlGroup { display: flex; flex-direction: column; gap: 12px; }
+  #tab3 .lvlDivider { height: 1px; background: #e0e0e0; margin: 4px 0; }
   
-  /* オプション：枠なしで3行・左揃え */
-  #tab3 .lvlOptLines{
+  /* 基本の1行レイアウト */
+  #tab3 .lvlRow {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  #tab3 .lvlOptLine{
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 10px;
+    justify-content: space-between;
     align-items: center;
-  }
-  #tab3 .lvlOptName{
-    font-size: 13px;
-    font-weight: 800;
-    color: var(--text);
-  }
-  
-  /* クラス名を併記して、睡眠EXPボーナス(lvlIn1)の幅を他のオプション(lvlIn3)に合わせる */
-  #tab3 .lvlIn3,
-  #tab3 .lvlIn1 {
-    width: 6ch !important; /* 文字数ベースで幅を固定 */
-    text-align: center !important;
-    box-sizing: border-box !important;
-  }
-  
-  /* PC表示時(900px以上)の微調整も統一 */
-  @media (min-width: 900px) {
-    #tab3 #lvSleepBonus, 
-    #tab3 .lvlIn1 {
-      width: 6ch !important; /* ここが小さくなっていたのを修正 */
-    }
-  }
-
-  /* 1) 全行：左ラベル幅を固定して「縦ライン」を固定 */
-  #tab3 .lvlRow{
-    grid-template-columns: 260px 1fr !important; /* ←ここが基準線（縦線） */
-    gap: 14px !important;
-    align-items: center !important;
-    padding: 6px 0 !important;
-  }
-
-  /* 2) 性格/経験値タイプ（今は1列指定になっているので、PCでは2列に戻して揃える） */
-  #tab3 .lvlRowFull{
-    grid-template-columns: 260px 1fr !important;
-    align-items: center !important;
-  }
-  #tab3 .lvlRowFull .lvlLabel{
-    margin-bottom: 0 !important;
-  }
-
-  /* 3) 右側（入力ブロック）は常に幅100%で、右端を揃える */
-  #tab3 .lvlInput{
-    width: 100% !important;
-    grid-template-columns: 1fr auto !important; /* 左(クイック/説明) + 右(入力) */
-    align-items: center !important;
-  }
-
-  /* 4) 入力＋単位は右端にピタッ */
-  #tab3 .lvlInputRight{
-    justify-content: end !important;
-  }
-
-  /* 5) ブースト個数の行も右端揃え */
-  #tab3 .lvlBoostCountLine{
-    display: flex !important;
-    justify-content: flex-end !important;
-  }
-
-  /* 6) オプション：各行を「左=項目名 / 右=入力」で、右端を他行と一致 */
-  #tab3 .lvlOptLines{
-    width: 100% !important;
-  }
-  #tab3 .lvlOptLine{
-    width: 100% !important;
-    grid-template-columns: 1fr auto !important;
-  }
-
-  /* 7) “display: contents” で崩れていたのを確実に無効化（保険） */
-  #tab3 .lvlBoostLine,
-  #tab3 .lvlOptLines,
-  #tab3 .lvlOptLine{
-    display: initial !important;
-  }
-}
-
-    
-  /* クリア1個のときは確実に中央寄せ */
-  #tab3 .lvlButtons.lvlButtonsSingle{
-    justify-content: center !important;
-  }
-  
-  /* 角丸が他のbutton定義に負けた時の保険 */
-  #tab3 #lvClear{
-    border-radius: 28px !important;
-  }
-    
-  /* クイック（通常） */
-  .lvlQuick{
-    display:flex;
-    gap: 4px;
     flex-wrap: wrap;
-    justify-content: flex-start;
-    max-width: none;
-  }
-  
-  /* レベル用：3列 */
-  .lvlQuickLv{
-    display: grid;
-    grid-template-columns: repeat(3, 36px);
-    gap: 4px;
-    justify-content: start;
-    max-width: none;
-  }
-  
-  /* ブースト/ミニ：クイックを3列グリッド化（現状のまま） */
-  .lvlQuick:has(.lvlQuickBtn[data-boost]),
-  .lvlQuick:has(.lvlQuickBtn[data-mini]){
-    display: grid;
-    grid-template-columns: repeat(3, 36px);
-    gap: 4px;
-    justify-content: start;
-    max-width: none;
-  }
-  
-  /* クイックボタン（現状維持サイズ） */
-  .lvlQuickBtn{
-    width: 36px;
-    height: 28px;
-    border-radius: 10px;
-    border: 2px solid rgba(0,0,0,0.16);
-    background: #fff;
-    font-weight: 900;
-    font-size: 13px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 0;
-  }
-  .lvlQuickBtn:active{ transform: translateY(1px); }
-  
-  /* ブースト行：元は縦積み指定（HTMLの class は残す）が、最終上書きで“2列”に戻している */
-  .lvlInputStack{
-    grid-template-columns: 1fr !important;
-    row-gap: 10px;
-  }
-  
-  /* ★最終上書き：ブースト2行だけ「上段に上げる」＝現状維持 */
-  #tab3 .lvlRow .lvlInputStack{
-    grid-template-columns: 1fr auto !important;
-    align-items: start !important;
-  }
-  #tab3 .lvlInputStack .lvlInputRight{
-    align-self: start !important;
-    margin-top: 0 !important;
-  }
-  
-  /* 小クリア（現状：角丸四角形寄り） */
-  .lvlMiniClear{
-    height: 34px;
-    padding: 0 18px;
-    border: 1px solid #fadbd8;
-    background: #fff;
-    color: var(--danger);
-    font-weight: 800;
-    font-size: 13px;
-    cursor: pointer;
-    line-height: 34px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-  /* 最終上書き：角丸指定（現状維持） */
-  #tab3 .lvlMiniClear{ border-radius: 18px !important; }
-  .lvlMiniClear:active{ transform: translateY(1px); }
-  
-  /* 下部ボタン（計算/クリア） */
-  .lvlButtons{
-    display:flex;
-    justify-content: space-between;
-    gap: 16px;
-    margin-top: 10px;
-  }
-  .lvlBigBtn{
-    width: 46%;
-    height: 62px;
-    font-size: 28px;
-    font-weight: 900;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:0;
-    line-height: 1;
-  
-    /* 文字が1px下に見える端末向け微調整 */
-    transform: translateY(-1px);
-  }
-  /* 最終上書き：角丸＆フォントサイズ（現状維持） */
-  #tab3 .lvlBigBtn{
-    border-radius: 28px !important;
-    font-size: 30px !important;
-  }
-  
-  .lvlClearBtn{
-    background:#fff;
-    border: 4px solid #e74c3c;
-    color: #e74c3c;
-  }
-  
-  /* 結果 */
-  .lvlResult{
-    margin-top: 12px;
-    border: 2px solid var(--main);
-    background: #fff;
-    border-radius: 16px;
-    padding: 14px;
-    font-size: 14px;
-  }
-  .lvlResult .lvResTitle{
-    font-weight: 900;
-    font-size: 15px;
-    margin-bottom: 8px;
-    color: var(--main);
-  }
-  .lvlResult .lvResSubTitle{
-    margin-top: 10px;
-    font-weight: 900;
-    color:#111;
-    padding-top: 8px;
-    border-top: 1px solid rgba(0,0,0,0.10);
-  }
-  .lvlResult .lvResRow{
-    display:flex;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(0,0,0,0.08);
-  }
-  .lvlResult .lvResRow:last-child{ border-bottom:none; }
-  .lvlResult .lvResKey{ font-weight: 900; color:#111; }
-  .lvlResult .lvResVal{ font-weight: 900; color:#111; white-space: nowrap; }
-  .lvlWarn{ color:#e74c3c; font-weight:900; margin-top:10px; }
-
-  /* =========================
-     tab3：ボタンを1つにして中央寄せ＆少し細く
-  ========================= */
-  #tab3 .lvlButtonsSingle{
-    justify-content: center;
-    gap: 0;
-  }
-  #tab3 .lvlButtonsSingle #lvClear{
-    width: 40% !important;   /* 46% → 約8〜9割 */
-    max-width: 360px;
-    min-width: 220px;
-  }
-
-  /* =========================
-     tab3：結果ラベル横のアイコン
-  ========================= */
-  #tab3 .lvIcon{
-    width: 16px;
-    height: 16px;
-    object-fit: contain;
-    vertical-align: middle;
-    margin-right: 6px;
-    transform: translateY(1px);
-  }
-
-  /* =========================
-     tab3：ブースト（ラジオ＋クイック＋入力）を縦積み
-  ========================= */
-  #tab3 .lvlBoostWrap{
-    display: flex;
-    flex-direction: column;
     gap: 8px;
-    width: 100%;
   }
-  #tab3 .lvlBoostLine{
+  
+  #tab3 .lvlLabel {
+    font-weight: 900;
+    font-size: 14px;
+    color: #333;
+    flex: 1;
+    min-width: 140px;
+  }
+  
+  /* 右側の入力・ボタン群の配置 */
+  #tab3 .lvlRight { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  
+  #tab3 .lvlQuick {
+    display: grid;
+    grid-template-columns: repeat(3, 40px);
+    gap: 4px;
+  }
+  
+  #tab3 .lvlQuickBtn {
+    width: 40px;
+    height: 28px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  
+  /* 入力欄のスタイル統一 */
+  #tab3 .lvlInputWrapper { display: flex; align-items: center; gap: 6px; }
+  #tab3 input[type="number"] {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 4px 8px;
+    text-align: center;
+    font-weight: bold;
+  }
+  
+  #tab3 .lvlInMain { width: 60px; } /* レベル入力用 */
+  #tab3 .lvlInSub { width: 80px; }  /* 経験値・アメ用 */
+  #tab3 .lvlInMini { width: 60px; } /* オプション用サイズ統一 */
+  
+  #tab3 .lvlUnit { font-size: 11px; font-weight: bold; min-width: 2.5em; }
+  
+  /* ラジオボタンの横並び */
+  #tab3 .lvlRadios { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+  #tab3 .lvlRadio { font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 4px; cursor: pointer; white-space: nowrap; }
+  
+  /* ブースト行の特殊配置 */
+  #tab3 .lvlBoostRow {
     display: grid;
     grid-template-columns: 1fr auto;
-    column-gap: 10px;
-    align-items: start;
+    align-items: center;
+    row-gap: 12px;
   }
-
-  /* =========================
-     tab3：オプション3項目（小さめ）
-  ========================= */
-  #tab3 .lvlOptGrid{
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
+  #tab3 .lvlBoostRow .lvlLabel { grid-column: 1; grid-row: 1; }
+  #tab3 .lvlBoostRow .lvlInputWrapper { grid-column: 2; grid-row: 1; }
+  #tab3 .lvlBoostRow .lvlBoostRadios {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: flex;
+    gap: 16px;
+    margin-top: -4px;
   }
-  @media (max-width: 520px){
-    #tab3 .lvlOptGrid{ grid-template-columns: 1fr; }
-  }
-  #tab3 .lvlOptItem{
-    border: 1px solid rgba(0,0,0,0.10);
+  
+  /* オプションエリアの右寄せ配置 */
+  #tab3 .lvlOptGroup .lvlRow { align-items: flex-start; }
+  #tab3 .lvlOptItems { display: flex; flex-direction: column; gap: 8px; flex: 2; }
+  #tab3 .lvlOptLine { display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
+  #tab3 .lvlOptName { font-size: 12px; font-weight: bold; color: #666; text-align: right; }
+  
+  /* 結果表示 */
+  #tab3 .lvlResult {
+    margin-top: 8px;
+    padding: 16px;
+    border: 2px solid #007bff;
     border-radius: 12px;
-    padding: 10px;
     background: #fff;
-  }
-  #tab3 .lvlOptName{
-    font-size: 11px;
-    font-weight: 900;
-    color: var(--muted);
-    margin-bottom: 6px;
-    white-space: nowrap;
-  }
-  #tab3 .lvlIn3{
-    width: 5ch !important;      /* 3桁想定の小さめ */
-    text-align: center !important;
-  }
-    
-  /* placeholder（tab3 内は全部薄グレー：現状維持） */
-  #tab3 input:placeholder-shown{ color: #c0c6cf; }
-  #tab3 input::placeholder{ color: #c0c6cf; opacity: 1; }
-  
-  /* スマホ微調整（現状維持） */
-  @media (max-width: 520px){
-    .lvlInput{ column-gap: 8px; }
-    .lvlInputRight{ gap: 6px; }
-  
-    .lvlQuickLv{
-      grid-template-columns: repeat(3, 34px);
-      gap: 4px;
-    }
-    .lvlQuick:has(.lvlQuickBtn[data-boost]),
-    .lvlQuick:has(.lvlQuickBtn[data-mini]){
-      grid-template-columns: repeat(3, 34px);
-      gap: 4px;
-    }
-  
-    .lvlQuickBtn{
-      width: 34px;
-      height: 28px;
-      border-radius: 10px;
-      font-size: 13px;
-    }
-  }
-
-  /* 経験値シミュレータ―：小さいクリアボタンを非表示（機能は残す） */
-  #tab3 #lvClearOptional{
-    display: none;
-  }    
-
-  /* 小クリアの“行”ごと消す（ボタンだけ消すと行のpaddingが残るため） */
-  #tab3 .lvlRow:has(#lvClearOptional){
-    display: none;
+    display: none; /* level.jsが計算後に表示させる */
   }
   
-  /* 区切り線まわりの余白を上下一致に近づける（必要なら微調整） */
-  #tab3 .lvlDivider{
-    margin: 10px 0 6px;  /* 下だけ少し詰める */
-  }
-
-  /* PC：タブ③（経験値シミュレータ―）のカード幅を他タブと同じにする */
-  @media (min-width: 900px){
-    #tab3 #levelCard{
-      max-width: none !important;
-      width: 100% !important;
-      margin: 0 !important; /* 中央寄せを解除 */
-    }
-  }
-
-  /* ===== タブ③：スピンボタン制御（PC向け） ===== */
-  @media (min-width: 900px){
-  
-    /* ▼ 下側（区切り線より下の任意入力）＝スピンを消す */
-    #tab3 #lvProgressExp::-webkit-outer-spin-button,
-    #tab3 #lvProgressExp::-webkit-inner-spin-button,
-    #tab3 #lvCandyOwned::-webkit-outer-spin-button,
-    #tab3 #lvCandyOwned::-webkit-inner-spin-button,
-    #tab3 #lvBoostCount::-webkit-outer-spin-button,
-    #tab3 #lvBoostCount::-webkit-inner-spin-button,
-      margin: 0;
-    }
-    /* Firefox用 */
-    #tab3 #lvProgressExp,
-    #tab3 #lvCandyOwned,
-    #tab3 #lvBoostCount,
-    }
-  
-    /* ▲ 上側（区切り線より上のレベル入力）＝普段から見える寄りにする */
-    #tab3 #lvNow::-webkit-outer-spin-button,
-    #tab3 #lvNow::-webkit-inner-spin-button,
-    #tab3 #lvTarget::-webkit-outer-spin-button,
-    #tab3 #lvTarget::-webkit-inner-spin-button{
-      opacity: 1; /* “常時表示寄り” */
-    }
-
-    /* ブースト：個数入力を右寄せで1行に */
-    #tab3 .lvlBoostCountLine{
-      display:flex;
-      justify-content:flex-end;
-      margin-top: 8px;
-    }
-    
-    /* 結果カードの右上カーブに×を被せる */
-    #tab3 .lvlResult{ position: relative; }
-    #tab3 .lvResultClose{
-      position: absolute !important;
-      top: -12px !important;
-      right: -12px !important;
-      z-index: 10;
-    }
-    
-    /* ブースト行だけ：上寄せにして、ラジオを「ブーストの下」に見せる */
-    #tab3 .lvlRowBoost{
-      align-items: flex-start;
-    }
-    #tab3 .lvlRowBoost .lvlBoostRadios{
-      margin-top: 6px;
-      justify-content: flex-start;
-      gap: 18px;
-      flex-wrap: wrap;
-    }
-  }
-
-  /* =========================
-   * [PC] タブ③：オプション行だけ正しく整列（左=項目名 / 右=入力）
-   * ========================= */
-  @media (min-width: 900px){
-  
-    /* PCブロック内の display: contents 指定をオプションだけ無効化 */
-    #tab3 .lvlRowOpt .lvlOptLines{ display:flex !important; flex-direction:column !important; gap:10px !important; }
-    #tab3 .lvlRowOpt .lvlOptLine{  display:grid !important; grid-template-columns: 1fr auto !important; gap:10px !important; align-items:center !important; }
-  
-    /* オプションの中身は「中央+右」(col2〜col3) をまるごと使う */
-    #tab3 .lvlRowOpt .lvlInput{
-      grid-column: 2 / span 2 !important;
-      justify-self: stretch !important;
-      width: 100% !important;
-    }
-  
-    /* オプション内のラベル/入力の“変なgrid-column固定”を解除して、行内で自然に並べる */
-    #tab3 .lvlRowOpt .lvlOptName{
-      grid-column: auto !important;
-      justify-self: start !important;
-      white-space: nowrap !important;
-    }
-    #tab3 .lvlRowOpt .lvlInputRight{
-      grid-column: auto !important;
-      justify-self: end !important; /* 右の赤線に揃う */
-    }
-  }
-
-  /* =========================
-   * [SP] タブ③：ブースト行を
-   * 1行目 右に「xxxx 個」
-   * 2行目 左に「〇アメブースト 〇ミニアメブースト」
-   * ========================= */
-  @media (max-width: 520px){
-  
-    /* ブースト行の入力側だけ、2段レイアウトにする（inline style を上書き） */
-    #tab3 .lvlRow:has(.lvlBoostRadios) .lvlInput{
-      display: grid !important;
-      grid-template-columns: 1fr auto !important;
-      grid-template-rows: auto auto !important;
-      row-gap: 8px !important;
-    }
-  
-    /* 右上：個数入力 */
-    #tab3 .lvlRow:has(.lvlBoostRadios) .lvlBoostCountLine{
-      grid-column: 2 !important;
-      grid-row: 1 !important;
-      justify-self: end !important;
-      margin-top: 0 !important;
-    }
-  
-    /* 下段：ラジオ（2つ横並び） */
-    #tab3 .lvlRow:has(.lvlBoostRadios) .lvlBoostRadios{
-      grid-column: 1 / -1 !important;
-      grid-row: 2 !important;
-      justify-content: flex-start !important;
-      gap: 18px !important;
-    }
-  }
-
-  
-
-  /* =========================
-     tab3 微調整（他タブに影響なし）
-     - PC：オプション行を左寄せ＋右端揃え、睡眠EXPボーナス入力を小さく
-     - スマホ：ブーストを「上段=個数 / 下段=ラジオ」に配置
-  ========================= */
-
-  @media (min-width: 900px){
-    /* オプション：行幅を100%にして“中央寄り”を解消 */
-    #tab3 .lvlOptLines{
-      width: 100% !important;
-      align-items: stretch !important;
-    }
-    #tab3 .lvlOptLine{
-      width: 100% !important;
-      grid-template-columns: 1fr auto !important;
-    }
-    #tab3 .lvlOptName{
-      justify-self: start !important;
-      text-align: left !important;
-    }
-
-    /* 睡眠EXPボーナス（1桁）は少しだけ小さく */
-    #tab3 #lvSleepBonus{
-      width: 4ch !important;
-    }
-  }
-
-/* @media (max-width: 520px) 内を修正 */
-@media (max-width: 520px) {
-  /* ブースト行の親要素 */
-  #tab3 .lvlRowBoost .lvlInput {
-    display: grid !important;
-    grid-template-columns: 1fr auto !important; /* 左：余白 / 右：入力欄 */
-    grid-template-rows: auto auto !important;   /* 1段目：入力行 / 2段目：ラジオ行 */
-    column-gap: 10px !important;
-    row-gap: 12px !important; /* 段落間の余白 */
-    align-items: center !important; /* 1段目内のy軸を中央揃え */
-  }
-
-  /* 1段目右：個数入力欄 */
-  #tab3 .lvlRowBoost .lvlBoostCountLine {
-    grid-column: 2 !important;
-    grid-row: 1 !important;
-    justify-self: end !important;
-    margin: 0 !important; /* 余計なマージンを排除 */
-  }
-
-  /* 2段目：ラジオボタンを左端から横並びに */
-  #tab3 .lvlRowBoost .lvlBoostRadios {
-    grid-column: 1 / -1 !important; /* 横幅いっぱい使う */
-    grid-row: 2 !important;
-    display: flex !important;
-    justify-content: flex-start !important; /* 左寄せ */
-    gap: 18px !important;
-    margin: 0 !important;
+  /* スマホ調整 */
+  @media (max-width: 480px) {
+    #tab3 .lvlLabel { font-size: 13px; min-width: 100px; }
+    #tab3 .lvlQuick { grid-template-columns: repeat(3, 36px); }
+    #tab3 .lvlQuickBtn { width: 36px; }
+    #tab3 .lvlRadios { justify-content: flex-start; }
   }
 }
 
@@ -1449,6 +873,8 @@
     </section>
   </div>
 
+
+  
   <div id="tab2" class="tab-content">
     <div id="fieldMenu">
       <section class="card">
@@ -1461,188 +887,140 @@
     </div>
   </div>
 
+
+  
   <div id="tab3" class="tab-content">
     <section class="card" id="levelCard">
-  
-      <!-- 入力エリア -->
       <div class="lvlForm">
-      
-        <!-- ===== 必須（上側）===== -->
-      
-        <!-- 今のレベル（65ボタン削除 / 1〜64入力） -->
-        <div class="lvlRow">
-          <div class="lvlLabel"><span class="lvlReq">*</span> 今のレベル</div>
-          <div class="lvlInput">
-            <div class="lvlQuick lvlQuickLv">
-              <button type="button" class="lvlQuickBtn" data-now="25">25</button>
-              <button type="button" class="lvlQuickBtn" data-now="30">30</button>
-              <button type="button" class="lvlQuickBtn" data-now="50">50</button>
-              <button type="button" class="lvlQuickBtn" data-now="55">55</button>
-              <button type="button" class="lvlQuickBtn" data-now="60">60</button>
-            </div>
-      
-            <div class="lvlInputRight">
-              <input id="lvNow" class="lvlIn2" type="number" min="1" max="64" inputmode="numeric"
-                     placeholder="xx">
-              <span class="lvlUnit">レベル</span>
-            </div>
-          </div>
-        </div>
-      
-        <!-- 目標レベル（2〜65入力） -->
-        <div class="lvlRow">
-          <div class="lvlLabel"><span class="lvlReq">*</span> 目標のレベル</div>
-          <div class="lvlInput">
-            <div class="lvlQuick lvlQuickLv">
-              <button type="button" class="lvlQuickBtn" data-target="25">25</button>
-              <button type="button" class="lvlQuickBtn" data-target="30">30</button>
-              <button type="button" class="lvlQuickBtn" data-target="50">50</button>
-              <button type="button" class="lvlQuickBtn" data-target="55">55</button>
-              <button type="button" class="lvlQuickBtn" data-target="60">60</button>
-              <button type="button" class="lvlQuickBtn" data-target="65">65</button>
-            </div>
-      
-            <div class="lvlInputRight">
-              <input id="lvTarget" class="lvlIn2" type="number" min="2" max="65" inputmode="numeric"
-                     placeholder="xx">
-              <span class="lvlUnit">レベル</span>
-            </div>
-          </div>
-        </div>
-      
-        <!-- 性格 -->
-        <div class="lvlRow lvlRowFull">
-          <div class="lvlLabel"><span class="lvlReq">*</span> 性格</div>
-          <div class="lvlRadios">
-            <label class="lvlRadio"><input type="radio" name="lvNature" value="none" checked> 無補正</label>
-            <label class="lvlRadio"><input type="radio" name="lvNature" value="up"> <span class="lvUp">EXP↑</span></label>
-            <label class="lvlRadio"><input type="radio" name="lvNature" value="down"> <span class="lvDown">EXP↓</span></label>
-          </div>
-        </div>
-      
-        <!-- 経験値タイプ -->
-        <div class="lvlRow lvlRowFull">
-          <div class="lvlLabel"><span class="lvlReq">*</span> 経験値タイプ</div>
-          <div class="lvlRadios">
-            <label class="lvlRadio"><input type="radio" name="lvType" value="normal" checked> ふつう</label>
-            <label class="lvlRadio"><input type="radio" name="lvType" value="600"> 600族</label>
-            <label class="lvlRadio"><input type="radio" name="lvType" value="semi"> 準伝説</label>
-            <label class="lvlRadio"><input type="radio" name="lvType" value="legend"> 伝説 / 幻</label>
-          </div>
-        </div>
-      
-        <div class="lvlDivider"></div>
-      
-        <!-- ===== 任意（下側）===== -->
-      
-        <!-- 小クリア：専用の1段（右側に置く） -->
-        <div class="lvlRow">
-          <div class="lvlLabel"></div>
-          <div class="lvlInput" style="grid-template-columns: 1fr 118px; column-gap:8px;">
-            <div></div>
-            <button id="lvClearOptional" type="button" class="lvlMiniClear" style="justify-self:end;">クリア</button>
-          </div>
-        </div>
         
-        <!-- 次のレベルまでの経験値：入力だけの段（縦ラインが安定する） -->
-        <div class="lvlRow">
-          <div class="lvlLabel">次のレベルまでの経験値</div>
-          <div class="lvlInput">
-            <div></div>
-            <div class="lvlInputRight">
-              <input id="lvProgressExp" class="lvlIn4" type="number" min="1" max="9999" inputmode="numeric"
-                     placeholder="xxxx">
+        <div class="lvlGroup">
+          <div class="lvlRow">
+            <div class="lvlLabel"><span class="lvlReq">*</span> 今のレベル</div>
+            <div class="lvlRight">
+              <div class="lvlQuick">
+                <button type="button" class="lvlQuickBtn" data-now="25">25</button>
+                <button type="button" class="lvlQuickBtn" data-now="30">30</button>
+                <button type="button" class="lvlQuickBtn" data-now="50">50</button>
+                <button type="button" class="lvlQuickBtn" data-now="55">55</button>
+                <button type="button" class="lvlQuickBtn" data-now="60">60</button>
+              </div>
+              <div class="lvlInputWrapper">
+                <input id="lvNow" class="lvlInMain" type="number" placeholder="xx">
+                <span class="lvlUnit">レベル</span>
+              </div>
+            </div>
+          </div>
+  
+          <div class="lvlRow">
+            <div class="lvlLabel"><span class="lvlReq">*</span> 目標のレベル</div>
+            <div class="lvlRight">
+              <div class="lvlQuick">
+                <button type="button" class="lvlQuickBtn" data-target="25">25</button>
+                <button type="button" class="lvlQuickBtn" data-target="30">30</button>
+                <button type="button" class="lvlQuickBtn" data-target="50">50</button>
+                <button type="button" class="lvlQuickBtn" data-target="55">55</button>
+                <button type="button" class="lvlQuickBtn" data-target="60">60</button>
+                <button type="button" class="lvlQuickBtn" data-target="65">65</button>
+              </div>
+              <div class="lvlInputWrapper">
+                <input id="lvTarget" class="lvlInMain" type="number" placeholder="xx">
+                <span class="lvlUnit">レベル</span>
+              </div>
+            </div>
+          </div>
+  
+          <div class="lvlRow">
+            <div class="lvlLabel"><span class="lvlReq">*</span> 性格</div>
+            <div class="lvlRight">
+              <div class="lvlRadios">
+                <label class="lvlRadio"><input type="radio" name="lvNature" value="none" checked> 無補正</label>
+                <label class="lvlRadio"><input type="radio" name="lvNature" value="up"> EXP↑</label>
+                <label class="lvlRadio"><input type="radio" name="lvNature" value="down"> EXP↓</label>
+              </div>
+            </div>
+          </div>
+  
+          <div class="lvlRow">
+            <div class="lvlLabel"><span class="lvlReq">*</span> 経験値タイプ</div>
+            <div class="lvlRight">
+              <div class="lvlRadios">
+                <label class="lvlRadio"><input type="radio" name="lvType" value="normal" checked> ふつう</label>
+                <label class="lvlRadio"><input type="radio" name="lvType" value="600"> 600族</label>
+                <label class="lvlRadio"><input type="radio" name="lvType" value="semi"> 準伝説</label>
+                <label class="lvlRadio"><input type="radio" name="lvType" value="legend"> 伝説 / 幻</label>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <div class="lvlDivider"></div>
+  
+        <div class="lvlGroup">
+          <div class="lvlRow">
+            <div class="lvlLabel">次のレベルまでの経験値</div>
+            <div class="lvlInputWrapper">
+              <input id="lvProgressExp" class="lvlInSub" type="number" placeholder="xxxx">
               <span class="lvlUnit">pt</span>
             </div>
           </div>
-        </div>
-
-
-      
-        <!-- アメ所持数（1〜9999） -->
-        <div class="lvlRow">
-          <div class="lvlLabel">ポケモンのアメ所持数</div>
-          <div class="lvlInput">
-            <div></div>
-            <div class="lvlInputRight">
-              <input id="lvCandyOwned" class="lvlIn4" type="number" min="1" max="9999" inputmode="numeric"
-                     placeholder="xxxx">
+  
+          <div class="lvlRow">
+            <div class="lvlLabel">ポケモンのアメ所持数</div>
+            <div class="lvlInputWrapper">
+              <input id="lvCandyOwned" class="lvlInSub" type="number" placeholder="xxxx">
               <span class="lvlUnit">個</span>
             </div>
           </div>
-        </div>
-
-        <!-- ブースト（クイック廃止／ラジオはブーストの下） -->
-        <div class="lvlRow lvlRowBoost">
-          <div class="lvlLabel">ブースト</div>
-          <div class="lvlInput" style="grid-template-columns:1fr;">
-            <div class="lvlRadios lvlBoostRadios">
-              <label class="lvlRadio">
-                <input type="radio" name="lvBoostKind" value="full"> アメブースト
-              </label>
-              <label class="lvlRadio">
-                <input type="radio" name="lvBoostKind" value="mini"> ミニアメブースト
-              </label>
+  
+          <div class="lvlRow lvlBoostRow">
+            <div class="lvlLabel">ブースト</div>
+            <div class="lvlInputWrapper">
+              <input id="lvBoostCount" class="lvlInSub" type="number" placeholder="xxxx">
+              <span class="lvlUnit">個</span>
             </div>
-        
-            <div class="lvlBoostCountLine">
-              <div class="lvlInputRight">
-                <input id="lvBoostCount" class="lvlInBoost"
-                       type="number" inputmode="numeric"
-                       placeholder="xxxx">
-                <span class="lvlUnit">個</span>
-              </div>
+            <div class="lvlBoostRadios">
+              <label class="lvlRadio"><input type="radio" name="lvBoostKind" value="full"> アメブースト</label>
+              <label class="lvlRadio"><input type="radio" name="lvBoostKind" value="mini"> ミニアメブースト</label>
             </div>
           </div>
         </div>
-
-
+  
         <div class="lvlDivider"></div>
-
-        <!-- オプション（枠なし・3行・左揃え） -->
-        <div class="lvlRow lvlRowOpt"> <div class="lvlLabel">オプション</div>
-          <div class="lvlInput" style="grid-template-columns:1fr;">
-            <div class="lvlOptLines">
+  
+        <div class="lvlGroup lvlOptGroup">
+          <div class="lvlRow">
+            <div class="lvlLabel">オプション</div>
+            <div class="lvlOptItems">
               <div class="lvlOptLine">
-                <div class="lvlOptName">睡眠</div>
-                <div class="lvlInputRight">
-                  <input id="lvSleepDays" class="lvlIn3"
-                         type="number" min="1" max="999" inputmode="numeric"
-                         placeholder="xxx">
+                <span class="lvlOptName">睡眠</span>
+                <div class="lvlInputWrapper">
+                  <input id="lvSleepDays" class="lvlInMini" type="number" placeholder="xxx">
                   <span class="lvlUnit">日</span>
                 </div>
               </div>
-
               <div class="lvlOptLine">
-                <div class="lvlOptName">睡眠EXPボーナス</div>
-                <div class="lvlInputRight">
-                  <input id="lvSleepBonus" class="lvlIn1"
-                         type="number" min="1" max="5" inputmode="numeric"
-                         placeholder="x">
+                <span class="lvlOptName">睡眠EXPボーナス</span>
+                <div class="lvlInputWrapper">
+                  <input id="lvSleepBonus" class="lvlInMini" type="number" placeholder="x">
                   <span class="lvlUnit">体</span>
                 </div>
               </div>
-
               <div class="lvlOptLine">
-                <div class="lvlOptName">せいちょうのおこう</div>
-                <div class="lvlInputRight">
-                  <input id="lvGrowthIncense" class="lvlIn3"
-                         type="number" min="1" max="999" inputmode="numeric"
-                         placeholder="xxx">
+                <span class="lvlOptName">せいちょうのおこう</span>
+                <div class="lvlInputWrapper">
+                  <input id="lvGrowthIncense" class="lvlInMini" type="number" placeholder="xxx">
                   <span class="lvlUnit">個</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        
-
-        <!-- 結果（常に表示） -->
+  
         <div id="lvResult" class="lvlResult"></div>
-      
       </div>
     </section>
   </div>
+
 
   
   <div id="tab4" class="tab-content">
