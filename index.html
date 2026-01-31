@@ -120,70 +120,6 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
 
-    /* クイックボタンのレイアウト */
-    .quickButtonGroup {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 8px;
-    }
-    .quickBtn {
-      padding: 6px 12px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      font-size: 11px;
-      font-weight: 800;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .quickBtn:active {
-      background: var(--main-soft);
-      border-color: var(--main);
-      color: var(--main);
-    }
-
-    /* セレクトボックスの青枠固定 */
-    select.emphSelect, input.emphInput {
-      border: 2px solid var(--main) !important;
-      outline: none !important;
-      box-shadow: none !important;
-    }
-
-    /* 獲得量入力欄の微調整 */
-    .repInputRow {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 2px;
-      width: 100%;
-      padding-left: 4px; /* 左寄りを解消 */
-    }
-    .repQty {
-      width: 45px !important; /* 少し幅を広げて中央に */
-      height: 24px !important;
-      text-align: center;
-      border-radius: 6px !important;
-      font-weight: 900 !important;
-      font-size: 13px !important;
-      font-family: inherit !important;
-    }
-    /* 「個」のフォント調整 */
-    .repInputRow span {
-      font-size: 11px !important;
-      font-weight: 900 !important;
-      color: var(--text) !important;
-      font-family: inherit !important;
-    }
-    
-    /* 除外チェックボックスの1px調整 */
-    .exChk {
-      margin: 0;
-      position: relative;
-      top: -1px; /* □を1px上げる */
-    }
-    
     /* タブ③：スマホで横にはみ出すのを防ぐ */
     #levelCard{ overflow-x: hidden; }
 
@@ -849,7 +785,7 @@
 <header>
   <div>
     <div id="headerTitle" class="title-text">食材ストック計算</div>
-    <div id="headerVer" class="ver-text">ver1.0.6</div>
+    <div id="headerVer" class="ver-text">ver1.0.5</div>
   </div>
 
   <div style="display:flex; align-items:center; gap:10px;">
@@ -865,70 +801,90 @@
 </header>
 
 <main>
+  <div id="tab1" class="tab-content active">
     <section class="card">
       <div class="settingsHeaderRow">
-        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-          <div>
-            <div class="sectionTitle">条件設定</div>
-            <span class="badge" id="summaryBadge">合計 0食 / 21食</span>
-          </div>
-          <div style="display: flex; gap: 8px;">
-            <button id="clearAll" class="danger">クリア</button>
-            <button id="addRecipe" class="primary">+ 追加</button>
-          </div>
-        </div>
-        
-        <div style="font-size:12px; font-weight:800; color:var(--muted); margin-top: 8px;">
-          21食の範囲でレシピを自由に組み合わせ可能です
+        <!-- 条件設定 -->
+        <div id="condBlock">
+          <div class="sectionTitle">条件設定</div>
+          <span class="badge" id="summaryBadge">合計 0食 / 21食</span>
         </div>
 
-        <div class="quickButtonGroup">
-          <button class="quickBtn" onclick="applyQuickSet('カレー・シチュー')">カレー・シチュー</button>
-          <button class="quickBtn" onclick="applyQuickSet('サラダ')">サラダ</button>
-          <button class="quickBtn" onclick="applyQuickSet('デザート・ドリンク')">デザート・ドリンク</button>
-          <button class="quickBtn" onclick="applyQuick21()">21食</button>
+        <div id="modeBlock">
+          <div class="modeInner">
+            <div class="modeTitle">モードを選択してください</div>
+
+            <label class="modeLabel">
+              <input type="radio" name="calcMode" id="calcMode1" value="mode1">
+              <span>① 同じレシピだけ作る</span>
+            </label>
+
+            <label class="modeLabel">
+              <input type="radio" name="calcMode" id="calcMode2" value="mode2">
+              <span>② 2種以上のレシピを組み合わせる</span>
+            </label>
+
+            <label class="modeLabel">
+              <input type="radio" name="calcMode" id="calcMode3" value="mode3">
+              <span>③ 別カテゴリーのレシピを組み合わせる</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- +追加 / クリア -->
+        <div id="actionBlock">
+          <button id="clearAll" class="danger">クリア</button>
+          <button id="addRecipe" class="primary">+ 追加</button>
         </div>
       </div>
 
       <div id="recipeList" style="margin-top:10px;"></div>
     </section>
-  
-      <section class="card">
-        <div class="sectionTitle">計算から除外</div>
-        <div id="excludeGrid" class="grid5"></div>
-      </section>
-  
-      <section class="card">
-        <div class="replenishHeaderRow">
-          <div>
-            <div class="sectionTitle">1日当たりの獲得量</div>
-          </div>
-          <div>
-            <label class="chkLabel ncPikaOpt">
-              <input type="checkbox" id="optNcPika">
-              NCピカチュウの獲得分を差し引く
-            </label>
-          </div>
-          <div></div>
+
+    <section class="card">
+      <div class="sectionTitle">計算から除外</div>
+      <div id="excludeGrid" class="grid5"></div>
+    </section>
+
+    <section class="card">
+      <div class="replenishHeaderRow">
+        <!-- 左：見出し -->
+        <div>
+          <div class="sectionTitle">1日当たりの獲得量</div>
         </div>
-        <div id="replenishGrid" class="grid5"></div>
-      </section>
-  
-      <section class="result-card">
-        <div class="resultHeader">
-          <div class="resultTitle">計算結果</div>
-          <span class="badge total-badge" id="totalBadge">総合計 0個</span>
+    
+        <!-- 中：NCピカ（「モード」列と同じX位置に揃う） -->
+        <div>
+          <label class="chkLabel ncPikaOpt">
+            <input type="checkbox" id="optNcPika">
+            NCピカチュウの獲得分を差し引く
+          </label>
         </div>
-  
-        <div id="mode3Note" class="mode3Note" style="display: block; margin-top: 8px; font-size: 11px; color: var(--muted); font-weight: 800; line-height: 1.4;">
-          同じカテゴリーの料理を選択した場合 → 食材を「合算」して計算しています<br>
-          異なるカテゴリーの料理を選択した場合 → 重複する食材は「最大値」を参照して計算しています
-        </div>
-  
-        <div class="resultDivider"></div>
-        <div id="resultGrid" class="grid5"></div>
-      </section>
-    </div>
+    
+        <!-- 右：空（PCのみ。スマホではgridが2列になるので自然に無視されます） -->
+        <div></div>
+      </div>
+    
+      <div id="replenishGrid" class="grid5"></div>
+    </section>
+
+
+
+    <!-- ✅ 計算結果：HTML構造を正常化（枠ズレ/下寄り/注意書き消え対策） -->
+    <section class="result-card">
+      <div class="resultHeader">
+        <div class="resultTitle">計算結果</div>
+        <span class="badge total-badge" id="totalBadge">総合計 0個</span>
+      </div>
+
+      <div id="mode3Note" class="mode3Note">
+        ※異なるカテゴリーのレシピ間で重複している食材は、各レシピ中で最も多く使われている食材の個数を参照して計算しています
+      </div>
+
+      <div class="resultDivider"></div>
+      <div id="resultGrid" class="grid5"></div>
+    </section>
+  </div>
 
 
   
