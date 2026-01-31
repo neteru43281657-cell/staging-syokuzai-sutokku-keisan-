@@ -900,139 +900,141 @@
 
   
   <div id="tab3" class="tab-content">
-    <section class="card" id="levelCard">
-      <div class="lvlForm">
-        
-        <div class="lvlGroup">
-          <div class="lvlRow lvlRowTop">
-            <div class="lvlLabel"><span class="lvlReq">*</span> 今のレベル</div>
-            <div class="lvlRight">
-              <div class="lvlInputWrapper">
-                <input id="lvNow" class="lvlInMain" type="number" placeholder="xx" inputmode="numeric">
-                <span class="lvlUnit">レベル</span>
-              </div>
-              <div class="lvlQuick" style="display: flex; gap: 4px; justify-content: flex-end; width: 100%; margin-top: 4px;">
-                <button type="button" class="lvlQuickBtn" data-now="25" style="flex: 1; min-width: 40px;">25</button>
-                <button type="button" class="lvlQuickBtn" data-now="30" style="flex: 1; min-width: 40px;">30</button>
-                <button type="button" class="lvlQuickBtn" data-now="50" style="flex: 1; min-width: 40px;">50</button>
-                <button type="button" class="lvlQuickBtn" data-now="55" style="flex: 1; min-width: 40px;">55</button>
-                <button type="button" class="lvlQuickBtn" data-now="60" style="flex: 1; min-width: 40px;">60</button>
-                <div style="flex: 1; min-width: 40px;"></div>
-              </div>
-            </div>
-          </div>
-  
-          <div class="lvlRow lvlRowTop">
-            <div class="lvlLabel"><span class="lvlReq">*</span> 目標のレベル</div>
-            <div class="lvlRight">
-              <div class="lvlInputWrapper">
-                <input id="lvTarget" class="lvlInMain" type="number" placeholder="xx" inputmode="numeric">
-                <span class="lvlUnit">レベル</span>
-              </div>
-              <div class="lvlQuick" style="display: flex; gap: 4px; justify-content: flex-end; width: 100%; margin-top: 4px;">
-                <button type="button" class="lvlQuickBtn" data-target="25" style="flex: 1; min-width: 40px;">25</button>
-                <button type="button" class="lvlQuickBtn" data-target="30" style="flex: 1; min-width: 40px;">30</button>
-                <button type="button" class="lvlQuickBtn" data-target="50" style="flex: 1; min-width: 40px;">50</button>
-                <button type="button" class="lvlQuickBtn" data-target="55" style="flex: 1; min-width: 40px;">55</button>
-                <button type="button" class="lvlQuickBtn" data-target="60" style="flex: 1; min-width: 40px;">60</button>
-                <button type="button" class="lvlQuickBtn" data-target="65" style="flex: 1; min-width: 40px;">65</button>
-              </div>
-            </div>
-          </div>
-    
-            <div class="lvlRowStack">
-              <div class="lvlLabel"><span class="lvlReq">*</span> 性格</div>
-              <div class="lvlRadios">
-                <label class="lvlRadio"><input type="radio" name="lvNature" value="none" checked><span>無補正</span></label>
-                <label class="lvlRadio"><input type="radio" name="lvNature" value="up"><span>EXP↑</span></label>
-                <label class="lvlRadio"><input type="radio" name="lvNature" value="down"><span>EXP↓</span></label>
-              </div>
-            </div>
-    
-            <div class="lvlRowStack">
-              <div class="lvlLabel"><span class="lvlReq">*</span> 経験値タイプ</div>
-              <div class="lvlRadios">
-                <label class="lvlRadio"><input type="radio" name="lvType" value="normal" checked><span>ふつう</span></label>
-                <label class="lvlRadio"><input type="radio" name="lvType" value="600"><span>600族</span></label>
-                <label class="lvlRadio"><input type="radio" name="lvType" value="semi"><span>準伝説</span></label>
-                <label class="lvlRadio"><input type="radio" name="lvType" value="legend"><span>伝説 / 幻</span></label>
-              </div>
-            </div>
-          </div>
-    
-          <div class="lvlDivider"></div>
-    
+      <section class="card" id="levelCard">
+        <div class="lvlForm">
+          
           <div class="lvlGroup">
-            <div class="lvlRow">
-              <div class="lvlLabel">次のレベルまでの経験値</div>
-              <div class="lvlInputWrapper">
-                <input id="lvProgressExp" class="lvlInSub" type="number" placeholder="xxxx">
-                <span class="lvlUnit">pt</span>
+            <div class="lvlRow lvlRowTop">
+              <div class="lvlLabel"><span class="lvlReq">*</span> 今のレベル</div>
+              <div class="lvlRight">
+                <div class="lvlInputWrapper">
+                  <input id="lvNow" class="lvlInMain" type="number" placeholder="xx" inputmode="numeric">
+                  <span class="lvlUnit">レベル</span>
+                </div>
+                <div class="lvlQuick" style="display: flex; gap: 4px; justify-content: flex-end; width: 100%; margin-top: 4px;">
+                  <button type="button" class="lvlQuickBtn" data-now="25" style="flex: 1; min-width: 40px;">25</button>
+                  <button type="button" class="lvlQuickBtn" data-now="30" style="flex: 1; min-width: 40px;">30</button>
+                  <button type="button" class="lvlQuickBtn" data-now="50" style="flex: 1; min-width: 40px;">50</button>
+                  <button type="button" class="lvlQuickBtn" data-now="55" style="flex: 1; min-width: 40px;">55</button>
+                  <button type="button" class="lvlQuickBtn" data-now="60" style="flex: 1; min-width: 40px;">60</button>
+                  <div style="flex: 1; min-width: 40px;"></div>
+                </div>
               </div>
             </div>
-            
-          <!-- ▼ここから非表示（将来戻したいのでHTMLだけコメントアウト） -->
-          <!--
-          <div class="lvlRow">
-            <div class="lvlLabel">ポケモンのアメ所持数</div>
-            <div class="lvlInputWrapper">
-              <input id="lvCandyOwned" class="lvlInSub" type="number" placeholder="xxxx">
-              <span class="lvlUnit">個</span>
-            </div>
-          </div>
-          -->
-          <!-- ▲ここまで非表示 -->
-            
-            <div class="lvlRow lvlBoostRow">
-              <div class="lvlLabel">ブースト</div>
-              <div class="lvlInputWrapper">
-                <input id="lvBoostCount" class="lvlInSub" type="number" placeholder="xxxx">
-                <span class="lvlUnit">個</span>
-              </div>
-              <div class="lvlBoostRadios">
-                <label class="lvlRadio"><input type="radio" name="lvBoostKind" value="full"><span>アメブースト</span></label>
-                <label class="lvlRadio"><input type="radio" name="lvBoostKind" value="mini"><span>ミニアメブースト</span></label>
-              </div>
-            </div>
-          </div>
     
-          <div class="lvlDivider"></div>
-    
-          <div class="lvlGroup lvlOptGroup">
-            <div class="lvlRow">
-              <div class="lvlLabel">オプション</div>
-              <div class="lvlOptItems">
-                <div class="lvlOptLine">
-                  <span class="lvlOptName">睡眠</span>
-                  <div class="lvlInputWrapper">
-                    <input id="lvSleepDays" class="lvlInMini" type="number" placeholder="xxx">
-                    <span class="lvlUnit">日</span>
-                  </div>
+            <div class="lvlRow lvlRowTop">
+              <div class="lvlLabel"><span class="lvlReq">*</span> 目標のレベル</div>
+              <div class="lvlRight">
+                <div class="lvlInputWrapper">
+                  <input id="lvTarget" class="lvlInMain" type="number" placeholder="xx" inputmode="numeric">
+                  <span class="lvlUnit">レベル</span>
                 </div>
-                <div class="lvlOptLine">
-                  <span class="lvlOptName">睡眠EXPボーナス</span>
-                  <div class="lvlInputWrapper">
-                    <input id="lvSleepBonus" class="lvlInMini" type="number" placeholder="x">
-                    <span class="lvlUnit">体</span>
-                  </div>
+                <div class="lvlQuick" style="display: flex; gap: 4px; justify-content: flex-end; width: 100%; margin-top: 4px;">
+                  <button type="button" class="lvlQuickBtn" data-target="25" style="flex: 1; min-width: 40px;">25</button>
+                  <button type="button" class="lvlQuickBtn" data-target="30" style="flex: 1; min-width: 40px;">30</button>
+                  <button type="button" class="lvlQuickBtn" data-target="50" style="flex: 1; min-width: 40px;">50</button>
+                  <button type="button" class="lvlQuickBtn" data-target="55" style="flex: 1; min-width: 40px;">55</button>
+                  <button type="button" class="lvlQuickBtn" data-target="60" style="flex: 1; min-width: 40px;">60</button>
+                  <button type="button" class="lvlQuickBtn" data-target="65" style="flex: 1; min-width: 40px;">65</button>
                 </div>
-                <div class="lvlOptLine">
-                  <span class="lvlOptName">せいちょうのおこう</span>
-                  <div class="lvlInputWrapper">
-                    <input id="lvGrowthIncense" class="lvlInMini" type="number" placeholder="xxx">
-                    <span class="lvlUnit">個</span>
+              </div>
+            </div>
+      
+              <div class="lvlRowStack">
+                <div class="lvlLabel"><span class="lvlReq">*</span> 性格</div>
+                <div class="lvlRadios">
+                  <label class="lvlRadio"><input type="radio" name="lvNature" value="none"><span>無補正</span></label>
+                  <label class="lvlRadio"><input type="radio" name="lvNature" value="up"><span>EXP↑</span></label>
+                  <label class="lvlRadio"><input type="radio" name="lvNature" value="down"><span>EXP↓</span></label>
+                </div>
+              </div>
+      
+              <div class="lvlRowStack">
+                <div class="lvlLabel"><span class="lvlReq">*</span> 経験値タイプ</div>
+                <div class="lvlRadios">
+                  <label class="lvlRadio"><input type="radio" name="lvType" value="normal"><span>ふつう</span></label>
+                  <label class="lvlRadio"><input type="radio" name="lvType" value="600"><span>600族</span></label>
+                  <label class="lvlRadio"><input type="radio" name="lvType" value="semi"><span>準伝説</span></label>
+                  <label class="lvlRadio"><input type="radio" name="lvType" value="legend"><span>伝説 / 幻</span></label>
+                </div>
+              </div>
+            </div>
+      
+            <div class="lvlDivider"></div>
+      
+            <div class="lvlGroup">
+              <div class="lvlRow">
+                <div class="lvlLabel">次のレベルまでの経験値</div>
+                <div class="lvlInputWrapper">
+                  <input id="lvProgressExp" class="lvlInSub" type="number" placeholder="xxxx">
+                  <span class="lvlUnit">pt</span>
+                </div>
+              </div>
+              
+              <div class="lvlRow lvlBoostRow">
+                <div class="lvlLabel">ブースト</div>
+                <div class="lvlInputWrapper">
+                  <input id="lvBoostCount" class="lvlInSub" type="number" placeholder="xxxx">
+                  <span class="lvlUnit">個</span>
+                </div>
+                <div class="lvlBoostRadios">
+                  <label class="lvlRadio"><input type="radio" name="lvBoostKind" value="full"><span>アメブースト</span></label>
+                  <label class="lvlRadio"><input type="radio" name="lvBoostKind" value="mini"><span>ミニアメブースト</span></label>
+                </div>
+              </div>
+            </div>
+      
+            <div class="lvlDivider"></div>
+      
+            <div class="lvlGroup lvlOptGroup">
+              <div class="lvlRow">
+                <div class="lvlLabel">オプション</div>
+                <div class="lvlOptItems">
+                  <div class="lvlOptLine">
+                    <span class="lvlOptName">睡眠</span>
+                    <div class="lvlInputWrapper">
+                      <input id="lvSleepDays" class="lvlInMini" type="number" placeholder="xxx">
+                      <span class="lvlUnit">日</span>
+                    </div>
+                  </div>
+                  <div class="lvlOptLine">
+                    <span class="lvlOptName">睡眠EXPボーナス</span>
+                    <div class="lvlInputWrapper">
+                      <input id="lvSleepBonus" class="lvlInMini" type="number" placeholder="x">
+                      <span class="lvlUnit">体</span>
+                    </div>
+                  </div>
+                  <div class="lvlOptLine">
+                    <span class="lvlOptName">せいちょうのおこう</span>
+                    <div class="lvlInputWrapper">
+                      <input id="lvGrowthIncense" class="lvlInMini" type="number" placeholder="xxx">
+                      <span class="lvlUnit">個</span>
+                    </div>
+                  </div>
+                  <div class="lvlOptLine">
+                    <span class="lvlOptName">グッドスリープデー</span>
+                    <div class="lvlInputWrapper">
+                      <input id="lvGSD" class="lvlInMini" type="number" placeholder="xx">
+                      <span class="lvlUnit">回</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+            <div id="lvResult" class="lvlResult">
+              <div class="lvResTitle">計算結果</div>
+              <div id="lvResultIn">
+                <div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">0 pt</div></div>
+                <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">0 個</div></div>
+                <div class="lvResRow">
+                  <div class="lvResKey">必要なゆめのかけら量✨<div style="font-size:0.75em; font-weight:inherit; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div></div>
+                  <div class="lvResVal">0</div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div id="lvResult" class="lvlResult">
-            <div id="lvResultClear" class="lvResultClose">×</div>
-            <div class="lvResTitle">計算結果</div>
-          </div>
-        </div>
-      </section>
-    </div>
+        </section>
+      </div>
 
   
   <div id="tab4" class="tab-content">
