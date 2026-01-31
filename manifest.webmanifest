@@ -7,10 +7,16 @@
   "theme_color": "#007bff",
   "icons": [
     {
-      "src": "images/アイコン.png",
+      "src": "images/アイコン_ios.png", // 透過なし・背景ありの正方形画像
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "images/アイコン_maskable.png", // 円形に切られても大丈夫な余白あり画像
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
