@@ -675,17 +675,29 @@
   #tab3 .lvlRowTop { align-items: flex-start !important; padding-top: 4px; }
   #tab3 .lvlRight { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 
-  /* クイックボタン：横3列・縦2列 */
+/* クイックボタン：1段（横6列）に固定  */
   #tab3 .lvlGrid3 {
     display: grid !important;
-    grid-template-columns: repeat(3, 38px) !important;
-    gap: 6px !important;
+    grid-template-columns: repeat(6, 1fr) !important; /* 6列1段に変更  */
+    gap: 4px !important;
     justify-content: flex-end !important;
+    width: 100% !important; /* 横幅いっぱいに広げる  */
+    max-width: 250px; /* 広がりすぎないよう制限  */
   }
+  
   #tab3 .lvlQuickBtn {
-    width: 38px; height: 28px; border-radius: 10px; border: 1px solid var(--line) !important;
-    background: #fff !important; font-size: 11px; font-weight: 900;
-    display: flex; align-items: center; justify-content: center; color: var(--muted) !important; cursor: pointer;
+    width: auto !important; /* 幅をグリッドに合わせる  */
+    height: 28px; 
+    border-radius: 10px; 
+    border: 1px solid var(--line) !important;
+    background: #fff !important; 
+    font-size: 11px; 
+    font-weight: 900;
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    color: var(--muted) !important; 
+    cursor: pointer;
   }
 
   /* 入力欄：中央揃え、太字、プレースホルダー調整 */
@@ -898,12 +910,12 @@
                   <span class="lvlUnit">レベル</span>
                 </div>
                 <div class="lvlQuick lvlGrid3">
-                  <button type="button" class="lvlQuickBtn" data-now="25">25</button>
-                  <button type="button" class="lvlQuickBtn" data-now="30">30</button>
-                  <button type="button" class="lvlQuickBtn" data-now="50">50</button>
-                  <button type="button" class="lvlQuickBtn" data-now="55">55</button>
-                  <button type="button" class="lvlQuickBtn" data-now="60">60</button>
-                  <div class="lvlEmpty"></div>
+                  <button type="button" class="lvlQuickBtn" data-target="25">25</button>
+                  <button type="button" class="lvlQuickBtn" data-target="30">30</button>
+                  <button type="button" class="lvlQuickBtn" data-target="50">50</button>
+                  <button type="button" class="lvlQuickBtn" data-target="55">55</button>
+                  <button type="button" class="lvlQuickBtn" data-target="60">60</button>
+                  <button type="button" class="lvlQuickBtn" data-target="65">65</button>
                 </div>
               </div>
             </div>
