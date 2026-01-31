@@ -1,100 +1,19 @@
 "use strict";
 
-/* =========================================================
-   診断モード：JSエラーを画面に表示
-========================================================= */
-(function attachErrorOverlay() {
-  function ensureBox() {
-    let box = document.getElementById("jsErrorOverlay");
-    if (!box) {
-      box = document.createElement("div");
-      box.id = "jsErrorOverlay";
-      box.style.cssText = `
-        position: fixed; left: 10px; right: 10px; bottom: 70px;
-        z-index: 99999; background: #fff; border: 2px solid #d00;
-        border-radius: 12px; padding: 10px; font-size: 12px;
-        color: #111; box-shadow: 0 6px 20px rgba(0,0,0,.2);
-        display: none; white-space: pre-wrap; line-height: 1.4;
-      `;
-      document.body.appendChild(box);
-    }
-    return box;
-  }
-  function show(msg) {
-    try {
-      const box = ensureBox();
-      box.textContent = msg;
-      box.style.display = "block";
-    } catch (_) {}
-  }
-  window.addEventListener("error", (e) => {
-    const msg = ["[JS Error]", e.message || "(no message)", `@ ${e.filename || ""}:${e.lineno || ""}:${e.colno || ""}`].join("\n");
-    show(msg);
-  });
-  window.addEventListener("unhandledrejection", (e) => {
-    const reason = e.reason && (e.reason.stack || e.reason.message || String(e.reason));
-    show(["[Unhandled Promise Rejection]", reason || "(no reason)"].join("\n"));
-  });
-  window.__APP_JS_LOADED__ = true;
-})();
-
-/* =========================================================
-   SW / Cache reset
-========================================================= */
-async function resetSWAndCacheOnce() {
-  const KEY = "sw_cache_reset_done_v200"; // バージョンアップ
-  if (localStorage.getItem(KEY)) return;
-  try {
-    if ("serviceWorker" in navigator) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map((r) => r.unregister()));
-    }
-    if ("caches" in window) {
-      const keys = await caches.keys();
-      await Promise.all(keys.map((k) => caches.delete(k)));
-    }
-  } catch (e) { console.warn(e); }
-  localStorage.setItem(KEY, "1");
-  location.reload();
-}
-
-async function registerSW() {
-  if (!("serviceWorker" in navigator)) return;
-  try { await navigator.serviceWorker.register("./service-worker.js"); } catch (e) {}
-}
-
-/* =========================================================
-   基本設定・状態管理
-========================================================= */
-const el = (id) => document.getElementById(id);
 const MAX_ROWS = 9;
 const WEEK_MEALS = 21;
-const MEALS_PER_DAY = 3;
+let state = { recipeRows: [] };
 
-// NCピカ補正値
-const NC_APPLE = 12;
-const NC_CACAO = 5;
-const NC_HONEY = 3;
+const el = (id) => document.getElementById(id);
+const imgSrc = (file) => "images/" + encodeURIComponent(file);
+const getIng = (id) => (window.INGREDIENTS || []).find(x => x.id === id);
 
-let state = {
-  recipeRows: [], // { rowId, cat, recipeId, meals }
-};
-
-/* =========================
-   Helper functions
-   ========================= */
-function getIng(id) { return (window.INGREDIENTS || []).find((x) => x.id === id); }
-function imgSrc(file) { return "images/" + encodeURIComponent(file); }
-
-/* =========================================================
-   UI描画・イベント
-========================================================= */
 function renderGrids() {
   const ex = el("excludeGrid"), rep = el("replenishGrid");
   if (!ex || !rep) return;
   ex.innerHTML = ""; rep.innerHTML = "";
 
-  (window.INGREDIENTS || []).forEach((ing) => {
+  (window.INGREDIENTS || []).forEach(ing => {
     ex.innerHTML += `
       <div class="tile">
         <div class="tileName">${ing.name}</div>
@@ -105,24 +24,24 @@ function renderGrids() {
       <div class="tile">
         <div class="tileName">${ing.name}</div>
         <img class="icon" src="${imgSrc(ing.file)}">
-        <div class="repInputRow"><input type="number" class="repQty" data-iid="${ing.id}" placeholder="0"><span>個</span></div>
+        <div class="repInputRow">
+          <input type="number" class="repQty" data-iid="${ing.id}" placeholder="xxx">
+          <span class="unitLabel">個</span>
+        </div>
       </div>`;
   });
-
-  document.querySelectorAll(".exChk, .repQty").forEach(input => {
-    input.oninput = () => calc();
-  });
+  document.querySelectorAll(".exChk, .repQty").forEach(i => i.oninput = () => calc());
 }
 
 function addRecipeRow(init) {
   if (state.recipeRows.length >= MAX_ROWS) return;
 
-  const rowId = crypto.randomUUID ? crypto.randomUUID() : "rid_" + Date.now() + "_" + Math.random().toString(16).slice(2);
+  const rowId = "rid_" + Date.now() + "_" + Math.random().toString(16).slice(2);
   const rowData = {
     rowId,
     cat: init?.cat || "カレー・シチュー",
-    recipeId: init?.recipeId || (window.RECIPES.find(r => r.cat === (init?.cat || "カレー・シチュー"))?.id),
-    meals: Number(init?.meals ?? 0),
+    recipeId: init?.recipeId || window.RECIPES.find(r => r.cat === (init?.cat || "カレー・シチュー")).id,
+    meals: Number(init?.meals ?? 0)
   };
   state.recipeRows.push(rowData);
 
@@ -130,13 +49,15 @@ function addRecipeRow(init) {
   wrap.className = "recipeRow";
   wrap.dataset.rowId = rowId;
   wrap.innerHTML = `
-    <button class="removeBtn">×</button>
-    <div style="flex:1;"><label>カテゴリー</label><select class="catSel emphSelect">
-      <option value="カレー・シチュー">カレー・シチュー</option>
-      <option value="サラダ">サラダ</option>
-      <option value="デザート・ドリンク">デザート・ドリンク</option>
-    </select></div>
-    <div style="flex:2;"><label>料理</label><select class="recipeSel emphSelect"></select></div>
+    <div class="removeBtn">×</div>
+    <div style="flex:1; min-width:110px;"><label>カテゴリー</label>
+      <select class="catSel emphSelect">
+        <option value="カレー・シチュー">カレー・シチュー</option>
+        <option value="サラダ">サラダ</option>
+        <option value="デザート・ドリンク">デザート・ドリンク</option>
+      </select>
+    </div>
+    <div style="flex:2; min-width:140px;"><label>料理</label><select class="recipeSel emphSelect"></select></div>
     <div style="width:65px;"><label>食数</label><select class="mealsSel emphSelect"></select></div>
     <div class="preview"></div>
   `;
@@ -184,34 +105,49 @@ function updateAllMealDropdowns() {
     const mSel = document.querySelector(`.recipeRow[data-row-id="${row.rowId}"] .mealsSel`);
     if (!mSel) return;
     const maxAvail = 21 - (currentTotal - row.meals);
-    const val = row.meals;
+    const currentVal = row.meals;
+    
     mSel.innerHTML = "";
-    for (let i = 0; i <= 21; i++) {
+    for (let i = 0; i <= maxAvail; i++) {
       const opt = document.createElement("option");
       opt.value = i; opt.textContent = i;
-      if (i > maxAvail) opt.disabled = true;
       mSel.appendChild(opt);
     }
-    mSel.value = val;
+    mSel.value = currentVal;
   });
   el("addRecipe").disabled = state.recipeRows.length >= MAX_ROWS;
 }
 
-/* =========================================================
-   計算メインロジック
-========================================================= */
+// クイックボタン機能
+window.applyQuickSet = (cat) => {
+  el("recipeList").innerHTML = ""; state.recipeRows = [];
+  const defaultId = window.RECIPES.find(r => r.cat === cat).id;
+  for(let i=0; i<3; i++) addRecipeRow({ cat, recipeId: defaultId, meals: 0 });
+};
+
+window.applyQuick21 = () => {
+  if (state.recipeRows.length === 0) addRecipeRow();
+  state.recipeRows.forEach((r, idx) => {
+    r.meals = (idx === 0) ? 21 : 0;
+    const mSel = document.querySelector(`.recipeRow[data-row-id="${r.rowId}"] .mealsSel`);
+    if (mSel) {
+      updateAllMealDropdowns(); // 選択肢をリフレッシュ
+      mSel.value = r.meals;
+    }
+  });
+  updateAllMealDropdowns();
+  calc();
+};
+
 function calc() {
+  // (中略: カテゴリ別合算 & 最大値ロジックは前回通り)
   const exclude = new Set([...document.querySelectorAll(".exChk:checked")].map(c => c.dataset.iid));
   const perDay = new Map([...document.querySelectorAll(".repQty")].map(c => [c.dataset.iid, Number(c.value) || 0]));
-  
-  // NCピカ補正
   if (el("optNcPika")?.checked) {
-    perDay.set("apple", (perDay.get("apple") || 0) + NC_APPLE);
-    perDay.set("cacao", (perDay.get("cacao") || 0) + NC_CACAO);
-    perDay.set("honey", (perDay.get("honey") || 0) + NC_HONEY);
+    perDay.set("apple", (perDay.get("apple") || 0) + 12);
+    perDay.set("cacao", (perDay.get("cacao") || 0) + 5);
+    perDay.set("honey", (perDay.get("honey") || 0) + 3);
   }
-
-  // 1. カテゴリーごとに食材を「合算」
   const catSums = { "カレー・シチュー": new Map(), "サラダ": new Map(), "デザート・ドリンク": new Map() };
   state.recipeRows.forEach(row => {
     const r = window.RECIPES.find(x => x.id === row.recipeId);
@@ -220,85 +156,33 @@ function calc() {
       catSums[row.cat].set(iid, (catSums[row.cat].get(iid) || 0) + (qty * row.meals));
     });
   });
-
-  // 2. カテゴリー間で食材の「最大値」を採用
   const finalGross = new Map();
   Object.values(catSums).forEach(map => {
     map.forEach((total, iid) => {
       if (total > (finalGross.get(iid) || 0)) finalGross.set(iid, total);
     });
   });
-
-  // 3. 獲得量を差し引く (獲得量 * 7日分)
-  const resultGrid = el("resultGrid");
-  resultGrid.innerHTML = "";
-  let grandTotal = 0;
-
+  const resultGrid = el("resultGrid"); resultGrid.innerHTML = ""; let grandTotal = 0;
   window.INGREDIENTS.forEach(ing => {
     if (exclude.has(ing.id)) return;
-    const gross = finalGross.get(ing.id) || 0;
-    const subtract = (perDay.get(ing.id) || 0) * 7;
-    const final = Math.max(0, gross - subtract);
-
+    const final = Math.max(0, (finalGross.get(ing.id) || 0) - (perDay.get(ing.id) || 0) * 7);
     if (final > 0) {
       grandTotal += final;
-      resultGrid.innerHTML += `
-        <div class="tile">
-          <div class="tileName">${ing.name}</div>
-          <img class="icon" src="${imgSrc(ing.file)}">
-          <div style="font-weight:900; font-size:13px;">${final.toLocaleString()}個</div>
-        </div>`;
+      resultGrid.innerHTML += `<div class="tile"><div class="tileName">${ing.name}</div><img class="icon" src="${imgSrc(ing.file)}"><div style="font-weight:900; font-size:13px;">${final.toLocaleString()}個</div></div>`;
     }
   });
   el("totalBadge").textContent = `総合計 ${grandTotal.toLocaleString()}個`;
 }
 
-/* =========================================================
-   タブ切替
-========================================================= */
-window.switchTab = function (tabId, clickedEl) {
-  document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
-  const target = el(tabId); if (target) target.classList.add("active");
-
-  const navItems = document.querySelectorAll(".bottom-nav .nav-item");
-  navItems.forEach(n => n.classList.remove("active"));
-  if (clickedEl) { clickedEl.classList.add("active"); } 
-  else {
-    const idx = { tab1:0, tab2:1, tab3:2, tab4:3 }[tabId] || 0;
-    if (navItems[idx]) navItems[idx].classList.add("active");
-  }
-
-  const titles = { tab1:"食材ストック計算", tab2:"出現ポケモン一覧", tab3:"経験値シミュレーター", tab4:"月齢カレンダー" };
-  if (el("headerTitle")) el("headerTitle").textContent = titles[tabId] || titles.tab1;
-  
-  localStorage.setItem("activeTab", tabId);
-
-  if (tabId === "tab4" && window.CalendarTab?.renderYearCalendar) window.CalendarTab.renderYearCalendar();
-  if (tabId === "tab2" && window.PokedexTab?.renderFieldMenu) window.PokedexTab.renderFieldMenu();
-  if (tabId === "tab3" && window.LevelTab?.init) window.LevelTab.init();
-};
-
-/* =========================================================
-   初期化
-========================================================= */
 window.onload = () => {
-  resetSWAndCacheOnce();
-  registerSW();
   renderGrids();
-
   el("addRecipe").onclick = () => addRecipeRow();
   el("clearAll").onclick = () => {
     el("recipeList").innerHTML = ""; state.recipeRows = [];
     document.querySelectorAll(".exChk").forEach(c => c.checked = false);
     document.querySelectorAll(".repQty").forEach(i => i.value = "");
     addRecipeRow({ meals: 0 });
-    if (window.LevelTab) window.LevelTab.clearAll();
+    calc();
   };
-  el("optNcPika").onchange = () => calc();
-
-  // 初回行追加
   addRecipeRow({ meals: 0 });
-
-  const savedTab = localStorage.getItem("activeTab") || "tab1";
-  window.switchTab(savedTab, null);
 };
