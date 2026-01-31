@@ -120,7 +120,7 @@ function toNum(v) {
     let candies = 0, shards = 0, lv = lvNow;
     let currentExp = (initialProgress || 0) + (freeExp || 0);
     let boostRemain = Math.max(0, boostCount || 0);
-    
+
     const boostExpMul = 2;
     const boostShardMul = boostKind === "mini" ? 4 : (boostKind === "full" ? 5 : 1);
 
@@ -147,6 +147,7 @@ function toNum(v) {
   async function onCalc() {
     await loadTablesOnce();
 
+    // 入力制限（桁・範囲）
     enforceDigitsAndRange(el("lvNow"), 2, 1, 64);
     enforceDigitsAndRange(el("lvTarget"), 2, 2, 65);
     enforceDigitsAndRange(el("lvProgressExp"), 4, 0, 9999);
@@ -156,25 +157,11 @@ function toNum(v) {
     enforceDigitsAndRange(el("lvSleepBonus"), 1, 0, 5);
     enforceDigitsAndRange(el("lvGrowthIncense"), 3, 0, 999);
 
-    const lvNow = toNum(el("lvNow").value);
-    let lvTarget = toNum(el("lvTarget").value);
-    const lvSleepDays = toNum(el("lvSleepDays").value);
-    const growthIncenseEl = el("lvGrowthIncense");
-    let lvGrowthIncense = toNum(growthIncenseEl.value);
+    const lvNow = toNum(el("lvNow")?.value);
+    let lvTarget = toNum(el("lvTarget")?.value);
 
-    if (lvGrowthIncense > lvSleepDays) {
-      growthIncenseEl.value = String(lvSleepDays);
-      lvGrowthIncense = lvSleepDays;
-    }
-
-    // 現在Lvが目標Lvを超えた場合のみ、目標Lvを引き上げる
-    if (lvNow > 0 && lvTarget > 0 && lvNow > lvTarget) {
-      el("lvTarget").value = String(lvNow);
-      lvTarget = lvNow;
-    }
-
-    const nowRaw = el("lvNow").value.trim();
-    const targetRaw = el("lvTarget").value.trim();
+    const nowRaw = el("lvNow")?.value.trim();
+    const targetRaw = el("lvTarget")?.value.trim();
     const natureSel = getRadio("lvNature");
     const typeSel = getRadio("lvType");
 
@@ -184,23 +171,75 @@ function toNum(v) {
       return;
     }
 
-    const progressExp = toNum(el("lvProgressExp").value);
-    const candyOwned = toNum(el("lvCandyOwned").value);
-    const boostKind = getRadio("lvBoostKind") || "none";
-    let boostCountEff = boostCountTouched ? toNum(el("lvBoostCount").value) : 9999;
-    const sleepBonus = toNum(el("lvSleepBonus").value);
+    // 現在Lvが目標Lvを超えた場合のみ、目標Lvを引き上げる
+    if (lvNow > 0 && lvTarget > 0 && lvNow > lvTarget) {
+      el("lvTarget").value = String(lvNow);
+      lvTarget = lvNow;
+    }
 
-    let initialProgress = Math.max(0, getNeedStep(lvNow + 1, typeSel) - progressExp);
+    const progressExpInput = toNum(el("lvProgressExp")?.value); // 「すでに稼いだEXP」として扱う
+    const candyOwned = toNum(el("lvCandyOwned")?.value);
+
+    const boostKind = getRadio("lvBoostKind") || "none";
+    let boostCountEff = boostCountTouched ? toNum(el("lvBoostCount")?.value) : 9999;
+
+    // ------- 睡眠/おこう（上限処理：おこう <= 睡眠日数） -------
+    const sleepEl = el("lvSleepDays");
+    const incenseEl = el("lvGrowthIncense");
+    const sleepRaw = sleepEl?.value.trim() ?? "";
+    const incenseRaw = incenseEl?.value.trim() ?? "";
+
+    const sleepDays = toNum(sleepEl?.value);
+    const sleepBonus = toNum(el("lvSleepBonus")?.value);
+    let incense = toNum(incenseEl?.value);
+
+    // 「睡眠」が入力されている状態で、おこうが睡眠を超えたらクランプ（=②の要望）
+    if (sleepRaw !== "" && incenseRaw !== "" && incense > sleepDays) {
+      incenseEl.value = String(sleepDays);
+      incense = sleepDays;
+    }
+
+    // ------- 必要EXP -------
     let totalSteps = 0;
     for (let i = lvNow + 1; i <= lvTarget; i++) totalSteps += getNeedStep(i, typeSel);
 
-    let usedIncense = Math.min(lvSleepDays, lvGrowthIncense);
-    let perDayBase = 100 + 14 * sleepBonus;
-    let freeExp = perDayBase * (lvSleepDays + usedIncense);
-    freeExp = Math.min(freeExp, totalSteps);
+    // progressExp は「必要経験値」表示から引く（UI要件）
+    const progressExpUsedForTotal = Math.min(progressExpInput, totalSteps);
 
-    const totalExpNeeded = Math.max(0, totalSteps - initialProgress - freeExp);
-    const simNormal = simulateCandiesAndShards({ lvNow, lvTarget, typeKey: typeSel, natureKey: natureSel, initialProgress, freeExp, boostKind: "none", boostCount: 0 });
+    // シミュレーションの初期所持EXP（次レベル必要EXPを上限にして繰り越さない）
+    const needForNext = getNeedStep(lvNow + 1, typeSel);
+    const initialProgress = Math.min(progressExpInput, needForNext);
+
+    // ------- freeExp（睡眠/おこう） -------
+    // 正：睡眠EXPボーナスはおこう無しの日も常に加算（毎日 100+14*n）
+    // おこうを使った日はその日の睡眠EXPが *2
+    const perDay = 100 + 14 * sleepBonus;
+
+    const usedIncense = Math.min(sleepDays, incense);           // おこう使用日数（睡眠日数以下）
+    const nonIncenseDays = Math.max(0, sleepDays - usedIncense); // おこう無しの日数
+
+    let freeExp =
+      (perDay * 2 * usedIncense) +
+      (perDay * nonIncenseDays);
+
+    // freeExp は残り必要分以上は使えない
+    const remainAfterProgress = Math.max(0, totalSteps - progressExpUsedForTotal);
+    freeExp = Math.min(freeExp, remainAfterProgress);
+
+    // 表示用：必要経験値（progressExp と freeExp を差し引く）
+    const totalExpNeeded = Math.max(0, totalSteps - progressExpUsedForTotal - freeExp);
+
+    // ------- シミュレーション実行（アメ/かけら） -------
+    const simNormal = simulateCandiesAndShards({
+      lvNow,
+      lvTarget,
+      typeKey: typeSel,
+      natureKey: natureSel,
+      initialProgress,
+      freeExp,
+      boostKind: "none",
+      boostCount: 0
+    });
 
     const shardLabelHtml = `
       <div class="lvResKey">
@@ -214,7 +253,16 @@ function toNum(v) {
     html += `<div class="lvResRow">${shardLabelHtml}<div class="lvResVal">${simNormal.shardsTotal.toLocaleString()}</div></div>`;
 
     if (boostKind !== "none") {
-      const simBoost = simulateCandiesAndShards({ lvNow, lvTarget, typeKey: typeSel, natureKey: natureSel, initialProgress, freeExp, boostKind, boostCount: boostCountEff });
+      const simBoost = simulateCandiesAndShards({
+        lvNow,
+        lvTarget,
+        typeKey: typeSel,
+        natureKey: natureSel,
+        initialProgress,
+        freeExp,
+        boostKind,
+        boostCount: boostCountEff
+      });
       const subtitle = boostKind === "mini" ? "ミニアメブースト時" : "アメブースト時";
       html += `<div class="lvResSubTitle">${subtitle}</div>`;
       html += `<div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${Math.max(0, simBoost.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
