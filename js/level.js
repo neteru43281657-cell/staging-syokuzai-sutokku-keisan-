@@ -157,7 +157,7 @@ function toNum(v) {
     enforceDigitsAndRange(el("lvGrowthIncense"), 3, 0, 999);
 
     const lvNow = toNum(el("lvNow").value);
-    const lvTarget = toNum(el("lvTarget").value);
+    let lvTarget = toNum(el("lvTarget").value);
     const lvSleepDays = toNum(el("lvSleepDays").value);
     const growthIncenseEl = el("lvGrowthIncense");
     let lvGrowthIncense = toNum(growthIncenseEl.value);
@@ -167,8 +167,10 @@ function toNum(v) {
       lvGrowthIncense = lvSleepDays;
     }
 
-    if (lvNow > lvTarget) {
+    // 現在Lvが目標Lvを超えた場合のみ、目標Lvを引き上げる
+    if (lvNow > 0 && lvTarget > 0 && lvNow > lvTarget) {
       el("lvTarget").value = String(lvNow);
+      lvTarget = lvNow;
     }
 
     const nowRaw = el("lvNow").value.trim();
@@ -200,7 +202,6 @@ function toNum(v) {
     const totalExpNeeded = Math.max(0, totalSteps - initialProgress - freeExp);
     const simNormal = simulateCandiesAndShards({ lvNow, lvTarget, typeKey: typeSel, natureKey: natureSel, initialProgress, freeExp, boostKind: "none", boostCount: 0 });
 
-    // かけら注釈用のHTMLパーツ
     const shardLabelHtml = `
       <div class="lvResKey">
         必要なゆめのかけら量✨
@@ -248,8 +249,12 @@ function toNum(v) {
     tab3.addEventListener("click", e => {
       const btn = e.target.closest(".lvlQuickBtn");
       if (btn) {
-        if (btn.dataset.now) el("lvNow").value = btn.dataset.now;
-        if (btn.dataset.target) el("lvTarget").value = btn.dataset.target;
+        // datasetの存在チェックを行い、該当する項目だけを更新するように修正
+        if (btn.dataset.now !== undefined) {
+          el("lvNow").value = btn.dataset.now;
+        } else if (btn.dataset.target !== undefined) {
+          el("lvTarget").value = btn.dataset.target;
+        }
         onCalc();
       }
       if (e.target.id === "lvResultClear") clearAll();
