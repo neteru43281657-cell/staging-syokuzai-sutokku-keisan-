@@ -20,10 +20,12 @@ function toNum(v) {
 
   async function loadTablesOnce() {
     if (expTable && shardTable) return;
+
     const [expTxt, shardTxt] = await Promise.all([
       fetch("./data/exp_table.txt", { cache: "no-store" }).then((r) => r.text()),
       fetch("./data/shard_table.txt", { cache: "no-store" }).then((r) => r.text()),
     ]);
+
     expTable = parseExpTable(expTxt);
     shardTable = parseTwoColTable(shardTxt);
 
@@ -148,7 +150,7 @@ function toNum(v) {
     if (input.value !== String(v)) input.value = String(v);
   }
 
-  // 「おこう」<=「睡眠日数」を強制
+  // 「おこう」<=「睡眠日数」を強制（②：睡眠を超えたら最大値へ）
   function clampIncenseBySleep() {
     const sleepEl = el("lvSleepDays");
     const incEl = el("lvGrowthIncense");
@@ -163,7 +165,10 @@ function toNum(v) {
       return;
     }
 
-    const sleep = Math.max(1, Math.min(999, parseInt(sleepRaw.replace(/[^\d]/g, ""), 10) || 1));
+    const sleep = Math.max(
+      1,
+      Math.min(999, parseInt(sleepRaw.replace(/[^\d]/g, ""), 10) || 1)
+    );
     const maxInc = sleep;
 
     incEl.max = String(maxInc);
@@ -197,7 +202,7 @@ function toNum(v) {
   }
 
   /* =========================
-   * Simulator
+   * Simulator（ブースト復活：EXP×2 / かけら×4 or ×5）
    * ========================= */
   function simulateCandiesAndShards(opts) {
     const {
@@ -219,8 +224,10 @@ function toNum(v) {
     let currentExp = (initialProgress || 0) + (freeExp || 0);
 
     let boostRemain = Math.max(0, boostCount || 0);
+
     const boostExpMul = 2;
-    const boostShardMul = boostKind === "mini" ? 4 : boostKind === "full" ? 5 : 1;
+    const boostShardMul =
+      boostKind === "mini" ? 4 : boostKind === "full" ? 5 : 1;
 
     while (lv < lvTarget) {
       const targetLv = lv + 1;
@@ -254,15 +261,15 @@ function toNum(v) {
    * Main calc
    * ========================= */
   async function onCalc() {
-    // 入力制限（桁・範囲）
+    // 入力制限（空欄は許可）
     enforceDigitsAndRange(el("lvNow"), 2, 1, 64);
     enforceDigitsAndRange(el("lvTarget"), 2, 2, 65);
-    enforceDigitsAndRange(el("lvProgressExp"), 4, 1, 9999);
-    enforceDigitsAndRange(el("lvCandyOwned"), 4, 1, 9999);
-    enforceDigitsAndRange(el("lvBoostCount"), 4, 1, 9999);
-    enforceDigitsAndRange(el("lvSleepDays"), 3, 1, 999);
-    enforceDigitsAndRange(el("lvSleepBonus"), 1, 1, 5);
-    enforceDigitsAndRange(el("lvGrowthIncense"), 3, 1, 999);
+    enforceDigitsAndRange(el("lvProgressExp"), 4, 0, 9999);
+    enforceDigitsAndRange(el("lvCandyOwned"), 4, 0, 9999);
+    enforceDigitsAndRange(el("lvBoostCount"), 4, 0, 9999);
+    enforceDigitsAndRange(el("lvSleepDays"), 3, 0, 999);
+    enforceDigitsAndRange(el("lvSleepBonus"), 1, 0, 5);
+    enforceDigitsAndRange(el("lvGrowthIncense"), 3, 0, 999);
 
     // おこう<=睡眠日数
     clampIncenseBySleep();
@@ -283,22 +290,25 @@ function toNum(v) {
 
     if (lvTarget <= lvNow) {
       el("lvResult").innerHTML =
+        `<div id="lvResultClear" class="lvResultClose">×</div>` +
         `<div class="lvResTitle">計算結果</div>` +
         `<div style="color:red; font-size:12px; font-weight:bold;">目標のレベルは今のレベルより大きい値にしてください</div>`;
       el("lvResult").style.display = "block";
+      el("lvResultClear").onclick = LevelTab.clearAll;
       return;
     }
 
     await loadTablesOnce();
 
-    // ---- 次のレベルまでの経験値：空欄＝開始状態 ----
-    // 入力値は「次Lvまでの残り」として扱う
+    // ---- 次のレベルまでの経験値（空欄＝開始状態）----
+    // UI上：入力された値だけ「必要経験値」から差し引く
+    // 内部：入力値は「次Lvまでの残り」として扱い、LvNow→LvNow+1 の必要量から差し引く
     const progressRaw = (el("lvProgressExp")?.value ?? "").trim();
     const needForNextLevel = getNeedStep(lvNow + 1, typeSel);
 
     let remainToNext;
     if (progressRaw === "") {
-      remainToNext = needForNextLevel; // ★空欄＝開始状態（残り=必要量）
+      remainToNext = needForNextLevel; // 空欄＝開始状態
     } else {
       const v = toNum(progressRaw);
       remainToNext = Math.min(Math.max(v, 0), needForNextLevel);
@@ -310,48 +320,52 @@ function toNum(v) {
     // UI表示用：入力された値だけ「必要経験値」から差し引く（空欄は0）
     const progressForUi = progressRaw === "" ? 0 : remainToNext;
 
-    // ---- その他 ----
-    const candyOwned = toNum(el("lvCandyOwned")?.value) || 0;
+    // ---- 総必要経験値（タイプ倍率適用済み step を合算）----
+    let totalSteps = 0;
+    for (let i = lvNow + 1; i <= lvTarget; i++) totalSteps += getNeedStep(i, typeSel);
 
-    const boostKind = getRadio("lvBoostKind") || "none";
-    let boostCountEff = boostCountTouched ? (toNum(el("lvBoostCount")?.value) || 0) : 9999;
-
+    // ---- 睡眠/ボーナス/おこう：freeExp ----
     const sleepDays = toNum(el("lvSleepDays")?.value) || 0;
     const sleepBonus = toNum(el("lvSleepBonus")?.value) || 0;
     const incense = toNum(el("lvGrowthIncense")?.value) || 0;
 
-    // ---- 総必要EXP（単純合計） ----
-    let totalSteps = 0;
-    for (let i = lvNow + 1; i <= lvTarget; i++) totalSteps += getNeedStep(i, typeSel);
-
-    // ---- freeExp（睡眠/おこう） ----
-    // 正：睡眠EXPボーナスはおこう無しの日も常に加算（毎日 100+14*n）
-    // おこうを使った日はその日の睡眠EXPが *2
-    const perDay = 100 + 14 * sleepBonus;
+    // おこうは睡眠日数以下（強制済み）
     const usedIncense = Math.min(sleepDays, incense);
-    const nonIncenseDays = Math.max(0, sleepDays - usedIncense);
 
-    const freeExpRaw = perDay * 2 * usedIncense + perDay * nonIncenseDays;
+    // 「睡眠EXPボーナスは、おこうを使ってない日も +14（常に 100+14*n）」
+    const perDayBase = 100 + 14 * sleepBonus;
 
-    // シミュレーション用：initialProgress を含めた残りに対して上限をかける
-    const remainAfterInitial = Math.max(0, totalSteps - initialProgress);
-    const freeExpSim = Math.min(freeExpRaw, remainAfterInitial);
+    // おこう日は「最後を*2」＝その日分をもう1回加算 → 合計は (sleepDays + usedIncense) 日ぶん
+    const freeExpSim = perDayBase * (sleepDays + usedIncense);
 
-    // UI表示用：progressForUi を差し引いた後の残りに対して上限をかける
+    // freeExp は総必要expを超えて意味がないので丸め
+    const freeExpClamped = Math.min(freeExpSim, totalSteps);
+
+    // ---- UI表示用の freeExp（progressForUi を引いた残りに対して適用）----
     const remainAfterUi = Math.max(0, totalSteps - progressForUi);
-    const freeExpUi = Math.min(freeExpRaw, remainAfterUi);
+    const freeExpUi = Math.min(freeExpClamped, remainAfterUi);
 
     // UI表示の必要経験値
     const totalExpNeeded = Math.max(0, totalSteps - progressForUi - freeExpUi);
 
-    // ---- シミュレーション ----
+    // ---- 所持アメ（表示上は必要アメから差し引き）----
+    const candyOwned = toNum(el("lvCandyOwned")?.value) || 0;
+
+    // ---- ブースト ----
+    const boostKind = getRadio("lvBoostKind") || "none";
+
+    // ③「選択された段階では 9999 個入力された前提」
+    // 　ユーザーがブースト個数に手入力したら、その値を使う
+    const boostCountEff = boostCountTouched ? (toNum(el("lvBoostCount")?.value) || 0) : 9999;
+
+    // ---- シミュレーション（通常）----
     const simNormal = simulateCandiesAndShards({
       lvNow,
       lvTarget,
       typeKey: typeSel,
       natureKey: natureSel,
       initialProgress,
-      freeExp: freeExpSim,
+      freeExp: freeExpClamped,
       boostKind: "none",
       boostCount: 0,
     });
@@ -373,6 +387,8 @@ function toNum(v) {
         <div class="lvResVal">${simNormal.shardsTotal.toLocaleString()}</div>
       </div>
     `;
+
+    // ---- シミュレーション（ブースト）----
     if (boostKind !== "none") {
       const simBoost = simulateCandiesAndShards({
         lvNow,
@@ -380,7 +396,7 @@ function toNum(v) {
         typeKey: typeSel,
         natureKey: natureSel,
         initialProgress,
-        freeExp: freeExpSim,
+        freeExp: freeExpClamped,
         boostKind,
         boostCount: boostCountEff,
       });
@@ -399,7 +415,6 @@ function toNum(v) {
           <div class="lvResVal">${simBoost.shardsTotal.toLocaleString()}</div>
         </div>
       `;
-
     }
 
     el("lvResult").innerHTML = html;
@@ -407,6 +422,9 @@ function toNum(v) {
     el("lvResultClear").onclick = LevelTab.clearAll;
   }
 
+  /* =========================
+   * Bind
+   * ========================= */
   function bindOnce() {
     const tab3 = document.getElementById("tab3");
     if (!tab3) return;
@@ -436,8 +454,26 @@ function toNum(v) {
       if (btn.dataset.target) el("lvTarget").value = btn.dataset.target;
       onCalc();
     });
+
+    // ブーストのラジオ：同じものをもう一度押したら解除できるようにする
+    const radios = tab3.querySelectorAll('input[name="lvBoostKind"]');
+    radios.forEach((r) => {
+      let wasChecked = false;
+      r.addEventListener("mousedown", () => {
+        wasChecked = r.checked;
+      });
+      r.addEventListener("click", () => {
+        if (wasChecked) {
+          r.checked = false;
+        }
+        onCalc();
+      });
+    });
   }
 
+  /* =========================
+   * Public
+   * ========================= */
   window.LevelTab = {
     init() {
       if (!window.__LV_BOUND__) {
@@ -447,9 +483,25 @@ function toNum(v) {
       onCalc();
     },
     clearAll() {
-      ["lvNow", "lvTarget", "lvProgressExp", "lvCandyOwned", "lvBoostCount", "lvSleepDays", "lvSleepBonus", "lvGrowthIncense"].forEach((id) => {
+      [
+        "lvNow",
+        "lvTarget",
+        "lvProgressExp",
+        "lvCandyOwned",
+        "lvBoostCount",
+        "lvSleepDays",
+        "lvSleepBonus",
+        "lvGrowthIncense",
+      ].forEach((id) => {
         const x = el(id);
         if (x) x.value = "";
+      });
+
+      // ラジオも none に戻す
+      ["lvNature", "lvType", "lvBoostKind"].forEach((name) => {
+        document
+          .querySelectorAll(`input[name="${name}"]`)
+          .forEach((r) => (r.checked = false));
       });
 
       // ブースト個数の「未入力＝9999仮定」を復帰
@@ -460,4 +512,3 @@ function toNum(v) {
     },
   };
 })();
-
