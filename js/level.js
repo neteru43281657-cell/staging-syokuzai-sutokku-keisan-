@@ -96,12 +96,10 @@ function toNum(v) {
     }
   }
 
-  // 依存関係のある入力制限
   function clampSubOptions() {
     const sleep = toNum(el("lvSleepDays").value);
     const incEl = el("lvGrowthIncense");
     const gsdEl = el("lvGSD");
-
     if (toNum(incEl.value) > sleep) incEl.value = sleep || "";
     if (toNum(gsdEl.value) > sleep) gsdEl.value = sleep || "";
   }
@@ -117,41 +115,34 @@ function toNum(v) {
     const bonusCount = toNum(el("lvSleepBonus").value);
     const incense = toNum(el("lvGrowthIncense").value);
     const gsdCount = toNum(el("lvGSD").value);
-
     const baseExp = 100 + (14 * bonusCount);
     
-    // GSDの内訳計算 (1回=3日セット)
-    let gsd3Val = gsdCount; // 3倍の日
-    let gsd2Val = gsdCount * 2; // 2倍の日
-    
-    // 睡眠日数がGSDセット(3日)に満たない場合の調整
-    if (gsd3Val + gsd2Val > sleep) {
-      gsd3Val = Math.floor(sleep / 3);
-      gsd2Val = sleep - gsd3Val;
-    }
-    const normalDays = sleep - (gsd3Val + gsd2Val);
+    let remDays = sleep;
+    let gsd3Days = Math.min(remDays, gsdCount);
+    remDays -= gsd3Days;
+    let gsd2Days = Math.min(remDays, gsdCount * 2);
+    remDays -= gsd2Days;
+    let normalDays = remDays;
 
-    // おこうの割り当て (効率の良いGSD日を優先)
     let remainIncense = incense;
-    
     const useIncense = (days, multiplier) => {
       const daysWithIncense = Math.min(days, remainIncense);
       remainIncense -= daysWithIncense;
-      // (おこう有りの日: exp * mult * 2) + (おこう無しの日: exp * mult)
       return (daysWithIncense * baseExp * multiplier * 2) + ((days - daysWithIncense) * baseExp * multiplier);
     };
 
     let total = 0;
-    total += useIncense(gsd3Val, 3); // 最優先: 3倍日
-    total += useIncense(gsd2Val, 2); // 次点: 2倍日
-    total += useIncense(normalDays, 1); // 残り: 通常日
-
+    total += useIncense(gsd3Days, 3);
+    total += useIncense(gsd2Days, 2);
+    total += useIncense(normalDays, 1);
     return total;
   }
 
   function simulate(opts) {
     const { lvNow, lvTarget, typeKey, natureKey, initialProgress, freeExp, boostKind, boostCount } = opts;
     let candies = 0, shards = 0, lv = lvNow;
+    
+    // ロジックを以前の「今のレベルから順にアメを使う」方式に完全復帰
     let currentExp = initialProgress + freeExp;
     let boostRemain = Math.max(0, boostCount || 0);
     const boostExpMul = 2;
@@ -189,12 +180,11 @@ function toNum(v) {
     const type = getRadio("lvType");
     const container = el("lvResultIn");
 
-    // 必須項目未入力チェック
     if (!lvNow || !lvTarget || !nature || !type) {
       container.innerHTML = `
         <div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">0 pt</div></div>
         <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">0 個</div></div>
-        <div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨<div style="font-size:0.75em; font-weight:inherit; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div></div><div class="lvResVal">0</div></div>`;
+        <div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨<div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div></div><div class="lvResVal">0</div></div>`;
       return;
     }
 
@@ -204,15 +194,12 @@ function toNum(v) {
     }
 
     await loadTablesOnce();
-    const typeKey = type;
-    const natureKey = nature;
-
-    const needForNext = getNeedStep(lvNow + 1, typeKey);
+    const needForNext = getNeedStep(lvNow + 1, type);
     const progressInput = toNum(el("lvProgressExp").value);
     const initialProgress = Math.max(0, needForNext - Math.min(progressInput || needForNext, needForNext));
 
     let totalSteps = 0;
-    for (let i = lvNow + 1; i <= lvTarget; i++) totalSteps += getNeedStep(i, typeKey);
+    for (let i = lvNow + 1; i <= lvTarget; i++) totalSteps += getNeedStep(i, type);
 
     const freeExp = calculateFreeExp();
     const displayExpNeeded = Math.max(0, totalSteps - (needForNext - Math.min(progressInput || needForNext, needForNext)) - freeExp);
@@ -220,67 +207,52 @@ function toNum(v) {
     const boostKind = getRadio("lvBoostKind") || "none";
     const bCount = boostCountTouched ? toNum(el("lvBoostCount").value) : 9999;
 
-    const resNormal = simulate({ lvNow, lvTarget, typeKey, natureKey, initialProgress, freeExp, boostKind: "none", boostCount: 0 });
+    const resNormal = simulate({ lvNow, lvTarget, typeKey: type, natureKey: nature, initialProgress, freeExp, boostKind: "none", boostCount: 0 });
 
     let html = `
       <div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">${displayExpNeeded.toLocaleString()} pt</div></div>
       <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${resNormal.candies.toLocaleString()} 個</div></div>
-      <div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨<div style="font-size:0.75em; font-weight:inherit; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div></div><div class="lvResVal">${resNormal.shards.toLocaleString()}</div></div>`;
+      <div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨<div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div></div><div class="lvResVal">${resNormal.shards.toLocaleString()}</div></div>`;
 
     if (boostKind !== "none") {
-      const resBoost = simulate({ lvNow, lvTarget, typeKey, natureKey, initialProgress, freeExp, boostKind, boostCount: bCount });
+      const resBoost = simulate({ lvNow, lvTarget, typeKey: type, natureKey: nature, initialProgress, freeExp, boostKind, boostCount: bCount });
       html += `<div class="lvResSubTitle">${boostKind === "mini" ? "ミニアメブースト時" : "アメブースト時"}</div>
                <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${resBoost.candies.toLocaleString()} 個</div></div>
-               <div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨<div style="font-size:0.75em; font-weight:inherit; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div></div><div class="lvResVal">${resBoost.shards.toLocaleString()}</div></div>`;
+               <div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨<div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div></div><div class="lvResVal">${resBoost.shards.toLocaleString()}</div></div>`;
     }
     container.innerHTML = html;
   }
 
   window.LevelTab = {
-      init() {
-        if (!window.__LV_BOUND__) {
-          window.__LV_BOUND__ = true;
-          
-          // 入力イベントの監視
-          el("tab3").addEventListener("input", (e) => {
-            if (e.target.id === "lvBoostCount") boostCountTouched = true;
-            onCalc();
-          });
-          el("tab3").addEventListener("change", onCalc);
-          
-          // クイックボタンのイベント
-          el("tab3").addEventListener("click", (e) => {
-            const btn = e.target.closest(".lvlQuickBtn");
-            if (btn) {
-              if (btn.dataset.now) el("lvNow").value = btn.dataset.now;
-              if (btn.dataset.target) el("lvTarget").value = btn.dataset.target;
-              onCalc();
-            }
-          });
-  
-          // ×ボタンのクリックイベント
-          const closeBtn = el("lvResultClear");
-          if (closeBtn) {
-            closeBtn.onclick = () => {
-              this.clearAll(); // リセット機能を実行
-            };
-          }
-        }
-        onCalc();
-      },
-      clearAll() {
-        // 全入力欄を空にする
-        ["lvNow", "lvTarget", "lvProgressExp", "lvBoostCount", "lvSleepDays", "lvSleepBonus", "lvGrowthIncense", "lvGSD"].forEach(id => {
-          const target = el(id);
-          if (target) target.value = "";
+    init() {
+      if (!window.__LV_BOUND__) {
+        window.__LV_BOUND__ = true;
+        el("tab3").addEventListener("input", (e) => {
+          if (e.target.id === "lvBoostCount") boostCountTouched = true;
+          onCalc();
         });
-        // ラジオボタンの選択を解除
-        document.querySelectorAll('input[name="lvNature"], input[name="lvType"], input[name="lvBoostKind"]').forEach(r => r.checked = false);
-        
-        // 内部フラグのリセットと再計算（結果を0に戻す）
-        boostCountTouched = false;
-        onCalc();
+        el("tab3").addEventListener("change", onCalc);
+        el("tab3").addEventListener("click", (e) => {
+          const btn = e.target.closest(".lvlQuickBtn");
+          if (btn) {
+            if (btn.dataset.now) el("lvNow").value = btn.dataset.now;
+            if (btn.dataset.target) el("lvTarget").value = btn.dataset.target;
+            onCalc();
+          }
+        });
+        const closeBtn = el("lvResultClear");
+        if (closeBtn) closeBtn.onclick = () => this.clearAll();
       }
-    };
+      onCalc();
+    },
+    clearAll() {
+      ["lvNow", "lvTarget", "lvProgressExp", "lvBoostCount", "lvSleepDays", "lvSleepBonus", "lvGrowthIncense", "lvGSD"].forEach(id => {
+        const target = el(id);
+        if (target) target.value = "";
+      });
+      document.querySelectorAll('input[name="lvNature"], input[name="lvType"], input[name="lvBoostKind"]').forEach(r => r.checked = false);
+      boostCountTouched = false;
+      onCalc();
+    }
+  };
 })();
-
