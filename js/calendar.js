@@ -29,7 +29,7 @@ function isAroundTarget(dateStr, targetArray) {
 }
 
 function renderYearCalendar() {
-  const container = calEl("yearCalendar");
+  const container = document.getElementById("yearCalendar");
   if (!container) return;
 
   const year = 2026;
@@ -39,7 +39,6 @@ function renderYearCalendar() {
   
   container.innerHTML = "";
   container.style.display = "grid";
-  // PCでもスマホでも3列固定
   container.style.gridTemplateColumns = "repeat(3, 1fr)";
   container.style.gap = "8px";
 
@@ -50,7 +49,6 @@ function renderYearCalendar() {
         <div class="days-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px 0;">
     `;
 
-    // 曜日の描画
     dows.forEach((d, idx) => {
       let color = "var(--muted)";
       if (idx === 5) color = "#007bff";
@@ -70,30 +68,38 @@ function renderYearCalendar() {
       const moonType = getMoonType(dateStr);
       
       let baseStyle = "font-size: 9px; width: 100%; height: 18px; display: flex; align-items: center; justify-content: center; font-weight: 800; position: relative;";
+      
+      // カラーリング設定
       let color = "var(--text)";
-      if (dayOfWeek === 6) color = "#007bff";
-      if (dayOfWeek === 0 || HOLIDAYS_2026.includes(dateStr)) color = "#e74c3c";
+      if (dayOfWeek === 6) {
+        color = "#007bff"; // 土曜
+      } else if (dayOfWeek === 0) {
+        color = "#e74c3c"; // 日曜
+      }
+
+      // 祝日の上書き判定（日曜よりも優先してオレンジに）
+      if (HOLIDAYS_2026.includes(dateStr)) {
+        color = "#ff8c00"; // 鮮やかなオレンジ
+      }
 
       let bgStyle = "";
       if (moonType) {
         const bgColor = moonType === "gsd" ? "#add8e6" : "#000080";
         color = moonType === "gsd" ? "#000" : "#fff";
 
-        // 前後の日も同じイベントか判定して連結
         const prevStr = `${year}-${String(m + 1).padStart(2, '0')}-${String(d - 1).padStart(2, '0')}`;
         const nextStr = `${year}-${String(m + 1).padStart(2, '0')}-${String(d + 1).padStart(2, '0')}`;
         const hasPrev = getMoonType(prevStr) === moonType && d > 1;
         const hasNext = getMoonType(nextStr) === moonType && d < lastDate;
 
         let radius = "10px";
-        if (hasPrev && hasNext) radius = "0"; // 中間
-        else if (hasPrev) radius = "0 10px 10px 0"; // 右端
-        else if (hasNext) radius = "10px 0 0 10px"; // 左端
+        if (hasPrev && hasNext) radius = "0";
+        else if (hasPrev) radius = "0 10px 10px 0";
+        else if (hasNext) radius = "10px 0 0 10px";
 
         bgStyle = `background: ${bgColor}; border-radius: ${radius};`;
       }
 
-      // 今日のマーク
       let todayBorder = "";
       if (dateStr === todayStr) {
         todayBorder = "outline: 1.5px solid #ff4757; outline-offset: -1.5px; border-radius: 4px; z-index: 5;";
