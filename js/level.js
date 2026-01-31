@@ -380,7 +380,7 @@ function toNum(v) {
       <div class="lvResRow">
         <div class="lvResKey">
           必要なゆめのかけら量✨
-          <div style="font-size:0.85em; font-weight:inherit; margin-top:2px;">
+          <div style="font-size:0.7em; font-weight:inherit; margin-top:2px;">
             └ 数十程度の誤差が出る場合があります
           </div>
         </div>
@@ -408,7 +408,7 @@ function toNum(v) {
         <div class="lvResRow">
           <div class="lvResKey">
             必要なゆめのかけら量✨
-            <div style="font-size:0.85em; font-weight:inherit; margin-top:2px;">
+            <div style="font-size:0.7em; font-weight:inherit; margin-top:2px;">
               └ 数十程度の誤差が出る場合があります
             </div>
           </div>
@@ -512,4 +512,5 @@ function toNum(v) {
     },
   };
 })();
+
 
