@@ -362,8 +362,17 @@ function toNum(v) {
 
     html += `<div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">${totalExpNeeded.toLocaleString()} pt</div></div>`;
     html += `<div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${Math.max(0, simNormal.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
-    html += `<div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨</div><div class="lvResVal">${simNormal.shardsTotal.toLocaleString()}</div></div>`;
-
+    html += `
+      <div class="lvResRow">
+        <div class="lvResKey">
+          必要なゆめのかけら量✨
+          <div style="font-size:0.85em; font-weight:inherit; margin-top:2px;">
+            └ 数十程度の誤差が出る場合があります
+          </div>
+        </div>
+        <div class="lvResVal">${simNormal.shardsTotal.toLocaleString()}</div>
+      </div>
+    `;
     if (boostKind !== "none") {
       const simBoost = simulateCandiesAndShards({
         lvNow,
@@ -379,7 +388,18 @@ function toNum(v) {
       const subtitle = boostKind === "mini" ? "ミニアメブースト時" : "アメブースト時";
       html += `<div class="lvResSubTitle">${subtitle}</div>`;
       html += `<div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${Math.max(0, simBoost.candiesTotal - candyOwned).toLocaleString()} 個</div></div>`;
-      html += `<div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨</div><div class="lvResVal">${simBoost.shardsTotal.toLocaleString()}</div></div>`;
+      html += `
+        <div class="lvResRow">
+          <div class="lvResKey">
+            必要なゆめのかけら量✨
+            <div style="font-size:0.85em; font-weight:inherit; margin-top:2px;">
+              └ 数十程度の誤差が出る場合があります
+            </div>
+          </div>
+          <div class="lvResVal">${simBoost.shardsTotal.toLocaleString()}</div>
+        </div>
+      `;
+
     }
 
     el("lvResult").innerHTML = html;
@@ -440,3 +460,4 @@ function toNum(v) {
     },
   };
 })();
+
