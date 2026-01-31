@@ -1,3 +1,33 @@
+// calendar.js
+"use strict";
+
+const HOLIDAYS_2026 = [
+  "2026-01-01", "2026-01-12", "2026-02-11", "2026-02-23", "2026-03-20",
+  "2026-04-29", "2026-05-03", "2026-05-04", "2026-05-05", "2026-05-06",
+  "2026-07-20", "2026-08-11", "2026-09-21", "2026-09-22", "2026-09-23",
+  "2026-10-12", "2026-11-03", "2026-11-23"
+];
+const FULL_MOONS = ["2026-01-03", "2026-02-02", "2026-03-03", "2026-04-02", "2026-05-02", "2026-05-31", "2026-06-30", "2026-07-29", "2026-08-28", "2026-09-27", "2026-10-26", "2026-11-24", "2026-12-24"];
+const NEW_MOONS = ["2026-01-19", "2026-02-17", "2026-03-19", "2026-04-17", "2026-05-17", "2026-06-15", "2026-07-14", "2026-08-13", "2026-09-11", "2026-10-11", "2026-11-09", "2026-12-09"];
+
+const calEl = (id) => document.getElementById(id);
+
+// 判定用：特定の日付が満月/新月リストの前後1日（計3日間）に含まれるか
+function getMoonType(dateStr) {
+  if (isAroundTarget(dateStr, FULL_MOONS)) return "gsd";
+  if (isAroundTarget(dateStr, NEW_MOONS)) return "nmd";
+  return null;
+}
+
+function isAroundTarget(dateStr, targetArray) {
+  const date = new Date(dateStr);
+  return targetArray.some(target => {
+    const tDate = new Date(target);
+    const diff = Math.abs(date - tDate) / (1000 * 60 * 60 * 24);
+    return diff <= 1.1; // 浮動小数点の誤差考慮
+  });
+}
+
 function renderYearCalendar() {
   const container = calEl("yearCalendar");
   if (!container) return;
@@ -6,25 +36,26 @@ function renderYearCalendar() {
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   const dows = ["月", "火", "水", "木", "金", "土", "日"];
+  
   container.innerHTML = "";
-
-  // 常に3列構成にする
   container.style.display = "grid";
+  // PCでもスマホでも3列固定
   container.style.gridTemplateColumns = "repeat(3, 1fr)";
   container.style.gap = "8px";
 
   for (let m = 0; m < 12; m++) {
     let html = `
-      <div class="month-card" style="padding: 6px; border-radius: 12px; border: 1px solid var(--line); background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-        <div class="month-name" style="font-size: 12px; font-weight: 900; text-align: center; margin-bottom: 6px; color: var(--main); border-bottom: 1.5px solid var(--main-soft); padding-bottom: 2px;">${m + 1}月</div>
-        <div class="days-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px 0;">
+      <div class="month-card" style="padding: 6px; border-radius: 12px; border: 1px solid var(--line); background: #fff;">
+        <div class="month-name" style="font-size: 11px; font-weight: 900; text-align: center; margin-bottom: 4px; color: var(--main); border-bottom: 1.5px solid var(--main-soft);">${m + 1}月</div>
+        <div class="days-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px 0;">
     `;
 
+    // 曜日の描画
     dows.forEach((d, idx) => {
       let color = "var(--muted)";
       if (idx === 5) color = "#007bff";
       if (idx === 6) color = "#e74c3c";
-      html += `<div style="font-size: 8px; font-weight: 900; text-align: center; color: ${color}; transform: scale(0.85);">${d}</div>`;
+      html += `<div style="font-size: 8px; font-weight: 900; text-align: center; color: ${color}; transform: scale(0.8);">${d}</div>`;
     });
 
     const firstDayIdx = new Date(year, m, 1).getDay(); 
@@ -35,49 +66,44 @@ function renderYearCalendar() {
 
     for (let d = 1; d <= lastDate; d++) {
       const dateStr = `${year}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      const dateObj = new Date(year, m, d);
-      const dayOfWeek = dateObj.getDay();
+      const dayOfWeek = new Date(year, m, d).getDay();
+      const moonType = getMoonType(dateStr);
       
-      let inlineStyle = "font-size: 9px; width: 100%; height: 20px; display: flex; align-items: center; justify-content: center; font-weight: 800; position: relative; z-index: 1;";
-      
-      // 今日の強調
-      if (dateStr === todayStr) {
-        inlineStyle += "outline: 1.5px solid #ff4757; outline-offset: -1.5px; border-radius: 4px; z-index: 2;";
-      }
-
-      // 文字色
+      let baseStyle = "font-size: 9px; width: 100%; height: 18px; display: flex; align-items: center; justify-content: center; font-weight: 800; position: relative;";
       let color = "var(--text)";
       if (dayOfWeek === 6) color = "#007bff";
       if (dayOfWeek === 0 || HOLIDAYS_2026.includes(dateStr)) color = "#e74c3c";
-      
-      // GSD/NMD 連結判定ロジック
+
       let bgStyle = "";
-      const isGSD = isAround(dateStr, FULL_MOONS);
-      const isNMD = isAround(dateStr, NEW_MOONS);
+      if (moonType) {
+        const bgColor = moonType === "gsd" ? "#add8e6" : "#000080";
+        color = moonType === "gsd" ? "#000" : "#fff";
 
-      if (isGSD || isNMD) {
-        const typeCls = isGSD ? "#add8e6" : "#000080";
-        const textColor = isGSD ? "#000" : "#fff";
-        color = textColor;
-
-        // 連結のための角丸計算
+        // 前後の日も同じイベントか判定して連結
         const prevStr = `${year}-${String(m + 1).padStart(2, '0')}-${String(d - 1).padStart(2, '0')}`;
         const nextStr = `${year}-${String(m + 1).padStart(2, '0')}-${String(d + 1).padStart(2, '0')}`;
-        const hasPrev = isAround(prevStr, isGSD ? FULL_MOONS : NEW_MOONS) && d > 1;
-        const hasNext = isAround(nextStr, isGSD ? FULL_MOONS : NEW_MOONS) && d < lastDate;
+        const hasPrev = getMoonType(prevStr) === moonType && d > 1;
+        const hasNext = getMoonType(nextStr) === moonType && d < lastDate;
 
-        let radius = "4px";
+        let radius = "10px";
         if (hasPrev && hasNext) radius = "0"; // 中間
         else if (hasPrev) radius = "0 10px 10px 0"; // 右端
         else if (hasNext) radius = "10px 0 0 10px"; // 左端
-        else radius = "10px"; // 独立（基本ないはずですが）
 
-        bgStyle = `background: ${typeCls}; border-radius: ${radius}; margin: 1px 0;`;
+        bgStyle = `background: ${bgColor}; border-radius: ${radius};`;
       }
-      
-      html += `<div class="day" style="${inlineStyle} ${bgStyle} color: ${color};">${d}</div>`;
+
+      // 今日のマーク
+      let todayBorder = "";
+      if (dateStr === todayStr) {
+        todayBorder = "outline: 1.5px solid #ff4757; outline-offset: -1.5px; border-radius: 4px; z-index: 5;";
+      }
+
+      html += `<div style="${baseStyle} ${bgStyle} ${todayBorder} color: ${color};">${d}</div>`;
     }
     html += `</div></div>`;
     container.innerHTML += html;
   }
 }
+
+window.CalendarTab = { renderYearCalendar };
