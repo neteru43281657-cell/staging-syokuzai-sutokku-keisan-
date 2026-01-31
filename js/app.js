@@ -1171,32 +1171,24 @@ window.onload = () => {
 
 
 
-  // クリア
+   // クリア
   const clearBtn = el("clearAll");
   if (clearBtn) {
     clearBtn.onclick = () => {
+      // タブ1のクリア
       const list = el("recipeList");
       if (list) list.innerHTML = "";
       state.recipeRows = [];
-
       document.querySelectorAll(".exChk").forEach((chk) => (chk.checked = false));
       document.querySelectorAll(".repQty").forEach((input) => (input.value = ""));
+      setMode(MODES.ONE);
 
-      // モードは初期に戻す
-      state.mode = MODES.ONE;
-
-      // 初期行を作る（前半の setMode などがある想定）
-      if (typeof setMode === "function") {
-        setMode(MODES.ONE);
-      } else {
-        // フォールバック：とりあえず1行作る
-        addRecipeRow({ meals: WEEK_MEALS });
-        updateAllMealDropdowns();
-        calc();
-      }
+      // タブ3のクリア（追加）
+      if (window.LevelTab) window.LevelTab.clearAll();
     };
   }
 
+   
   // 初期行がなければ1行追加（前半でモード初期化済み前提）
   if (state.recipeRows.length === 0) {
     if (typeof setMode === "function") {
