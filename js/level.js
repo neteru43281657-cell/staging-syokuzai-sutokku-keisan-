@@ -237,33 +237,50 @@ function toNum(v) {
   }
 
   window.LevelTab = {
-    init() {
-      if (!window.__LV_BOUND__) {
-        window.__LV_BOUND__ = true;
-        el("tab3").addEventListener("input", (e) => {
-          if (e.target.id === "lvBoostCount") boostCountTouched = true;
-          onCalc();
-        });
-        el("tab3").addEventListener("change", onCalc);
-        el("tab3").addEventListener("click", (e) => {
-          const btn = e.target.closest(".lvlQuickBtn");
-          if (btn) {
-            if (btn.dataset.now) el("lvNow").value = btn.dataset.now;
-            if (btn.dataset.target) el("lvTarget").value = btn.dataset.target;
+      init() {
+        if (!window.__LV_BOUND__) {
+          window.__LV_BOUND__ = true;
+          
+          // 入力イベントの監視
+          el("tab3").addEventListener("input", (e) => {
+            if (e.target.id === "lvBoostCount") boostCountTouched = true;
             onCalc();
+          });
+          el("tab3").addEventListener("change", onCalc);
+          
+          // クイックボタンのイベント
+          el("tab3").addEventListener("click", (e) => {
+            const btn = e.target.closest(".lvlQuickBtn");
+            if (btn) {
+              if (btn.dataset.now) el("lvNow").value = btn.dataset.now;
+              if (btn.dataset.target) el("lvTarget").value = btn.dataset.target;
+              onCalc();
+            }
+          });
+  
+          // ×ボタンのクリックイベント
+          const closeBtn = el("lvResultClear");
+          if (closeBtn) {
+            closeBtn.onclick = () => {
+              this.clearAll(); // リセット機能を実行
+            };
           }
+        }
+        onCalc();
+      },
+      clearAll() {
+        // 全入力欄を空にする
+        ["lvNow", "lvTarget", "lvProgressExp", "lvBoostCount", "lvSleepDays", "lvSleepBonus", "lvGrowthIncense", "lvGSD"].forEach(id => {
+          const target = el(id);
+          if (target) target.value = "";
         });
+        // ラジオボタンの選択を解除
+        document.querySelectorAll('input[name="lvNature"], input[name="lvType"], input[name="lvBoostKind"]').forEach(r => r.checked = false);
+        
+        // 内部フラグのリセットと再計算（結果を0に戻す）
+        boostCountTouched = false;
+        onCalc();
       }
-      onCalc();
-    },
-    clearAll() {
-      ["lvNow", "lvTarget", "lvProgressExp", "lvBoostCount", "lvSleepDays", "lvSleepBonus", "lvGrowthIncense", "lvGSD"].forEach(id => {
-        const target = el(id);
-        if (target) target.value = "";
-      });
-      document.querySelectorAll('input[name="lvNature"], input[name="lvType"], input[name="lvBoostKind"]').forEach(r => r.checked = false);
-      boostCountTouched = false;
-      onCalc();
-    }
-  };
+    };
 })();
+
