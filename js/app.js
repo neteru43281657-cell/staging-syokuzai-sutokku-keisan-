@@ -1175,16 +1175,17 @@ window.onload = () => {
   const clearBtn = el("clearAll");
   if (clearBtn) {
     clearBtn.onclick = () => {
-      // タブ1のクリア
+      // --- タブ1の項目のみをリセット ---
       const list = el("recipeList");
       if (list) list.innerHTML = "";
       state.recipeRows = [];
+
+      // 除外チェックと獲得量の入力を空にする
       document.querySelectorAll(".exChk").forEach((chk) => (chk.checked = false));
       document.querySelectorAll(".repQty").forEach((input) => (input.value = ""));
-      setMode(MODES.ONE);
 
-      // タブ3のクリア（追加）
-      if (window.LevelTab) window.LevelTab.clearAll();
+      // モードを初期（①）に戻して再構築
+      setMode(MODES.ONE);
     };
   }
 
