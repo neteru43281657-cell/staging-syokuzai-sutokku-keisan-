@@ -349,7 +349,7 @@ function toNum(v) {
     const totalExpNeeded = Math.max(0, totalSteps - progressForUi - freeExpUi);
 
     // ---- 所持アメ（表示上は必要アメから差し引き）----
-    const candyOwned = toNum(el("lvCandyOwned")?.value) || 0;
+    const candyOwned = toNum(el("lvCandyOwned")?.value); // HTML側で非表示/欠損でも0扱い
 
     // ---- ブースト ----
     const boostKind = getRadio("lvBoostKind") || "none";
@@ -512,3 +512,4 @@ function toNum(v) {
     },
   };
 })();
+
