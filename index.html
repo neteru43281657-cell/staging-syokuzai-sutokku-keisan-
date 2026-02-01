@@ -644,8 +644,8 @@
   #tab3 .lvlRowTop { align-items: flex-start !important; padding-top: 4px; }
   #tab3 .lvlRight { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 
-  /* クイックボタン：横1列（6列）表示設定 */
-  #tab3 .lvlGrid6 {
+  /* クイックボタン：横1列表示設定 */
+  #tab3 .lvlQuick {
     display: grid !important;
     grid-template-columns: repeat(6, 1fr) !important;
     gap: 4px !important;
@@ -671,7 +671,7 @@
     padding: 0;
   }
 
-  /* 入力欄：中央揃え、太字、プレースホルダー調整 */
+  /* 入力欄：中央揃え、太字 */
   #tab3 input[type="number"] {
     -moz-appearance: textfield;
     line-height: normal !important;
@@ -686,7 +686,7 @@
   }
   #tab3 input::placeholder { color: #d1d5db; opacity: 1; font-size: 11px; text-align: center; font-weight: 900; }
 
-  /* ラジオボタン：中央揃え */
+  /* ラジオボタン：中央揃え（1pxのズレ対策） */
   #tab3 .lvlRadios { display: flex; gap: 12px; justify-content: flex-end; align-items: center; }
   #tab3 .lvlRadio { font-size: 12px; cursor: pointer; color: var(--text); display: flex; align-items: center; }
   #tab3 .lvlRadio input[type="radio"] { margin: 0; }
@@ -707,14 +707,14 @@
   #tab3 .lvlInMini { width: 50px; }
   #tab3 .lvlUnit { font-size: 11px; font-weight: 900; white-space: nowrap; }
 
-  /* オプション：上端を「睡眠」ラベルと物理的に揃える */
-  #tab3 .lvlOptGroup .lvlRow { align-items: flex-start !important; padding-top: 2px; }
-  #tab3 .lvlOptGroup .lvlLabel { margin-top: 8px; } /* 左側の「オプション」文字位置 */
+  /* オプション：FlexboxでOSを問わず物理的に揃える */
+  #tab3 .lvlOptGroup .lvlRow { align-items: flex-start !important; }
+  #tab3 .lvlOptGroup .lvlLabel { margin-top: 8px; }
   #tab3 .lvlOptItems { display: flex; flex-direction: column; gap: 10px; flex: 1.5; }
   #tab3 .lvlOptLine { display: flex; justify-content: flex-end; align-items: center !important; gap: 8px; min-height: 32px; }
   #tab3 .lvlOptName { font-size: 12px; font-weight: 900; color: var(--muted); margin: 0; line-height: 1; }
 
-  /* 計算結果：OS依存を排除した上揃え定義 */
+  /* 計算結果：端末依存を排除した上揃え */
   #tab3 .lvResRow { display: flex; justify-content: space-between; align-items: flex-start !important; padding: 8px 0; }
   #tab3 .lvResKey { font-weight: 900; font-size: 13px; color: var(--muted); line-height: 1.4; }
   #tab3 .lvResVal { font-weight: 900; font-size: 14px; text-align: right; line-height: 1.4; display: flex; align-items: center; gap: 4px; }
@@ -727,7 +727,6 @@
     #tab3 .lvlQuickBtn { width: 34px; font-size: 10px; }
     #tab3 .lvlRadio { font-size: 11px; }
   }
-
 </style>
 </head>
 
