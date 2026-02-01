@@ -559,37 +559,25 @@
     }
 
 
-    /* スマホ：cond左 / mode右 / actions左下 */
+    /* スマホ：メッセージ左 / ボタン右横並び */
     @media (max-width: 520px){
       .settingsHeaderRow{
-        grid-template-columns: 140px 1fr;
-        grid-template-areas:
-          "cond  mode"
-          "actions mode";
+        grid-template-columns: 1fr auto; /* 左側を広げ、右側をボタン幅に */
+        grid-template-areas: "cond mode";
+        align-items: center;
+        gap: 8px;
       }
-      #modeBlock{ padding-left: 8px; } 
-      #actionBlock{ width: 140px; }
+      #infoMessageBlock { grid-area: cond; }
+      #actionBlock { 
+        grid-area: mode;
+        flex-direction: row !important; /* 縦並びから横並びに強制変更 */
+      }
       
-      /* モード文言：スマホでは1行固定にする */
-      .modeLabel{
-        white-space: nowrap;          /* 折り返し禁止 */
-        font-size: 12px;              /* ②③が2行になるのを防ぐため少し小さく */
-      }
-    
-      /* スマホ：n食/n食（badge）に寄せたサイズへ。2ボタンを完全に同寸化 */
-      #actionBlock > button{
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        box-sizing: border-box !important;
-    
-        height: 30px !important;
-        padding: 0 20px !important;
-        font-size: 12px !important;
-        line-height: 1 !important;
-        border-radius: 999px !important;
-    
-        min-width: 90px !important;
+      /* ボタンの横幅を固定せず、文字に合わせる */
+      #actionBlock > button {
+        min-width: 70px !important;
+        padding: 0 12px !important;
+        height: 32px !important;
       }
     }
     
@@ -822,9 +810,15 @@
         </div>
 
         <!-- +追加 / クリア -->
-        <div id="actionBlock">
-          <button id="clearAll" class="danger">クリア</button>
-          <button id="addRecipe" class="primary">+ 追加</button>
+        <div id="infoMessageBlock" style="grid-area: cond; display: flex; align-items: center;">
+          <div style="font-size: 12px; font-weight: 800; color: var(--muted); line-height: 1.4;">
+            カテゴリー、料理、食数を<br>自由に組み合わせできます
+          </div>
+        </div>
+
+        <div id="actionBlock" style="grid-area: mode; display: flex; gap: 8px; justify-content: flex-end; align-items: flex-start;">
+          <button id="addRecipe" class="primary" style="white-space: nowrap;">+ 追加</button>
+          <button id="clearAll" class="danger" style="white-space: nowrap;">クリア</button>
         </div>
       </div>
 
