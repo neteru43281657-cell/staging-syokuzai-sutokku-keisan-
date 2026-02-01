@@ -561,27 +561,36 @@
 
     /* スマホ：メッセージ左 / ボタン右横並び */
     @media (max-width: 520px){
-      .settingsHeaderRow{
-        grid-template-columns: 1fr auto; /* 左側を広げ、右側をボタン幅に */
-        grid-template-areas: "cond mode";
-        align-items: center;
-        gap: 8px;
-      }
-      #infoMessageBlock { grid-area: cond; }
-      #actionBlock { 
-        grid-area: mode;
-        flex-direction: row !important; /* 縦並びから横並びに強制変更 */
+      .settingsHeaderRow {
+        display: block !important; /* グリッドを解除して縦に並べる */
       }
       
-      /* ボタンの横幅を固定せず、文字に合わせる */
+      #infoMessageBlock {
+        margin-bottom: 12px;
+        padding-left: 5px;
+      }
+      
+      #infoMessageBlock div {
+        font-size: 11px !important; /* 少し小さくして1行に収まりやすく */
+        line-height: 1.2 !important;
+        white-space: nowrap; /* 折り返しを禁止してスッキリさせる */
+      }
+
+      #actionBlock {
+        display: flex !important;
+        justify-content: flex-end; /* ボタンは右寄せ */
+        gap: 8px;
+        margin-top: -35px; /* 条件設定の右側の空きスペースにボタンを食い込ませる */
+      }
+      
       #actionBlock > button {
-        min-width: 70px !important;
-        padding: 0 12px !important;
-        height: 32px !important;
+        height: 28px !important;
+        min-width: 60px !important;
+        font-size: 11px !important;
       }
     }
-    
 
+    
 
     /* =========================================================
        PC見栄え：計算結果カードをまとめて整える（他には影響しない）
@@ -812,7 +821,7 @@
         <!-- +追加 / クリア -->
         <div id="infoMessageBlock" style="grid-area: cond; display: flex; align-items: center;">
           <div style="font-size: 12px; font-weight: 800; color: var(--muted); line-height: 1.4;">
-            カテゴリー、料理、食数を<br>自由に組み合わせできます
+            21食の範囲内で自由に組み合わせできます
           </div>
         </div>
 
