@@ -258,35 +258,43 @@ function toNum(v) {
   }
 
   window.LevelTab = {
-    init() {
-      if (!window.__LV_BOUND__) {
-        window.__LV_BOUND__ = true;
-        el("tab3").addEventListener("input", (e) => {
-          if (e.target.id === "lvBoostCount") boostCountTouched = true;
-          onCalc();
-        });
-        el("tab3").addEventListener("change", onCalc);
-        el("tab3").addEventListener("click", (e) => {
-          const btn = e.target.closest(".lvlQuickBtn");
-          if (btn) {
-            if (btn.dataset.now) el("lvNow").value = btn.dataset.now;
-            if (btn.dataset.target) el("lvTarget").value = btn.dataset.target;
+      init() {
+        if (!window.__LV_BOUND__) {
+          window.__LV_BOUND__ = true;
+          el("tab3").addEventListener("input", (e) => {
+            if (e.target.id === "lvBoostCount") boostCountTouched = true;
             onCalc();
+          });
+          el("tab3").addEventListener("change", onCalc);
+          el("tab3").addEventListener("click", (e) => {
+            const btn = e.target.closest(".lvlQuickBtn");
+            if (btn) {
+              if (btn.dataset.now) el("lvNow").value = btn.dataset.now;
+              if (btn.dataset.target) el("lvTarget\").value = btn.dataset.target;
+              onCalc();
+            }
+          });
+          
+          // クリアボタンのイベント設定（×ボタンから継承）
+          const clearBtn = el("lvResultClear");
+          if (clearBtn) {
+            clearBtn.onclick = () => {
+              this.clearAll();
+              onCalc(); // クリア後に表示を更新
+            };
           }
+        }
+        onCalc();
+      },
+      // すべての入力を空にする機能は維持
+      clearAll() {
+        ["lvNow", "lvTarget", "lvProgressExp", "lvOwnedCandy", "lvBoostCount", "lvSleepDays", "lvSleepBonus", "lvGrowthIncense", "lvGSD"].forEach(id => {
+          const input = el(id);
+          if (input) input.value = "";
         });
-        const closeBtn = el("lvResultClear");
-        if (closeBtn) closeBtn.onclick = () => this.clearAll();
+        // ラジオボタンのリセット
+        document.querySelectorAll('input[name="lvNature"], input[name="lvType"], input[name="lvBoostKind"]').forEach(r => r.checked = false);
       }
-      onCalc();
-    },
-    clearAll() {
-      ["lvNow", "lvTarget", "lvProgressExp", "lvOwnedCandy", "lvBoostCount", "lvSleepDays", "lvSleepBonus", "lvGrowthIncense", "lvGSD"].forEach(id => {
-        const target = el(id);
-        if (target) target.value = "";
-      });
-      document.querySelectorAll('input[name="lvNature"], input[name="lvType"], input[name="lvBoostKind"]').forEach(r => r.checked = false);
-      boostCountTouched = false;
-      onCalc();
-    }
-  };
+    };
 })();
+
