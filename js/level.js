@@ -239,7 +239,7 @@ function toNum(v) {
 
     // ブースト設定
     const boostKind = getRadio("lvBoostKind") || "none";
-    // 修正：個数欄が空の場合は「すべてブースト」とみなして 9999 をセット
+    // 個数欄が空の場合は「すべてブースト」とみなして 9999 をセット
     const bCountStr = el("lvBoostCount").value;
     const bCount = (bCountStr === "") ? 9999 : toNum(bCountStr);
 
@@ -266,7 +266,7 @@ function toNum(v) {
       const diffShard = resBoost.shards - resNormal.shards;
 
       // 文言の定義
-      const boostTitle = boostKind === "mini" ? "ミニアメブースト時（EXP2倍/かけら消費4倍）" : "アメブースト時（EXP2倍/かけら消費5倍）";
+      const boostTitle = boostKind === "mini" ? "ミニアメブースト時（EXP2倍 / かけら消費4倍）" : "アメブースト時（EXP2倍 / かけら消費5倍）";
 
       html += `<div class="lvResSubTitle">${boostTitle}</div>
                <div class="lvResRow">
@@ -274,7 +274,7 @@ function toNum(v) {
                  <div class="lvResVal">${finalBoostCandy.toLocaleString()} 個 <span style="color:#007bff; font-size:0.9em;">(-${diffCandy.toLocaleString()})</span></div>
                </div>
                <div class="lvResRow">
-                 <div class="lvResKey">必要なゆめのかけら量✨</div>
+                 <div class="lvResKey">必要なゆめのかけら量✨<div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div></div>
                  <div class="lvResVal">${resBoost.shards.toLocaleString()} <span style="color:#e74c3c; font-size:0.9em;">(+${diffShard.toLocaleString()})</span></div>
                </div>`;
     }
