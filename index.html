@@ -453,166 +453,84 @@
       /* 視覚的ベースライン補正 */
       transform: translateY(-6px);
     }
-    
-    /* 条件設定ヘッダー（cond / mode / actions）共通 */
-    .settingsHeaderRow{
-      display:grid;
-      grid-template-columns: 160px 1fr 160px;
-      grid-template-areas: "cond mode actions";
-      gap: 12px;
-      align-items: start;
-    }
-    #condBlock{ grid-area: cond; }
-    #modeBlock{ grid-area: mode; }
-    #actionBlock{
-      grid-area: actions;
-      display:flex;
-      flex-direction:column;
-      gap: 10px;
-      align-items: flex-start; /* ★stretchさせない（ボタン巨大化防止） */
-    }
 
-    /* モード（PC/スマホ共通） */
-    #modeBlock .modeInner{
-      display:flex;
-      flex-direction:column;
-      align-items:flex-start;
-      gap: 10px;
-      width:100%;
+    
+    /* --- ① PC版を含む共通設定の修正 --- */
+    .settingsHeaderRow {
+      display: grid;
+      /* 列幅を「左（固定幅）」「中央（自由）」「右（ボタン幅）」に明確に分ける */
+      grid-template-columns: 160px 1fr auto; 
+      grid-template-areas: "cond info actions";
+      gap: 15px;
+      align-items: center; /* 縦方向を中央に揃えて重なりを防ぐ */
     }
-    #modeBlock .modeTitle{
-      font-weight: 900;
-      font-size: 14px;
-      color: var(--muted);
-      margin-bottom: 2px;
-    }
-    .modeLabel{
-      display: flex;
+    #condBlock { grid-area: cond; }
+    #infoMessageBlock { 
+      grid-area: info; 
+      display: flex; 
       align-items: center;
-      gap: 8px;
-      line-height: 1.4;
+      min-width: 0; /* 幅が狭まっても崩れないようにする */
     }
-    .modeLabel input[type="radio"]{
-      appearance: none;
-      -webkit-appearance: none;
-      width: 16px;
-      height: 16px;
-      border: 2px solid #3b82f6; /* 青 */
-      border-radius: 50%;
-      display: inline-grid;
-      place-content: center;
-      margin: 0;
-      transform: translateY(-1px); /* ← ラジオボタンの位置調整 */
+    #actionBlock { 
+      grid-area: actions; 
+      display: flex; 
+      gap: 10px; 
+      white-space: nowrap;
     }
 
-    .modeLabel input[type="radio"]::before{
-      content: "";
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      transform: scale(0);
-      transition: transform 0.1s ease-in-out;
-      background-color: #3b82f6;
-    }
-    
-    .modeLabel input[type="radio"]:checked::before{
-      transform: scale(1);
-    }
-
-    
-    /* action buttons：21食/21食バッジと“同じ系統”のサイズ感 */
-    #actionBlock > button{
-      width: auto !important;
-      height: 34px !important;
+    /* ボタンの共通構造：文字の上下ズレ（②）を解消 */
+    #actionBlock > button {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-weight: 800;
       padding: 0 16px !important;
-      font-size: 13px !important;
-      line-height: 34px !important;
-      border-radius: 999px !important;
+      height: 36px !important; /* ボタンを少し大きく */
+      line-height: 1 !important; /* 文字位置を安定させる */
+      border-radius: 999px;
+      cursor: pointer;
     }
 
-    /* 計算結果：ヘッダ固定（下に落ちない） */
-    .resultHeader{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap: nowrap;
-    }
-    .resultTitle{
-      font-weight: 900;
-      font-size: 16px;
-      color: var(--main);
-      line-height: 1.15;
-    }
-
-    /* 注意書き：PC/スマホで小さめ統一（でも極端に小さくしない） */
-    .mode3Note{
-      white-space: normal;
-      word-break: break-word;
-    }
-    
-    @media (max-width: 520px){
-      .mode3Note{
-        font-size: 9px;
-        line-height: 1.25;
-      }
-    }
-
-
-    /* スマホ：レイアウト重なりを解消する修正 */
+    /* --- ② スマホ版（520px以下）の修正 --- */
     @media (max-width: 520px){
       .settingsHeaderRow {
         display: flex !important;
-        flex-direction: column !important; /* 縦に並べる */
+        flex-direction: column !important;
         align-items: flex-start !important;
-        gap: 12px !important;
+        gap: 10px !important;
         position: relative;
+        padding-top: 5px;
       }
 
-      /* 条件設定タイトルとバッジ */
-      #condBlock {
-        width: 100%;
-      }
-
-      /* メッセージ：ボタンに被らないよう配置 */
+      /* メッセージエリアをタイトルとボタンの下に配置 */
       #infoMessageBlock {
         width: 100%;
-        margin: 4px 0;
-        padding-left: 5px;
-        order: 2; /* タイトル→メッセージ→ボタンの順にする */
+        margin-top: 5px;
+        padding-left: 2px;
       }
       
       #infoMessageBlock div {
         font-size: 11px !important;
+        white-space: normal !important; /* 改行を許可 */
         line-height: 1.4 !important;
-        white-space: normal !important; /* 改行を許可して重なりを防ぐ */
-        color: var(--muted);
       }
 
-      /* ボタンエリア：右上に浮かせるか、下に配置するか選べますが、
-         今回は重なりを避けるため「タイトルと同じ行の右側」に固定します */
+      /* ボタンエリアを右上に配置 */
       #actionBlock {
         position: absolute;
         top: 0;
         right: 0;
-        display: flex !important;
-        flex-direction: row !important;
-        gap: 6px !important;
+        gap: 8px !important;
       }
       
+      /* スマホでのボタンサイズアップ（②） */
       #actionBlock > button {
-        height: 28px !important;
-        min-width: 54px !important;
-        padding: 0 10px !important;
-        font-size: 11px !important;
-      }
-
-      /* バッジ（0食/21食）がボタンに被らないよう調整 */
-      #summaryBadge {
-        margin-top: 4px;
+        height: 32px !important; /* 高さを出して押しやすく */
+        min-width: 65px !important;
+        padding: 0 12px !important;
+        font-size: 12px !important;
       }
     }
-
     
 
     /* =========================================================
