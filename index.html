@@ -250,6 +250,17 @@
       align-items: center;
       gap: 6px;
     }
+
+    .mode3Note {
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--muted); /* 文字色を少し抑えて「注釈」らしく */
+      background: var(--main-soft); /* 薄い青背景で「お知らせ」感を出す */
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+      border: 1px solid #d0e7ff;
+    }
     
     .repInputRow {
       display: flex;
@@ -855,11 +866,11 @@
         <div class="resultTitle">計算結果</div>
         <span class="badge total-badge" id="totalBadge">総合計 0個</span>
       </div>
-
+    
       <div id="mode3Note" class="mode3Note">
-        ※異なるカテゴリーのレシピ間で重複している食材は、各レシピ中で最も多く使われている食材の個数を参照して計算しています
+        💡 カテゴリーを跨いで計算する場合、各レシピの中で「一番多く使う分量」に合わせて計算しています（食材の不足を防ぐため）
       </div>
-
+    
       <div class="resultDivider"></div>
       <div id="resultGrid" class="grid5"></div>
     </section>
