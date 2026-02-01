@@ -945,13 +945,9 @@
                 <label class="lvlRadio"><input type="radio" name="lvBoostKind" value="mini"><span>ミニアメブースト</span></label>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
   
-      <section class="card">
-        <div class="lvlForm">
-          <div class="lvlGroup lvlOptGroup">
+            <div class="lvlDivider"></div>
+  
             <div class="lvlRow">
               <div class="lvlLabel">オプション</div>
               <div class="lvlOptItems">
@@ -962,7 +958,6 @@
                     <span class="lvlUnit">日</span>
                   </div>
                 </div>
-                
                 <div class="lvlOptLine">
                   <span class="lvlOptName">睡眠EXPボーナス</span>
                   <div class="lvlInputWrapper">
@@ -970,7 +965,6 @@
                     <span class="lvlUnit">体</span>
                   </div>
                 </div>
-  
                 <div style="display: flex; flex-direction: column; gap: 2px; align-items: flex-start; width: fit-content; margin-left: auto;">
                   <div class="lvlOptLine" style="width: 100%; margin: 0; padding: 0;">
                     <span class="lvlOptName" style="margin-right: 8px;">せいちょうのおこう</span>
@@ -979,11 +973,7 @@
                       <span class="lvlUnit">個</span>
                     </div>
                   </div>
-                  <div style="font-size: 0.75em; font-weight: 800; opacity: 0.8; padding-left: 2px; color: var(--muted); white-space: nowrap;">
-                    └ 最高効率で自動配分されます
-                  </div>
                 </div>
-  
                 <div style="display: flex; flex-direction: column; gap: 2px; align-items: flex-start; width: fit-content; margin-left: auto; margin-top: 4px;">
                   <div class="lvlOptLine" style="width: 100%; margin: 0; padding: 0;">
                     <span class="lvlOptName" style="margin-right: 8px;">グッドスリープデー</span>
@@ -991,9 +981,6 @@
                       <input id="lvGSD" class="lvlInMini" type="number" placeholder="xx">
                       <span class="lvlUnit">回</span>
                     </div>
-                  </div>
-                  <div style="font-size: 0.75em; font-weight: 800; opacity: 0.8; padding-left: 2px; color: var(--muted); white-space: nowrap;">
-                    └ 通しの3日間で1回扱いです
                   </div>
                 </div>
               </div>
@@ -1003,21 +990,14 @@
       </section>
   
       <section class="result-card" id="lvResultCard" style="display: block; position: relative; margin-top: 12px;">
-        <div id="lvResultClear" class="lvResultClose">×</div>
-        <div class="resultHeader">
+        <div class="resultHeader" style="display: flex; justify-content: space-between; align-items: center;">
           <div class="resultTitle">計算結果</div>
+          <button id="lvResultClear" class="danger" style="height: 28px; padding: 0 12px; font-size: 11px; border-radius: 999px; min-width: 60px;">クリア</button>
         </div>
         <div class="resultDivider"></div>
         <div id="lvResultIn">
-          <div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">0 pt</div></div>
-          <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">0 個</div></div>
-          <div class="lvResRow">
-            <div class="lvResKey">必要なゆめのかけら量✨<div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div></div>
-            <div class="lvResVal">0</div>
           </div>
-        </div>
       </section>
-    </div>
 
   
   <div id="tab4" class="tab-content">
