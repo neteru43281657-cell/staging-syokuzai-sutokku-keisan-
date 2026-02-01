@@ -222,7 +222,7 @@ function toNum(v) {
 
     let html = `
       <div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">${displayExpNeeded.toLocaleString()} pt</div></div>
-      <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${finalNormalCandy.toLocaleString()} 個</div></div>
+      <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvlResVal">${finalNormalCandy.toLocaleString()} 個</div></div>
       <div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨<div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div></div><div class="lvResVal">${resNormal.shards.toLocaleString()}</div></div>`;
 
     if (boostKind !== "none") {
@@ -237,64 +237,63 @@ function toNum(v) {
       const boostRateInfo = boostKind === "mini" ? "(EXP2倍/かけら4倍)" : "(EXP2倍/かけら5倍)";
       
       if (isBoostCountEmpty) {
-        // 個数未入力：全期間ブースト（理論値）
         boostHeader = `${boostKind === "mini" ? "ミニアメブースト" : "アメブースト"}最大適用時 ${boostRateInfo}`;
       } else {
-        // 個数入力あり：指定数ブースト（現実値）
         boostHeader = `${boostKind === "mini" ? "ミニアメブースト" : "アメブースト"} ${bCount}個適用時 ${boostRateInfo}`;
       }
 
       html += `<div class="lvResSubTitle" style="font-size: 12.5px;">${boostHeader}</div>
-               <div class="lvResRow">
-                 <div class="lvResKey">必要なアメの数🍬</div>
-                 <div class="lvResVal">${finalBoostCandy.toLocaleString()} 個 <span style="color:#007bff; font-size:0.9em;">(-${diffCandy.toLocaleString()})</span></div>
+               <div class=\"lvResRow\">
+                 <div class=\"lvResKey\">必要なアメの数🍬</div>
+                 <div class=\"lvResVal\">${finalBoostCandy.toLocaleString()} 個 <span style=\"color:#007bff; font-size:0.9em;\">(-${diffCandy.toLocaleString()})</span></div>
                </div>
-               <div class="lvResRow">
-                 <div class="lvResKey">必要なゆめのかけら量✨<div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div></div>
-                 <div class="lvResVal">${resBoost.shards.toLocaleString()} <span style="color:#e74c3c; font-size:0.9em;">(+${diffShard.toLocaleString()})</span></div>
+               <div class=\"lvResRow\">
+                 <div class=\"lvResKey\">必要なゆめのかけら量✨<div style=\"font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;\">└ 数十程度の誤差が出る場合があります</div></div>
+                 <div class=\"lvResVal\">${resBoost.shards.toLocaleString()} <span style=\"color:#e74c3c; font-size:0.9em;\">(+${diffShard.toLocaleString()})</span></div>
                </div>`;
     }
     container.innerHTML = html;
   }
 
   window.LevelTab = {
-      init() {
-        if (!window.__LV_BOUND__) {
-          window.__LV_BOUND__ = true;
-          el("tab3").addEventListener("input", (e) => {
-            if (e.target.id === "lvBoostCount") boostCountTouched = true;
-            onCalc();
-          });
-          el("tab3").addEventListener("change", onCalc);
-          el("tab3").addEventListener("click", (e) => {
-            const btn = e.target.closest(".lvlQuickBtn");
-            if (btn) {
-              if (btn.dataset.now) el("lvNow").value = btn.dataset.now;
-              if (btn.dataset.target) el("lvTarget\").value = btn.dataset.target;
-              onCalc();
-            }
-          });
-          
-          // クリアボタンのイベント設定（×ボタンから継承）
-          const clearBtn = el("lvResultClear");
-          if (clearBtn) {
-            clearBtn.onclick = () => {
-              this.clearAll();
-              onCalc(); // クリア後に表示を更新
-            };
-          }
-        }
-        onCalc();
-      },
-      // すべての入力を空にする機能は維持
-      clearAll() {
-        ["lvNow", "lvTarget", "lvProgressExp", "lvOwnedCandy", "lvBoostCount", "lvSleepDays", "lvSleepBonus", "lvGrowthIncense", "lvGSD"].forEach(id => {
-          const input = el(id);
-          if (input) input.value = "";
+    init() {
+      if (!window.__LV_BOUND__) {
+        window.__LV_BOUND__ = true;
+        // タブ全体の入力監視
+        el("tab3").addEventListener("input", (e) => {
+          if (e.target.id === "lvBoostCount") boostCountTouched = true;
+          onCalc();
         });
-        // ラジオボタンのリセット
-        document.querySelectorAll('input[name="lvNature"], input[name="lvType"], input[name="lvBoostKind"]').forEach(r => r.checked = false);
-      }
-    };
-})();
+        el("tab3").addEventListener("change", onCalc);
+        
+        // 新しいタイル構造に合わせてクリックイベントを監視
+        el("tab3").addEventListener("click", (e) => {
+          const btn = e.target.closest(".lvlQuickBtn");
+          if (btn) {
+            if (btn.dataset.now) el("lvNow").value = btn.dataset.now;
+            if (btn.dataset.target) el("lvTarget").value = btn.dataset.target;
+            onCalc();
+          }
+        });
 
+        // クリアボタン
+        const clearBtn = el("lvResultClear");
+        if (clearBtn) {
+          clearBtn.onclick = () => {
+            this.clearAll();
+            onCalc();
+          };
+        }
+      }
+      onCalc();
+    },
+    clearAll() {
+      ["lvNow", "lvTarget", "lvProgressExp", "lvOwnedCandy", "lvBoostCount", "lvSleepDays", "lvSleepBonus", "lvGrowthIncense", "lvGSD"].forEach(id => {
+        const input = el(id);
+        if (input) input.value = "";
+      });
+      document.querySelectorAll('input[name="lvNature"], input[name="lvType"], input[name="lvBoostKind"]').forEach(r => r.checked = false);
+      boostCountTouched = false;
+    }
+  };
+})();
