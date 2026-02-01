@@ -215,10 +215,19 @@ function toNum(v) {
       <div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨<div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div></div><div class="lvResVal">${resNormal.shards.toLocaleString()}</div></div>`;
 
     if (boostKind !== "none") {
-      const resBoost = simulate({ lvNow, lvTarget, typeKey: type, natureKey: nature, initialProgress, freeExp, boostKind, boostCount: bCount });
-      html += `<div class="lvResSubTitle">${boostKind === "mini" ? "ミニアメブースト時（EXP2倍/かけら消費量4倍）" : "アメブースト時（EXP2倍/かけら消費量5倍）"}</div>
-               <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${resBoost.candies.toLocaleString()} 個</div></div>
-               <div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨<div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div></div><div class="lvResVal">${resBoost.shards.toLocaleString()}</div></div>`;
+      const resBoost = simulate({ /* ...引数... */ });
+      const diffCandies = resNormal.candies - resBoost.candies; // 浮いたアメ
+      const diffShards = resBoost.shards - resNormal.shards;   // 増えるかけら
+    
+      html += `<div class="lvResSubTitle">${boostKind === "mini" ? "ミニアメブースト時" : "アメブースト時"}</div>
+               <div class="lvResRow">
+                 <div class="lvResKey">必要なアメの数🍬</div>
+                 <div class="lvResVal">${resBoost.candies.toLocaleString()} 個 <span style="color:var(--main); font-size:0.75em;">(-${diffCandies.toLocaleString()})</span></div>
+               </div>
+               <div class="lvResRow">
+                 <div class="lvResKey">必要なゆめのかけら量✨</div>
+                 <div class="lvResVal">${resBoost.shards.toLocaleString()} <span style="color:var(--danger); font-size:0.75em;">(+${diffShards.toLocaleString()})</span></div>
+               </div>`;
     }
     container.innerHTML = html;
   }
@@ -256,4 +265,5 @@ function toNum(v) {
     }
   };
 })();
+
 
