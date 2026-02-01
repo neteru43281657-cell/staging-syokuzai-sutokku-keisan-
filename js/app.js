@@ -91,7 +91,7 @@ const WEEK_MEALS = 21;
 const MODE3_TOTAL_MEALS = 63;
 
 // ② 異なるレシピを組み合わせて21食：最大行数
-const MAX_ROWS_MODE2 = 6;
+const MAX_ROWS = 9;
 
 // NCピカ（1日あたり差し引き分）※値はここで固定
 const NC_APPLE = 12;
@@ -976,102 +976,56 @@ function calcWeeklySubtractByReplenish(displayOrder) {
 ========================================================= */
 function calc() {
   const exclude = buildExcludeSet();
-  const perDay = buildReplenishPerDayMap(); // NC分込み（1日あたり）
+  const perDay = buildReplenishPerDayMap();
   const resultGrid = el("resultGrid");
   if (!resultGrid) return;
 
-  // 週グロス必要量（レシピ由来）を作る
-  const gross = new Map(); // iid -> weekly gross
-  const order = [];        // 表示順（出現順）
+  // 1. カテゴリーごとの合計を保持する箱を作る
+  const catSums = { "カレー・シチュー": new Map(), "サラダ": new Map(), "デザート・ドリンク": new Map() };
 
-  const pushOrder = (iid) => { if (!order.includes(iid)) order.push(iid); };
-  const addGross = (iid, v) => {
-    pushOrder(iid);
-    gross.set(iid, (gross.get(iid) || 0) + v);
-  };
-  const setGrossMax = (iid, v) => {
-    pushOrder(iid);
-    const prev = gross.has(iid) ? gross.get(iid) : -Infinity;
-    if (v > prev) gross.set(iid, v);
-  };
+  state.recipeRows.forEach(row => {
+    const meals = Number(row.meals) || 0;
+    const r = RECIPES.find(x => x.id === row.recipeId);
+    if (!r || meals <= 0) return;
 
-  if (state.mode === MODES.ONE) {
-    const row = state.recipeRows[0];
-    const r = RECIPES.find((x) => x.id === row?.recipeId);
-    if (r) {
-      Object.entries(r.ingredients).forEach(([iid, qtyPerMeal]) => {
-        addGross(iid, qtyPerMeal * WEEK_MEALS); // 1食あたり * 21食
-      });
-    }
-  } else if (state.mode === MODES.MIX) {
-    // ★ここが今回の修正点：qtyPerMeal * meals で積み上げる
-    state.recipeRows.forEach((row) => {
-      const meals = Number(row.meals) || 0;
-      if (meals <= 0) return;
-
-      const r = RECIPES.find((x) => x.id === row.recipeId);
-      if (!r) return;
-
-      Object.entries(r.ingredients).forEach(([iid, qtyPerMeal]) => {
-        addGross(iid, qtyPerMeal * meals);
-      });
+    const currentCatMap = catSums[row.cat];
+    Object.entries(r.ingredients).forEach(([iid, qty]) => {
+      currentCatMap.set(iid, (currentCatMap.get(iid) || 0) + (qty * meals));
     });
-  } else if (state.mode === MODES.PRESET63) {
-    // 3カテゴリ：重複は「1食あたり最大値」を採用し、それ * 21
-    state.recipeRows.forEach((row) => {
-      const r = RECIPES.find((x) => x.id === row.recipeId);
-      if (!r) return;
+  });
 
-      Object.entries(r.ingredients).forEach(([iid, qtyPerMeal]) => {
-        setGrossMax(iid, qtyPerMeal * WEEK_MEALS);
-      });
+  // 2. 各食材について、カテゴリー間で「最大値」を採用する
+  const gross = new Map();
+  const allIids = new Set();
+  Object.values(catSums).forEach(map => {
+    map.forEach((val, iid) => {
+      allIids.add(iid);
+      gross.set(iid, Math.max(gross.get(iid) || 0, val));
     });
-  }
+  });
 
-  // 描画（除外・獲得量差し引き）
+  // 3. 描画と最終差し引き
   resultGrid.innerHTML = "";
   let grandTotal = 0;
 
-  order.forEach((iid) => {
+  Array.from(allIids).sort().forEach(iid => {
     if (exclude.has(iid)) return;
-
     const g = gross.get(iid) || 0;
-    if (g <= 0) return;
-
-    // 1日当たり獲得量は「使う食材だけ」対象（grossにある＝使う）
-   const pd = perDay.get(iid) || 0;
-   
-   // ===============================
-   // モード②のみ：入力済み食数に比例して差し引く
-   // ===============================
-   let subtractAmt = pd * WEEK_DAYS; // デフォルト：7日分（①・③）
-   
-   if (state.mode === MODES.MIX) {
-     const totalMeals = state.recipeRows.reduce(
-       (sum, r) => sum + (Number(r.meals) || 0),
-       0
-     );
-     subtractAmt = pd * (totalMeals / MEALS_PER_DAY); // 食数 ÷ 3 日分
-   }
-   
-   const finalNeed = Math.max(0, Math.round(g - subtractAmt));
+    const pd = perDay.get(iid) || 0;
+    const finalNeed = Math.max(0, Math.round(g - (pd * 7)));
 
     if (finalNeed <= 0) return;
-
     grandTotal += finalNeed;
-
     const ing = getIng(iid);
     resultGrid.innerHTML += `
       <div class="tile">
-        <div class="tileName">${ing ? ing.name : iid}</div>
-        <img class="icon" src="${imgSrc(ing ? ing.file : "")}">
+        <div class="tileName">${ing?.name}</div>
+        <img class="icon" src="${imgSrc(ing?.file)}">
         <div style="font-weight:900; font-size:13px;">${finalNeed}個</div>
-      </div>
-    `;
+      </div>`;
   });
 
-  const totalBadge = el("totalBadge");
-  if (totalBadge) totalBadge.textContent = `総合計 ${grandTotal}個`;
+  el("totalBadge").textContent = `総合計 ${grandTotal}個`;
 }
 
 
