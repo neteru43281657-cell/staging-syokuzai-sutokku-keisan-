@@ -342,9 +342,18 @@ function calc() {
       </div>`;
   });
 
-  // ① 総合計バッジの更新（右寄せにするためのクラス適用は CSS で行います）
+  // ① 総合計バッジの更新
   const totalBadge = el("totalBadge");
   if (totalBadge) totalBadge.textContent = `総合計 ${grandTotal}個`;
+
+  // ▼▼▼ 追加：カテゴリー混在時の注釈表示制御 ▼▼▼
+  const note = el("mode3Note");
+  if (note) {
+    // 現在登録されているレシピのカテゴリー（重複なし）を取得
+    const activeCats = new Set(state.recipeRows.map(r => r.cat));
+    // 2種類以上ある場合のみ表示
+    note.style.display = (activeCats.size > 1) ? "block" : "none";
+  }
 }
 
 
