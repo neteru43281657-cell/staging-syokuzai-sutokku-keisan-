@@ -490,7 +490,7 @@
       white-space: nowrap !important;
     }
 
-    /* ボタンの共通構造：中央揃えを徹底 */
+    /* ボタンの共通構造：中央揃え */
     #actionBlock > button {
       display: inline-flex !important;
       align-items: center !important;
@@ -503,7 +503,7 @@
       cursor: pointer;
     }
 
-    /* --- ② スマホ版（520px以下）：完璧な状態を維持 --- */
+    /* --- ② スマホ版（520px以下） --- */
     @media (max-width: 520px) {
       .settingsHeaderRow {
         display: flex !important;
@@ -527,7 +527,7 @@
         line-height: 1.4 !important;
       }
 
-      /* ボタンエリアを右上に絶対配置 */
+      /* ボタンエリアを右上に配置 */
       #actionBlock {
         position: absolute !important;
         top: 0 !important;
@@ -549,42 +549,48 @@
        PC見栄え：計算結果カードをまとめて整える（他には影響しない）
     ========================================================= */
     
-    /* 計算結果カード全体 */
-    .result-card{
-      padding: 18px;
+    .result-card {
+      padding: 16px;
+      border: 2px solid var(--main);
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,123,255,0.1);
     }
-    
-    /* ヘッダー（計算結果 / 総合計） */
-    .result-card .resultHeader{
+
+    /* ヘッダー：タイトルを左、バッジを右に配置 */
+    .result-card .resultHeader {
+      display: flex;
       align-items: center;
-      gap: 14px;
+      justify-content: space-between; /* 両端に分ける */
+      margin-bottom: 12px;
     }
-    
-    .result-card .resultTitle{
-      font-size: 18px;
-      letter-spacing: .02em;
+
+    /* タイトルの色とフォントウェイトを以前の状態へ */
+    .result-card .resultTitle {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--main);
+      margin: 0;
     }
-    
-    .result-card .total-badge{
+
+    /* 総合計バッジ：右寄せ＆スタイル調整 */
+    .result-card .total-badge {
       font-size: 13px;
-      padding: 8px 16px;
+      font-weight: 900;
+      padding: 6px 16px;
+      background: var(--main);
+      color: #fff;
       border-radius: 999px;
+      border: none;
       white-space: nowrap;
     }
-    
-    /* 注意書き：PCでは“補足”に見えるように */
-    .result-card .mode3Note{
-      font-size: 12px;
-      font-weight: 600;
-      color: #6b7a8a;
-      line-height: 1.45;
-      margin-top: 8px;
-    }
-    
-    /* 区切り線：少し上品に */
-    .result-card .resultDivider{
-      margin: 14px 0 14px;
-      opacity: .18;
+
+    /* 区切り線 */
+    .result-card .resultDivider {
+      height: 1px;
+      background: var(--line);
+      margin: 12px 0;
+      opacity: 0.6;
     }
     
   /* =========================================================
