@@ -187,26 +187,20 @@ function toNum(v) {
 
     if (!lvNow || !lvTarget || !nature || !type) {
       container.innerHTML = `
-        <div class="lvResRow">
-          <div class="lvResKey">必要経験値</div>
-          <div class="lvResVal">0 pt</div>
-        </div>
-        <div class="lvResRow">
-          <div class="lvResKey">必要なアメの数🍬</div>
-          <div class="lvResVal">0 個</div>
-        </div>
-        <div class="lvResRow">
+        <div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">0 pt</div></div>
+        <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">0 個</div></div>
+        <div class="lvResRow" style="align-items: flex-start;">
           <div class="lvResKey">
             <span>必要なゆめのかけら量✨</span>
-            <div class="lvResNote">└ 数十程度の誤差が出る場合があります</div>
+            <div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div>
           </div>
-          <div class="lvResVal">0</div>
+          <div class="lvResVal" style="padding-top: 2px;">0</div>
         </div>`;
       return;
     }
 
     if (lvTarget <= lvNow) {
-      container.innerHTML = `<div style="color:red; font-size:12px; font-weight:bold; text-align:center; padding:10px;">目標レベルを現在のレベルより大きくしてください</div>`;
+      container.innerHTML = `<div style="color:red; font-size:12px; font-weight:bold;">目標レベルを現在のレベルより大きくしてください</div>`;
       return;
     }
 
@@ -228,25 +222,18 @@ function toNum(v) {
 
     const ownedCandy = toNum(el("lvOwnedCandy").value);
 
-    // 通常時の計算
     const resNormal = simulate({ lvNow, lvTarget, typeKey: type, natureKey: nature, initialProgress, freeExp, boostKind: "none", boostCount: 0 });
     const finalNormalCandy = Math.max(0, resNormal.candies - ownedCandy);
 
     let html = `
-      <div class="lvResRow">
-        <div class="lvResKey">必要経験値</div>
-        <div class="lvResVal">${displayExpNeeded.toLocaleString()} pt</div>
-      </div>
-      <div class="lvResRow">
-        <div class="lvResKey">必要なアメの数🍬</div>
-        <div class="lvResVal">${finalNormalCandy.toLocaleString()} 個</div>
-      </div>
-      <div class="lvResRow">
+      <div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">${displayExpNeeded.toLocaleString()} pt</div></div>
+      <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${finalNormalCandy.toLocaleString()} 個</div></div>
+      <div class="lvResRow" style="align-items: flex-start;">
         <div class="lvResKey">
           <span>必要なゆめのかけら量✨</span>
-          <div class="lvResNote">└ 数十程度の誤差が出る場合があります</div>
+          <div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div>
         </div>
-        <div class="lvResVal">${resNormal.shards.toLocaleString()}</div>
+        <div class="lvResVal" style="padding-top: 2px;">${resNormal.shards.toLocaleString()}</div>
       </div>`;
 
     if (boostKind !== "none") {
@@ -263,17 +250,17 @@ function toNum(v) {
         boostHeader = `${boostKind === "mini" ? "ミニアメブースト" : "アメブースト"} ${bCount}個適用時 ${boostRateInfo}`;
       }
 
-      html += `<div class="lvResSubTitle">${boostHeader}</div>
+      html += `<div class="lvResSubTitle" style="font-size: 12.5px;">${boostHeader}</div>
                <div class="lvResRow">
                  <div class="lvResKey">必要なアメの数🍬</div>
                  <div class="lvResVal">${finalBoostCandy.toLocaleString()} 個</div>
                </div>
-               <div class="lvResRow">
+               <div class="lvResRow" style="align-items: flex-start;">
                  <div class="lvResKey">
                    <span>必要なゆめのかけら量✨</span>
-                   <div class="lvResNote">└ 数十程度の誤差が出る場合があります</div>
+                   <div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div>
                  </div>
-                 <div class="lvResVal">
+                 <div class="lvResVal" style="padding-top: 2px;">
                    ${resBoost.shards.toLocaleString()} <span style="color:#e74c3c; font-size:0.9em;">(+${diffShard.toLocaleString()})</span>
                  </div>
                </div>`;
