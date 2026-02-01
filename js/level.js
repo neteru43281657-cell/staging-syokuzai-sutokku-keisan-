@@ -189,12 +189,12 @@ function toNum(v) {
       container.innerHTML = `
         <div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">0 pt</div></div>
         <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">0 個</div></div>
-        <div class="lvResRow">
+        <div class="lvResRow" style="align-items: flex-start;">
           <div class="lvResKey">
             <span>必要なゆめのかけら量✨</span>
             <div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div>
           </div>
-          <div class="lvResVal" style="align-self: flex-start; margin-top: -2px;">0</div>
+          <div class="lvResVal" style="padding-top: 2px;">0</div>
         </div>`;
       return;
     }
@@ -222,19 +222,18 @@ function toNum(v) {
 
     const ownedCandy = toNum(el("lvOwnedCandy").value);
 
-    // 通常時の計算
     const resNormal = simulate({ lvNow, lvTarget, typeKey: type, natureKey: nature, initialProgress, freeExp, boostKind: "none", boostCount: 0 });
     const finalNormalCandy = Math.max(0, resNormal.candies - ownedCandy);
 
     let html = `
       <div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">${displayExpNeeded.toLocaleString()} pt</div></div>
       <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${finalNormalCandy.toLocaleString()} 個</div></div>
-      <div class="lvResRow">
+      <div class="lvResRow" style="align-items: flex-start;">
         <div class="lvResKey">
           <span>必要なゆめのかけら量✨</span>
           <div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div>
         </div>
-        <div class="lvResVal" style="align-self: flex-start; margin-top: -2px;">${resNormal.shards.toLocaleString()}</div>
+        <div class="lvResVal" style="padding-top: 2px;">${resNormal.shards.toLocaleString()}</div>
       </div>`;
 
     if (boostKind !== "none") {
@@ -256,12 +255,12 @@ function toNum(v) {
                  <div class="lvResKey">必要なアメの数🍬</div>
                  <div class="lvResVal">${finalBoostCandy.toLocaleString()} 個</div>
                </div>
-               <div class="lvResRow">
+               <div class="lvResRow" style="align-items: flex-start;">
                  <div class="lvResKey">
                    <span>必要なゆめのかけら量✨</span>
                    <div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div>
                  </div>
-                 <div class="lvResVal" style="align-self: flex-start; margin-top: -2px;">
+                 <div class="lvResVal" style="padding-top: 2px;">
                    ${resBoost.shards.toLocaleString()} <span style="color:#e74c3c; font-size:0.9em;">(+${diffShard.toLocaleString()})</span>
                  </div>
                </div>`;
