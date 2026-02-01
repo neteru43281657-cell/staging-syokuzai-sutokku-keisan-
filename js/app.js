@@ -144,7 +144,7 @@ function renderGrids() {
 ========================================================= */
 function refreshAllMealDropdowns() {
   state.recipeRows.forEach(row => {
-    const wrap = document.querySelector(\`.recipeRow[data-row-id="\${row.rowId}"]\`);
+    const wrap = document.querySelector(`.recipeRow[data-row-id="${row.rowId}"]`);
     if (!wrap) return;
     const mSel = wrap.querySelector(".mealsSel");
     if (!mSel) return;
@@ -162,6 +162,7 @@ function refreshAllMealDropdowns() {
       opt.value = i; opt.textContent = i;
       mSel.appendChild(opt);
     }
+    // 現在の値が上限を超えていれば補正
     mSel.value = prevVal > maxAllowed ? maxAllowed : prevVal;
     row.meals = Number(mSel.value);
   });
@@ -176,6 +177,7 @@ function addRecipeRow(init) {
 
   const rowId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ("rid_" + Date.now() + "_" + Math.random().toString(16).slice(2));
   
+  // 初期食数を決定（既存の合計から引く）
   const currentTotal = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
   const initialMeals = Math.min(init?.meals ?? 21, 21 - currentTotal);
 
@@ -191,7 +193,7 @@ function addRecipeRow(init) {
   wrap.className = "recipeRow";
   wrap.dataset.rowId = rowId;
 
-  wrap.innerHTML = \`
+  wrap.innerHTML = `
     <button class="removeBtn" title="削除">×</button>
     <div style="flex:1; min-width:100px;">
       <label class="emphLabel">カテゴリー</label>
@@ -210,7 +212,7 @@ function addRecipeRow(init) {
       <select class="mealsSel emphSelect"></select>
     </div>
     <div class="preview"></div>
-  \`;
+  `;
 
   const cSel = wrap.querySelector(".catSel");
   const rSel = wrap.querySelector(".recipeSel");
@@ -221,7 +223,7 @@ function addRecipeRow(init) {
 
   const updateRecipeList = () => {
     const filtered = RECIPES.filter((r) => r.cat === cSel.value);
-    rSel.innerHTML = filtered.map((r) => \`<option value="\${r.id}">\${r.name}</option>\`).join("");
+    rSel.innerHTML = filtered.map((r) => `<option value="${r.id}">${r.name}</option>`).join("");
     rSel.value = filtered.some(r => r.id === rowData.recipeId) ? rowData.recipeId : (filtered[0]?.id || "");
     updatePreview();
   };
@@ -236,9 +238,9 @@ function addRecipeRow(init) {
       const totalIngredients = Object.values(r.ingredients).reduce((sum, c) => sum + c, 0);
       let html = Object.entries(r.ingredients).map(([id, q]) => {
         const ing = getIng(id);
-        return \`<span><img src="\${imgSrc(ing?.file)}" style="width:14px; height:14px; margin-right:4px; vertical-align:middle;">\${q}</span>\`;
+        return `<span><img src="${imgSrc(ing?.file)}" style="width:14px; height:14px; margin-right:4px; vertical-align:middle;">${q}</span>`;
       }).join("");
-      html += \`<span class="badge" style="margin-left: auto; background:var(--main-soft); color:var(--main); border:1px solid #cce5ff; padding: 2px 10px; font-size: 11px;">\${totalIngredients}個</span>\`;
+      html += `<span class="badge" style="margin-left: auto; background:var(--main-soft); color:var(--main); border:1px solid #cce5ff; padding: 2px 10px; font-size: 11px;">${totalIngredients}個</span>`;
       pre.innerHTML = html;
     }
     calc();
@@ -248,7 +250,7 @@ function addRecipeRow(init) {
   rSel.onchange = updatePreview;
   mSel.onchange = () => {
     rowData.meals = Number(mSel.value);
-    refreshAllMealDropdowns();
+    refreshAllMealDropdowns(); // 他の行の選択肢を同期
     updatePreview();
   };
 
@@ -261,13 +263,13 @@ function addRecipeRow(init) {
 
   updateRecipeList();
   el("recipeList").appendChild(wrap);
-  refreshAllMealDropdowns();
+  refreshAllMealDropdowns(); // 追加時に全体を同期
 }
 
 function updateSummary() {
   const totalMeals = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
   const badge = el("summaryBadge");
-  if (badge) badge.textContent = \`合計 \${totalMeals}食 / 21食\`;
+  if (badge) badge.textContent = `${totalMeals}食 / 21食`;
   
   const addBtn = el("addRecipe");
   if (addBtn) addBtn.disabled = state.recipeRows.length >= MAX_ROWS;
@@ -296,7 +298,9 @@ function calc() {
   const resultGrid = el("resultGrid");
   if (!resultGrid) return;
 
+  // 1. カテゴリー別に食材を合算
   const catSums = { "カレー・シチュー": new Map(), "サラダ": new Map(), "デザート・ドリンク": new Map() };
+  // ② レシピの並び順を保持するための配列
   const ingredientOrder = [];
 
   state.recipeRows.forEach(row => {
@@ -304,11 +308,13 @@ function calc() {
     if (!r || row.meals <= 0) return;
     const map = catSums[row.cat];
     Object.entries(r.ingredients).forEach(([iid, qty]) => {
+      // 出現した順番に ID を記録（重複は避ける）
       if (!ingredientOrder.includes(iid)) ingredientOrder.push(iid);
       map.set(iid, (map.get(iid) || 0) + (qty * row.meals));
     });
   });
 
+  // 2. カテゴリー間で最大値を採用
   const gross = new Map();
   Object.values(catSums).forEach(map => {
     map.forEach((val, iid) => {
@@ -316,6 +322,7 @@ function calc() {
     });
   });
 
+  // 3. 描画（レシピの登録順 ingredientOrder に基づいてループ）
   resultGrid.innerHTML = "";
   let grandTotal = 0;
 
@@ -327,16 +334,17 @@ function calc() {
     if (finalNeed <= 0) return;
     grandTotal += finalNeed;
     const ing = getIng(iid);
-    resultGrid.innerHTML += \`
+    resultGrid.innerHTML += `
       <div class="tile">
-        <div class="tileName">\${ing?.name}</div>
-        <img class="icon" src="\${imgSrc(ing?.file)}">
-        <div style="font-weight:900; font-size:13px;">\${finalNeed}個</div>
-      </div>\`;
+        <div class="tileName">${ing?.name}</div>
+        <img class="icon" src="${imgSrc(ing?.file)}">
+        <div style="font-weight:900; font-size:13px;">${finalNeed}個</div>
+      </div>`;
   });
 
+  // ① 総合計バッジの更新（右寄せにするためのクラス適用は CSS で行います）
   const totalBadge = el("totalBadge");
-  if (totalBadge) totalBadge.textContent = \`総合計 \${grandTotal}個\`;
+  if (totalBadge) totalBadge.textContent = `総合計 ${grandTotal}個`;
 }
 
 
@@ -363,6 +371,7 @@ window.onload = () => {
   const savedTab = localStorage.getItem("activeTab") || "tab1";
   switchTab(savedTab);
 
+  // モーダル
   const dM = el("docsModal"), nM = el("noticeModal"), vM = el("docViewerModal");
   el("openDocs").onclick = () => dM.style.display = "flex";
   el("closeDocs").onclick = () => dM.style.display = "none";
