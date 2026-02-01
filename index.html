@@ -240,15 +240,23 @@
       height: 13px;
     }
 
-    /* NCピカチュウオプション：条件列に自然に馴染ませる */
+    /* NCピカチュウオプション：Flexboxで自然に中央揃え */
     .ncPikaOpt{
-      margin-top: 6px;
+      /* margin-topやtransformは削除 */
+      min-height: 30px; /* タップ領域確保 */
       font-size: 12px;
       font-weight: 700;
       color: var(--text);
       display: flex;
-      align-items: center;
+      align-items: center; /* これがあれば文字とチェックボックスは勝手に中央に揃う */
       gap: 6px;
+      cursor: pointer;
+    }
+    
+    /* チェックボックス自体の位置ズレも防ぐ */
+    .ncPikaOpt input[type="checkbox"] {
+      margin: 0; 
+      transform: scale(1.1); /* 少し大きくして押しやすく */
     }
 
     .mode3Note {
@@ -412,135 +420,138 @@
     .poke-item img { width: 44px; height: 44px; object-fit: contain; }
     .poke-name { font-size: 9px; font-weight: 800; color: var(--muted); text-align: center; line-height: 1.2; word-break: keep-all; }
 
-    /* =========================================================
-       ここから：レイアウトを「安定版」に1本化
+/* =========================================================
+       レイアウト修正版：Flexboxによる安全な整列
     ========================================================= */
 
-    /* セクション見出し（青縦線）を全端末で統一 */
     .sectionTitle{
       font-weight: 900;
       font-size: 14px;
       border-left: 5px solid var(--main);
       padding-left: 10px;
       color: var(--text);
-      margin-bottom: 6px;
+      /* margin-bottom は削除し、親の gap に任せる */
     }
 
-    /* =========================================================
-       1日当たりの獲得量：見出し行を「条件設定」と同じ列幅で揃える
-       - 左：見出し（160px）
-       - 中：NCピカ（1fr） ← ここに置くことで「モード」とX位置が揃う
-       - 右：空（160px）
-    ========================================================= */
-    .replenishHeaderRow{
-      display: grid;
-      grid-template-columns: 160px 1fr 160px;
-      gap: 12px;
-      align-items: center; /* ← start → center に変更（高さ揃え） */
+    /* 条件設定・1日あたりの獲得量ヘッダー 
+       Gridをやめ、Flexboxの wrap（折り返し）を使うことで
+       画面が狭くてもボタンがはみ出したり重なったりしないようにする
+    */
+    
+    /* PC・タブレット（基本形） */
+    .settingsHeaderRow,
+    .replenishHeaderRow {
+      display: flex;
+      flex-wrap: wrap; /* 画面が狭いと自動で改行 */
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      width: 100%;
+      margin-bottom: 10px;
+      position: relative; /* absolute廃止のため影響なし */
+    }
+
+    /* 左側のタイトルブロック */
+    #condBlock,
+    .replenishHeaderRow > div:first-child {
+      flex: 0 0 auto; /* 縮まない */
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    /* 中央のメッセージ/NCピカ (PCでは横並び、スマホでは改行される) */
+    #infoMessageBlock,
+    .replenishHeaderRow > div:nth-child(2) {
+      flex: 1; /* 余ったスペースを埋める */
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      min-width: 200px; /* 極端に狭くなったら改行させる */
     }
     
-    /* スマホ時：条件設定と同じく 140px / 1fr に */
-    @media (max-width: 520px){
-      .replenishHeaderRow{
-        grid-template-columns: 140px 1fr;
-      }
+    /* 1日あたりの～ のNCピカ用調整 */
+    .replenishHeaderRow > div:nth-child(2) {
+        justify-content: center; /* PCでは中央寄せ */
+    }
+
+    /* 右側のボタン群 */
+    #actionBlock,
+    .replenishHeaderRow > div:last-child {
+      flex: 0 0 auto;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* 空のdiv（レイアウト調整用）は非表示にするか、幅を持たせない */
+    .replenishHeaderRow > div:last-child:empty {
+        display: none;
     }
     
-    .ncPikaOpt{
-      justify-content: flex-start !important;
-      height: auto !important;
-      padding: 0 !important;
-      /* 視覚的ベースライン補正 */
-      transform: translateY(-6px);
-    }
-
-    
-    /* --- ① PC版を含む共通設定の修正 --- */
-    /* --- ① PC版：3カラムレイアウトを完全に固定 --- */
-    .settingsHeaderRow {
-      display: grid !important;
-      /* 左(タイトル): 160px, 中央(メッセージ): 1fr, 右(ボタン): 200px */
-      grid-template-columns: 160px 1fr 200px !important;
-      grid-template-areas: "cond info actions" !important;
-      gap: 15px !important;
-      align-items: center !important;
-      width: 100% !important;
-    }
-
-    #condBlock { 
-      grid-area: cond !important; 
-      display: flex !important;
-      flex-direction: column !important;
-      align-items: flex-start !important;
-    }
-
-    #infoMessageBlock { 
-      grid-area: info !important; 
-      display: flex !important;
-      align-items: center !important;
-      justify-content: flex-start !important;
-    }
-
-    #actionBlock { 
-      grid-area: actions !important; 
-      display: flex !important;
-      flex-direction: row !important; /* 横並び */
-      gap: 10px !important;
-      justify-content: flex-end !important;
-      white-space: nowrap !important;
-    }
-
-    /* ボタンの共通構造：中央揃え */
+    /* ボタン共通スタイル */
     #actionBlock > button {
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       font-weight: 800;
-      padding: 0 16px !important;
-      height: 36px !important;
-      line-height: 1 !important;
+      padding: 0 16px;
+      height: 36px;
+      line-height: 1;
       border-radius: 999px;
       cursor: pointer;
+      white-space: nowrap;
     }
 
-    /* --- ② スマホ版（520px以下） --- */
+    /* --- スマホ最適化 (520px以下) --- */
     @media (max-width: 520px) {
+      .settingsHeaderRow,
+      .replenishHeaderRow {
+        /* スマホでは縦積みに近い挙動にするが、Flexboxなら自然に流れる */
+        align-items: flex-start; 
+        gap: 12px;
+      }
+
+      /* タイトルとボタンを同じ行（横並び）に配置したい場合 */
       .settingsHeaderRow {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 10px !important;
-        position: relative !important;
-        padding-top: 5px !important;
+        display: grid;
+        grid-template-areas: 
+          "title actions"
+          "info  info";
+        grid-template-columns: 1fr auto; /* 左側可変、右側ボタンサイズ */
+        gap: 8px 0;
       }
 
-      /* メッセージエリアをタイトルの下に配置 */
-      #infoMessageBlock {
-        width: 100% !important;
-        margin-top: 5px !important;
-        padding-left: 2px !important;
+      #condBlock { grid-area: title; }
+      #actionBlock { grid-area: actions; justify-content: flex-end; }
+      #infoMessageBlock { grid-area: info; margin-top: 4px;}
+
+      /* 1日あたりの～ は単純な縦積みでOK */
+      .replenishHeaderRow {
+        flex-direction: column;
+        align-items: flex-start;
       }
-      
-      #infoMessageBlock div {
-        font-size: 11px !important;
-        white-space: normal !important;
-        line-height: 1.4 !important;
+      .replenishHeaderRow > div:nth-child(2) {
+        justify-content: flex-start; /* スマホでは左寄せ */
+        width: 100%;
+        background: var(--main-soft); /* わかりやすく背景を敷く */
+        padding: 8px;
+        border-radius: 8px;
       }
 
-      /* ボタンエリアを右上に配置 */
-      #actionBlock {
-        position: absolute !important;
-        top: 0 !important;
-        right: 0 !important;
-        gap: 8px !important;
-        justify-content: flex-end !important;
+      /* NCピカオプションの調整 */
+      .ncPikaOpt {
+        transform: none !important; /* マジックナンバー完全無効化 */
+        padding: 0 !important;
+        height: auto !important;
       }
       
+      /* ボタンサイズ調整 */
       #actionBlock > button {
-        height: 36px !important; /* 32pxから36pxへ。指で押しやすく */
-        min-width: 75px !important; /* 65pxから75pxへ。存在感を出す */
-        padding: 0 14px !important;
-        font-size: 14px !important; /* 12pxから13pxへ。文字も少し大きく */
+        height: 34px;
+        min-width: 70px;
+        font-size: 13px;
+        padding: 0 12px;
       }
     }
     
