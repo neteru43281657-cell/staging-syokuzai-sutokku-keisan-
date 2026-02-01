@@ -1,322 +1,392 @@
 "use strict";
 
-/**
- * 数値変換ヘルパー
- */
-function toNum(v) {
-  if (v == null) return 0;
-  const s = String(v).trim().replace(/,/g, "");
-  const n = Number(s);
-  return Number.isFinite(n) ? n : 0;
+/* =========================================================
+   診断モード：JSエラーを画面に表示
+========================================================= */
+(function attachErrorOverlay() {
+  function ensureBox() {
+    let box = document.getElementById("jsErrorOverlay");
+    if (!box) {
+      box = document.createElement("div");
+      box.id = "jsErrorOverlay";
+      box.style.cssText = `
+        position: fixed; left: 10px; right: 10px; bottom: 70px;
+        z-index: 99999; background: #fff; border: 2px solid #d00;
+        border-radius: 12px; padding: 10px; font-size: 12px;
+        color: #111; box-shadow: 0 6px 20px rgba(0,0,0,.2);
+        display: none; white-space: pre-wrap; line-height: 1.4;
+      `;
+      document.body.appendChild(box);
+    }
+    return box;
+  }
+  function show(msg) {
+    try {
+      const box = ensureBox();
+      box.textContent = msg;
+      box.style.display = "block";
+    } catch (_) {}
+  }
+  window.addEventListener("error", (e) => {
+    const msg = ["[JS Error]", e.message || "(no message)", `@ ${e.filename || ""}:${e.lineno || ""}:${e.colno || ""}`].join("\n");
+    show(msg);
+  });
+  window.addEventListener("unhandledrejection", (e) => {
+    const reason = e.reason && (e.reason.stack || e.reason.message || String(e.reason));
+    show(["[Unhandled Promise Rejection]", reason || "(no reason)"].join("\n"));
+  });
+  window.__APP_JS_LOADED__ = true;
+})();
+
+/* =========================================================
+   SW / Cache reset (一回だけ)
+========================================================= */
+async function resetSWAndCacheOnce() {
+  const KEY = "sw_cache_reset_done_v106";
+  if (localStorage.getItem(KEY)) return;
+  try {
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    }
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    }
+  } catch (e) {
+    console.warn("resetSWAndCacheOnce failed:", e);
+  }
+  localStorage.setItem(KEY, "1");
+  location.reload();
 }
 
-(function () {
-  let expTable = null;
-  let shardTable = null;
-  let needStepCache = null;
-  let boostCountTouched = false;
-
-  /**
-   * データテーブルの読み込み
-   */
-  async function loadTablesOnce() {
-    if (expTable && shardTable) return;
-    const [expTxt, shardTxt] = await Promise.all([
-      fetch("./data/exp_table.txt", { cache: "no-store" }).then((r) => r.text()),
-      fetch("./data/shard_table.txt", { cache: "no-store" }).then((r) => r.text()),
-    ]);
-    expTable = parseExpTable(expTxt);
-    shardTable = parseTwoColTable(shardTxt);
-    buildNeedStepCache();
+async function registerSW() {
+  if (!("serviceWorker" in navigator)) return;
+  try {
+    await navigator.serviceWorker.register("./service-worker.js");
+  } catch (e) {
+    console.warn("SW register failed:", e);
   }
+}
 
-  function parseTwoColTable(txt) {
-    const map = new Map();
-    txt.split(/\r?\n/).forEach((line) => {
-      const s = line.trim();
-      if (!s || s.startsWith("#")) return;
-      const p = s.split(/\s+/);
-      if (p.length < 2) return;
-      map.set(Number(p[0]), toNum(p[1]));
-    });
-    return map;
-  }
+/* =========================================================
+   基本定数・状態管理
+========================================================= */
+const el = (id) => document.getElementById(id);
 
-  function parseExpTable(txt) {
-    const map = new Map();
-    txt.split(/\r?\n/).forEach((line) => {
-      const s = line.trim();
-      if (!s || s.startsWith("#")) return;
-      const p = s.split(/\s+/);
-      if (p.length < 2) return;
-      map.set(Number(p[0]), { normal: toNum(p[1]) });
-    });
-    return map;
-  }
+const MEALS_PER_DAY = 3;
+const WEEK_DAYS = 7;
+const WEEK_MEALS = 21;
+const MAX_ROWS = 9; 
 
-  const TYPE_MUL = { normal: 1.0, "600": 1.5, semi: 1.8, legend: 2.2 };
+const NC_APPLE = 12;
+const NC_CACAO = 5;
+const NC_HONEY = 3;
 
-  function buildNeedStepCache() {
-    if (!expTable) return;
-    needStepCache = new Map();
-    const normalMap = new Map();
-    for (let lv = 2; lv <= 65; lv++) {
-      const row = expTable.get(lv);
-      normalMap.set(lv, row ? toNum(row.normal) : 0);
-    }
-    needStepCache.set("normal", normalMap);
-    const cumNormal = [0];
-    let sum = 0;
-    for (let lv = 2; lv <= 65; lv++) {
-      sum += normalMap.get(lv) || 0;
-      cumNormal[lv] = sum;
-    }
-    ["600", "semi", "legend"].forEach((typeKey) => {
-      const mul = TYPE_MUL[typeKey] || 1.0;
-      const map = new Map();
-      let prevScaled = 0;
-      for (let lv = 2; lv <= 65; lv++) {
-        const scaledCum = Math.round((cumNormal[lv] || 0) * mul);
-        map.set(lv, scaledCum - prevScaled);
-        prevScaled = scaledCum;
-      }
-      needStepCache.set(typeKey, map);
-    });
-  }
+let state = {
+  recipeRows: [], // { rowId, cat, recipeId, meals }
+};
 
-  function getNeedStep(targetLv, typeKey) {
-    if (!needStepCache) buildNeedStepCache();
-    return needStepCache.get(typeKey)?.get(targetLv) || 0;
-  }
+/* =========================================================
+   Helpers
+========================================================= */
+function getIng(id) {
+  return (window.INGREDIENTS || []).find((x) => x.id === id);
+}
 
-  const el = (id) => document.getElementById(id);
-  const getRadio = (name) => document.querySelector(`input[name="${name}"]:checked`)?.value ?? null;
+function imgSrc(file) {
+  return "images/" + encodeURIComponent(file || "");
+}
 
-  function enforceDigitsAndRange(input, maxDigits, min, max) {
-    if (!input) return;
-    let v = input.value.replace(/[^\d]/g, "");
-    if (v.length > maxDigits) v = v.slice(0, maxDigits);
-    if (v !== "") {
-      let num = Math.max(min, Math.min(max, parseInt(v, 10)));
-      input.value = String(num);
-    }
-  }
+function getFirstRecipeIdByCat(cat) {
+  const first = (window.RECIPES || []).find((r) => r.cat === cat);
+  return first ? first.id : null;
+}
 
-  function clampSubOptions() {
-    const sleep = toNum(el("lvSleepDays").value);
-    const incEl = el("lvGrowthIncense");
-    const gsdEl = el("lvGSD");
-    if (toNum(incEl.value) > sleep) incEl.value = sleep || "";
-    if (toNum(gsdEl.value) > sleep) gsdEl.value = sleep || "";
-  }
+/* =========================================================
+   除外 / 1日当たり獲得量 グリッド描画
+========================================================= */
+function renderGrids() {
+  const ex = el("excludeGrid"), rep = el("replenishGrid");
+  if (!ex || !rep) return;
 
-  function getCandyExp(level, natureKey, boostMul) {
-    let base = level < 25 ? 35 : (level < 30 ? 30 : 25);
-    let natureMul = natureKey === "up" ? 1.18 : (natureKey === "down" ? 0.82 : 1.0);
-    return Math.round(base * natureMul) * boostMul;
-  }
+  ex.innerHTML = "";
+  rep.innerHTML = "";
 
-  function calculateFreeExp() {
-    const sleep = toNum(el("lvSleepDays").value);
-    const bonusCount = toNum(el("lvSleepBonus").value);
-    const incense = toNum(el("lvGrowthIncense").value);
-    const gsdCount = toNum(el("lvGSD").value);
-    const baseExp = 100 + (14 * bonusCount);
-    
-    let remDays = sleep;
-    let gsd3Days = Math.min(remDays, gsdCount);
-    remDays -= gsd3Days;
-    let gsd2Days = Math.min(remDays, gsdCount * 2);
-    remDays -= gsd2Days;
-    let normalDays = remDays;
-
-    let remainIncense = incense;
-    const useIncense = (days, multiplier) => {
-      const daysWithIncense = Math.min(days, remainIncense);
-      remainIncense -= daysWithIncense;
-      return (daysWithIncense * baseExp * multiplier * 2) + ((days - daysWithIncense) * baseExp * multiplier);
-    };
-
-    let total = 0;
-    total += useIncense(gsd3Days, 3);
-    total += useIncense(gsd2Days, 2);
-    total += useIncense(normalDays, 1);
-    return total;
-  }
-
-  function simulate(opts) {
-    const { lvNow, lvTarget, typeKey, natureKey, initialProgress, freeExp, boostKind, boostCount } = opts;
-    let candies = 0, shards = 0, lv = lvNow;
-    let currentExp = initialProgress + freeExp;
-    let boostRemain = Math.max(0, boostCount || 0);
-    const boostExpMul = 2;
-    const boostShardMul = boostKind === "mini" ? 4 : (boostKind === "full" ? 5 : 1);
-
-    while (lv < lvTarget) {
-      const step = getNeedStep(lv + 1, typeKey);
-      while (currentExp < step) {
-        const useB = boostKind !== "none" && boostRemain > 0;
-        candies++;
-        shards += (shardTable.get(lv + 1) || 0) * (useB ? boostShardMul : 1);
-        currentExp += getCandyExp(lv, natureKey, useB ? boostExpMul : 1);
-        if (useB) boostRemain--;
-      }
-      currentExp -= step;
-      lv++;
-    }
-    return { candies, shards };
-  }
-
-  async function onCalc() {
-    enforceDigitsAndRange(el("lvNow"), 2, 1, 64);
-    enforceDigitsAndRange(el("lvTarget"), 2, 2, 65);
-    enforceDigitsAndRange(el("lvProgressExp"), 4, 0, 9999);
-    enforceDigitsAndRange(el("lvOwnedCandy"), 4, 0, 9999);
-    enforceDigitsAndRange(el("lvBoostCount"), 4, 0, 9999);
-    enforceDigitsAndRange(el("lvSleepDays"), 3, 0, 999);
-    enforceDigitsAndRange(el("lvSleepBonus"), 1, 0, 5);
-    enforceDigitsAndRange(el("lvGrowthIncense"), 3, 0, 999);
-    enforceDigitsAndRange(el("lvGSD"), 2, 0, 99);
-    clampSubOptions();
-
-    const lvNow = toNum(el("lvNow").value);
-    const lvTarget = toNum(el("lvTarget").value);
-    const nature = getRadio("lvNature");
-    const type = getRadio("lvType");
-    const container = el("lvResultIn");
-
-    if (!lvNow || !lvTarget || !nature || !type) {
-      container.innerHTML = `
-        <div class="lvResRow">
-          <div class="lvResKey">必要経験値</div>
-          <div class="lvResVal">0 pt</div>
+  (window.INGREDIENTS || []).forEach((ing) => {
+    ex.innerHTML += `
+      <div class="tile">
+        <div class="tileName" title="${ing.name}">${ing.name}</div>
+        <img class="icon" src="${imgSrc(ing.file)}" alt="">
+        <div class="exInputRow" style="width:100%; display:flex; justify-content:center; align-items:center;">
+          <label class="chkLabel"><input type="checkbox" class="exChk" data-iid="${ing.id}">除外</label>
         </div>
-        <div class="lvResRow">
-          <div class="lvResKey">必要なアメの数🍬</div>
-          <div class="lvResVal">0 個</div>
-        </div>
-        <div class="lvResRow">
-          <div class="lvResKey">
-            <span>必要なゆめのかけら量✨</span>
-            <div class="lvResNote">└ 数十程度の誤差が出る場合があります</div>
-          </div>
-          <div class="lvResVal">0</div>
-        </div>`;
-      return;
-    }
-
-    if (lvTarget <= lvNow) {
-      container.innerHTML = `<div style="color:red; font-size:12px; font-weight:bold; text-align:center; padding:10px;">目標レベルを現在のレベルより大きくしてください</div>`;
-      return;
-    }
-
-    await loadTablesOnce();
-
-    const needForNext = getNeedStep(lvNow + 1, type);
-    const progressInput = toNum(el("lvProgressExp").value);
-    const initialProgress = Math.max(0, needForNext - Math.min(progressInput || needForNext, needForNext));
-
-    let totalSteps = 0;
-    for (let i = lvNow + 1; i <= lvTarget; i++) totalSteps += getNeedStep(i, type);
-    const freeExp = calculateFreeExp();
-    const displayExpNeeded = Math.max(0, totalSteps - (needForNext - Math.min(progressInput || needForNext, needForNext)) - freeExp);
-
-    const boostKind = getRadio("lvBoostKind") || "none";
-    const bCountStr = el("lvBoostCount").value;
-    const isBoostCountEmpty = (bCountStr === "");
-    const bCount = isBoostCountEmpty ? 9999 : toNum(bCountStr);
-
-    const ownedCandy = toNum(el("lvOwnedCandy").value);
-
-    // 通常時の計算
-    const resNormal = simulate({ lvNow, lvTarget, typeKey: type, natureKey: nature, initialProgress, freeExp, boostKind: "none", boostCount: 0 });
-    const finalNormalCandy = Math.max(0, resNormal.candies - ownedCandy);
-
-    let html = `
-      <div class="lvResRow">
-        <div class="lvResKey">必要経験値</div>
-        <div class="lvResVal">${displayExpNeeded.toLocaleString()} pt</div>
-      </div>
-      <div class="lvResRow">
-        <div class="lvResKey">必要なアメの数🍬</div>
-        <div class="lvResVal">${finalNormalCandy.toLocaleString()} 個</div>
-      </div>
-      <div class="lvResRow">
-        <div class="lvResKey">
-          <span>必要なゆめのかけら量✨</span>
-          <div class="lvResNote">└ 数十程度の誤差が出る場合があります</div>
-        </div>
-        <div class="lvResVal">${resNormal.shards.toLocaleString()}</div>
       </div>`;
 
-    if (boostKind !== "none") {
-      const resBoost = simulate({ lvNow, lvTarget, typeKey: type, natureKey: nature, initialProgress, freeExp, boostKind, boostCount: bCount });
-      const finalBoostCandy = Math.max(0, resBoost.candies - ownedCandy);
-      const diffShard = resBoost.shards - resNormal.shards;
+    rep.innerHTML += `
+      <div class="tile">
+        <div class="tileName" title="${ing.name}">${ing.name}</div>
+        <img class="icon" src="${imgSrc(ing.file)}" alt="">
+        <div class="repInputRow" style="padding: 0 8px;">
+          <input type="number" class="repQty" data-iid="${ing.id}" placeholder="0">
+          <span style="font-size:9px; font-weight:700; margin-left:1px;">個</span>
+        </div>
+      </div>`;
+  });
 
-      let boostHeader = "";
-      const boostRateInfo = boostKind === "mini" ? "(EXP2倍/かけら4倍)" : "(EXP2倍/かけら5倍)";
-      
-      if (isBoostCountEmpty) {
-        boostHeader = `${boostKind === "mini" ? "ミニアメブースト" : "アメブースト"}最大適用時 ${boostRateInfo}`;
-      } else {
-        boostHeader = `${boostKind === "mini" ? "ミニアメブースト" : "アメブースト"} ${bCount}個適用時 ${boostRateInfo}`;
-      }
+  document.querySelectorAll(".exChk, .repQty").forEach((input) => {
+    input.oninput = () => calc();
+  });
+}
 
-      html += `<div class="lvResSubTitle">${boostHeader}</div>
-               <div class="lvResRow">
-                 <div class="lvResKey">必要なアメの数🍬</div>
-                 <div class="lvResVal">${finalBoostCandy.toLocaleString()} 個</div>
-               </div>
-               <div class="lvResRow">
-                 <div class="lvResKey">
-                   <span>必要なゆめのかけら量✨</span>
-                   <div class="lvResNote">└ 数十程度の誤差が出る場合があります</div>
-                 </div>
-                 <div class="lvResVal">
-                   ${resBoost.shards.toLocaleString()} <span style="color:#e74c3c; font-size:0.9em;">(+${diffShard.toLocaleString()})</span>
-                 </div>
-               </div>`;
+/* =========================================================
+   食数ドロップダウンの同期
+========================================================= */
+function refreshAllMealDropdowns() {
+  state.recipeRows.forEach(row => {
+    const wrap = document.querySelector(\`.recipeRow[data-row-id="\${row.rowId}"]\`);
+    if (!wrap) return;
+    const mSel = wrap.querySelector(".mealsSel");
+    if (!mSel) return;
+
+    const currentVal = row.meals;
+    const otherTotal = state.recipeRows
+      .filter(r => r.rowId !== row.rowId)
+      .reduce((sum, r) => sum + r.meals, 0);
+    const maxAllowed = Math.max(0, 21 - otherTotal);
+
+    const prevVal = mSel.value;
+    mSel.innerHTML = "";
+    for (let i = 0; i <= maxAllowed; i++) {
+      const opt = document.createElement("option");
+      opt.value = i; opt.textContent = i;
+      mSel.appendChild(opt);
     }
-    container.innerHTML = html;
+    mSel.value = prevVal > maxAllowed ? maxAllowed : prevVal;
+    row.meals = Number(mSel.value);
+  });
+  updateSummary();
+}
+
+/* =========================================================
+   料理行UI
+========================================================= */
+function addRecipeRow(init) {
+  if (state.recipeRows.length >= MAX_ROWS) return;
+
+  const rowId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ("rid_" + Date.now() + "_" + Math.random().toString(16).slice(2));
+  
+  const currentTotal = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
+  const initialMeals = Math.min(init?.meals ?? 21, 21 - currentTotal);
+
+  const rowData = {
+    rowId,
+    cat: init?.cat || "カレー・シチュー",
+    recipeId: init?.recipeId || getFirstRecipeIdByCat(init?.cat || "カレー・シチュー"),
+    meals: initialMeals,
+  };
+  state.recipeRows.push(rowData);
+
+  const wrap = document.createElement("div");
+  wrap.className = "recipeRow";
+  wrap.dataset.rowId = rowId;
+
+  wrap.innerHTML = \`
+    <button class="removeBtn" title="削除">×</button>
+    <div style="flex:1; min-width:100px;">
+      <label class="emphLabel">カテゴリー</label>
+      <select class="catSel emphSelect">
+        <option value="カレー・シチュー">カレー・シチュー</option>
+        <option value="サラダ">サラダ</option>
+        <option value="デザート・ドリンク">デザート・ドリンク</option>
+      </select>
+    </div>
+    <div style="flex:2; min-width:140px;">
+      <label class="emphLabel">料理</label>
+      <select class="recipeSel emphSelect"></select>
+    </div>
+    <div style="width:60px;">
+      <label class="emphLabel">食数</label>
+      <select class="mealsSel emphSelect"></select>
+    </div>
+    <div class="preview"></div>
+  \`;
+
+  const cSel = wrap.querySelector(".catSel");
+  const rSel = wrap.querySelector(".recipeSel");
+  const mSel = wrap.querySelector(".mealsSel");
+  const pre = wrap.querySelector(".preview");
+
+  cSel.value = rowData.cat;
+
+  const updateRecipeList = () => {
+    const filtered = RECIPES.filter((r) => r.cat === cSel.value);
+    rSel.innerHTML = filtered.map((r) => \`<option value="\${r.id}">\${r.name}</option>\`).join("");
+    rSel.value = filtered.some(r => r.id === rowData.recipeId) ? rowData.recipeId : (filtered[0]?.id || "");
+    updatePreview();
+  };
+
+  const updatePreview = () => {
+    rowData.cat = cSel.value;
+    rowData.recipeId = rSel.value;
+    rowData.meals = Number(mSel.value);
+
+    const r = RECIPES.find((x) => x.id === rSel.value);
+    if (r) {
+      const totalIngredients = Object.values(r.ingredients).reduce((sum, c) => sum + c, 0);
+      let html = Object.entries(r.ingredients).map(([id, q]) => {
+        const ing = getIng(id);
+        return \`<span><img src="\${imgSrc(ing?.file)}" style="width:14px; height:14px; margin-right:4px; vertical-align:middle;">\${q}</span>\`;
+      }).join("");
+      html += \`<span class="badge" style="margin-left: auto; background:var(--main-soft); color:var(--main); border:1px solid #cce5ff; padding: 2px 10px; font-size: 11px;">\${totalIngredients}個</span>\`;
+      pre.innerHTML = html;
+    }
+    calc();
+  };
+
+  cSel.onchange = updateRecipeList;
+  rSel.onchange = updatePreview;
+  mSel.onchange = () => {
+    rowData.meals = Number(mSel.value);
+    refreshAllMealDropdowns();
+    updatePreview();
+  };
+
+  wrap.querySelector(".removeBtn").onclick = () => {
+    state.recipeRows = state.recipeRows.filter((r) => r.rowId !== rowId);
+    wrap.remove();
+    refreshAllMealDropdowns();
+    calc();
+  };
+
+  updateRecipeList();
+  el("recipeList").appendChild(wrap);
+  refreshAllMealDropdowns();
+}
+
+function updateSummary() {
+  const totalMeals = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
+  const badge = el("summaryBadge");
+  if (badge) badge.textContent = \`合計 \${totalMeals}食 / 21食\`;
+  
+  const addBtn = el("addRecipe");
+  if (addBtn) addBtn.disabled = state.recipeRows.length >= MAX_ROWS;
+}
+
+/* =========================================================
+   計算ロジック
+========================================================= */
+function buildReplenishPerDayMap() {
+  const map = new Map([...document.querySelectorAll(".repQty")].map(c => [c.dataset.iid, Number(c.value) || 0]));
+  if (el("optNcPika")?.checked) {
+    map.set("apple", (map.get("apple") || 0) + NC_APPLE);
+    map.set("cacao", (map.get("cacao") || 0) + NC_CACAO);
+    map.set("honey", (map.get("honey") || 0) + NC_HONEY);
+  }
+  return map;
+}
+
+function buildExcludeSet() {
+  return new Set([...document.querySelectorAll(".exChk:checked")].map(c => c.dataset.iid));
+}
+
+function calc() {
+  const exclude = buildExcludeSet();
+  const perDay = buildReplenishPerDayMap();
+  const resultGrid = el("resultGrid");
+  if (!resultGrid) return;
+
+  const catSums = { "カレー・シチュー": new Map(), "サラダ": new Map(), "デザート・ドリンク": new Map() };
+  const ingredientOrder = [];
+
+  state.recipeRows.forEach(row => {
+    const r = RECIPES.find(x => x.id === row.recipeId);
+    if (!r || row.meals <= 0) return;
+    const map = catSums[row.cat];
+    Object.entries(r.ingredients).forEach(([iid, qty]) => {
+      if (!ingredientOrder.includes(iid)) ingredientOrder.push(iid);
+      map.set(iid, (map.get(iid) || 0) + (qty * row.meals));
+    });
+  });
+
+  const gross = new Map();
+  Object.values(catSums).forEach(map => {
+    map.forEach((val, iid) => {
+      gross.set(iid, Math.max(gross.get(iid) || 0, val));
+    });
+  });
+
+  resultGrid.innerHTML = "";
+  let grandTotal = 0;
+
+  ingredientOrder.forEach(iid => {
+    if (exclude.has(iid)) return;
+    const g = gross.get(iid) || 0;
+    const finalNeed = Math.max(0, Math.round(g - ((perDay.get(iid) || 0) * 7)));
+
+    if (finalNeed <= 0) return;
+    grandTotal += finalNeed;
+    const ing = getIng(iid);
+    resultGrid.innerHTML += \`
+      <div class="tile">
+        <div class="tileName">\${ing?.name}</div>
+        <img class="icon" src="\${imgSrc(ing?.file)}">
+        <div style="font-weight:900; font-size:13px;">\${finalNeed}個</div>
+      </div>\`;
+  });
+
+  const totalBadge = el("totalBadge");
+  if (totalBadge) totalBadge.textContent = \`総合計 \${grandTotal}個\`;
+}
+
+
+/* =========================================================
+   onload / タブ切替
+========================================================= */
+window.onload = () => {
+  resetSWAndCacheOnce();
+  registerSW();
+  renderGrids();
+
+  el("optNcPika")?.addEventListener("change", () => calc());
+  el("addRecipe").onclick = () => addRecipeRow();
+  el("clearAll").onclick = () => {
+    el("recipeList").innerHTML = "";
+    state.recipeRows = [];
+    document.querySelectorAll(".exChk").forEach(c => c.checked = false);
+    document.querySelectorAll(".repQty").forEach(i => i.value = "");
+    addRecipeRow({ meals: 21 });
+  };
+
+  if (state.recipeRows.length === 0) addRecipeRow({ meals: 21 });
+
+  const savedTab = localStorage.getItem("activeTab") || "tab1";
+  switchTab(savedTab);
+
+  const dM = el("docsModal"), nM = el("noticeModal"), vM = el("docViewerModal");
+  el("openDocs").onclick = () => dM.style.display = "flex";
+  el("closeDocs").onclick = () => dM.style.display = "none";
+  el("openNotice").onclick = () => nM.style.display = "flex";
+  el("closeNotice").onclick = () => nM.style.display = "none";
+  el("closeDocViewer").onclick = () => vM.style.display = "none";
+};
+
+window.switchTab = function (tabId, clickedEl) {
+  document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+  el(tabId)?.classList.add("active");
+
+  const items = document.querySelectorAll(".bottom-nav .nav-item");
+  items.forEach(n => n.classList.remove("active"));
+  if (clickedEl) clickedEl.classList.add("active");
+  else {
+    const idx = { tab1: 0, tab2: 1, tab3: 2, tab4: 3 }[tabId] || 0;
+    items[idx]?.classList.add("active");
   }
 
-  window.LevelTab = {
-    init() {
-      if (!window.__LV_BOUND__) {
-        window.__LV_BOUND__ = true;
-        el("tab3").addEventListener("input", (e) => {
-          if (e.target.id === "lvBoostCount") boostCountTouched = true;
-          onCalc();
-        });
-        el("tab3").addEventListener("change", onCalc);
-        
-        el("tab3").addEventListener("click", (e) => {
-          const btn = e.target.closest(".lvlQuickBtn");
-          if (btn) {
-            if (btn.dataset.now) el("lvNow").value = btn.dataset.now;
-            if (btn.dataset.target) el("lvTarget").value = btn.dataset.target;
-            onCalc();
-          }
-        });
+  el("headerTitle").textContent = { tab1: "食材ストック計算", tab2: "出現ポケモン一覧", tab3: "経験値シミュレーター", tab4: "月齢カレンダー" }[tabId];
+  localStorage.setItem("activeTab", tabId);
 
-        const clearBtn = el("lvResultClear");
-        if (clearBtn) {
-          clearBtn.onclick = () => {
-            this.clearAll();
-            onCalc();
-          };
-        }
-      }
-      onCalc();
-    },
-    clearAll() {
-      ["lvNow", "lvTarget", "lvProgressExp", "lvOwnedCandy", "lvBoostCount", "lvSleepDays", "lvSleepBonus", "lvGrowthIncense", "lvGSD"].forEach(id => {
-        const input = el(id);
-        if (input) input.value = "";
-      });
-      document.querySelectorAll('input[name="lvNature"], input[name="lvType"], input[name="lvBoostKind"]').forEach(r => r.checked = false);
-      boostCountTouched = false;
-    }
-  };
-})();
+  if (tabId === "tab2" && window.PokedexTab?.renderFieldMenu) window.PokedexTab.renderFieldMenu();
+  if (tabId === "tab3" && window.LevelTab?.init) window.LevelTab.init();
+  if (tabId === "tab4" && window.CalendarTab?.renderYearCalendar) window.CalendarTab.renderYearCalendar();
+};
