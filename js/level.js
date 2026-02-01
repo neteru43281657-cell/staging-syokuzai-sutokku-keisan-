@@ -229,7 +229,6 @@ function toNum(v) {
       const resBoost = simulate({ lvNow, lvTarget, typeKey: type, natureKey: nature, initialProgress, freeExp, boostKind, boostCount: bCount });
       const finalBoostCandy = Math.max(0, resBoost.candies - ownedCandy);
       
-      const diffCandy = resNormal.candies - resBoost.candies;
       const diffShard = resBoost.shards - resNormal.shards;
 
       let boostHeader = "";
@@ -244,7 +243,7 @@ function toNum(v) {
       html += `<div class="lvResSubTitle" style="font-size: 12.5px;">${boostHeader}</div>
                <div class="lvResRow">
                  <div class="lvResKey">必要なアメの数🍬</div>
-                 <div class="lvResVal">${finalBoostCandy.toLocaleString()} 個 <span style="color:#007bff; font-size:0.9em;">(-${diffCandy.toLocaleString()})</span></div>
+                 <div class="lvResVal">${finalBoostCandy.toLocaleString()} 個</div>
                </div>
                <div class="lvResRow">
                  <div class="lvResKey">必要なゆめのかけら量✨<div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div></div>
