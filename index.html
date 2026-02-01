@@ -456,76 +456,88 @@
 
     
     /* --- ① PC版を含む共通設定の修正 --- */
+    /* --- ① PC版：3カラムレイアウトを完全に固定 --- */
     .settingsHeaderRow {
-      display: grid;
-      /* 列幅を「左（固定幅）」「中央（自由）」「右（ボタン幅）」に明確に分ける */
-      grid-template-columns: 160px 1fr auto; 
-      grid-template-areas: "cond info actions";
-      gap: 15px;
-      align-items: center; /* 縦方向を中央に揃えて重なりを防ぐ */
-    }
-    #condBlock { grid-area: cond; }
-    #infoMessageBlock { 
-      grid-area: info; 
-      display: flex; 
-      align-items: center;
-      min-width: 0; /* 幅が狭まっても崩れないようにする */
-    }
-    #actionBlock { 
-      grid-area: actions; 
-      display: flex; 
-      gap: 10px; 
-      white-space: nowrap;
+      display: grid !important;
+      /* 左(タイトル): 160px, 中央(メッセージ): 1fr, 右(ボタン): 200px */
+      grid-template-columns: 160px 1fr 200px !important;
+      grid-template-areas: "cond info actions" !important;
+      gap: 15px !important;
+      align-items: center !important;
+      width: 100% !important;
     }
 
-    /* ボタンの共通構造：文字の上下ズレ（②）を解消 */
+    #condBlock { 
+      grid-area: cond !important; 
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: flex-start !important;
+    }
+
+    #infoMessageBlock { 
+      grid-area: info !important; 
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+    }
+
+    #actionBlock { 
+      grid-area: actions !important; 
+      display: flex !important;
+      flex-direction: row !important; /* 横並び */
+      gap: 10px !important;
+      justify-content: flex-end !important;
+      white-space: nowrap !important;
+    }
+
+    /* ボタンの共通構造：中央揃えを徹底 */
     #actionBlock > button {
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
       font-weight: 800;
       padding: 0 16px !important;
-      height: 36px !important; /* ボタンを少し大きく */
-      line-height: 1 !important; /* 文字位置を安定させる */
+      height: 36px !important;
+      line-height: 1 !important;
       border-radius: 999px;
       cursor: pointer;
     }
 
-    /* --- ② スマホ版（520px以下）の修正 --- */
-    @media (max-width: 520px){
+    /* --- ② スマホ版（520px以下）：完璧な状態を維持 --- */
+    @media (max-width: 520px) {
       .settingsHeaderRow {
         display: flex !important;
         flex-direction: column !important;
         align-items: flex-start !important;
         gap: 10px !important;
-        position: relative;
-        padding-top: 5px;
+        position: relative !important;
+        padding-top: 5px !important;
       }
 
-      /* メッセージエリアをタイトルとボタンの下に配置 */
+      /* メッセージエリアをタイトルの下に配置 */
       #infoMessageBlock {
-        width: 100%;
-        margin-top: 5px;
-        padding-left: 2px;
+        width: 100% !important;
+        margin-top: 5px !important;
+        padding-left: 2px !important;
       }
       
       #infoMessageBlock div {
         font-size: 11px !important;
-        white-space: normal !important; /* 改行を許可 */
+        white-space: normal !important;
         line-height: 1.4 !important;
       }
 
-      /* ボタンエリアを右上に配置 */
+      /* ボタンエリアを右上に絶対配置 */
       #actionBlock {
-        position: absolute;
-        top: 0;
-        right: 0;
+        position: absolute !important;
+        top: 0 !important;
+        right: 0 !important;
         gap: 8px !important;
+        justify-content: flex-end !important;
       }
       
-      /* スマホでのボタンサイズアップ（②） */
       #actionBlock > button {
-        height: 32px !important; /* 高さを出して押しやすく */
+        height: 32px !important;
         min-width: 65px !important;
         padding: 0 12px !important;
         font-size: 12px !important;
