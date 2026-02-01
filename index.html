@@ -261,13 +261,15 @@
 
     .mode3Note {
       font-size: 11px;
+      font-weight: 800; /* ← 太字に変更 */
       line-height: 1.5;
-      color: var(--muted); /* 文字色を少し抑えて「注釈」らしく */
-      background: var(--main-soft); /* 薄い青背景で「お知らせ」感を出す */
+      color: var(--muted);
+      background: var(--main-soft);
       padding: 10px;
       border-radius: 8px;
       margin-top: 10px;
       border: 1px solid #d0e7ff;
+      display: none; /* ← 初期状態は非表示（カテゴリーが混在した時だけJSで表示） */
     }
     
     .repInputRow {
@@ -1169,8 +1171,9 @@
     </div>
     
     <p style="font-size:13px; color:var(--text); line-height:1.6; margin-bottom:14px;">
-      このアプリは非公式であり、
-      <strong>ﾈﾃﾙ.exe（@suiminloop.bsky.social）</strong>が個人で作ったものです。<br>
+      このアプリは非公式であり、<br>
+      <a href="https://bsky.app/profile/suiminloop.bsky.social" target="_blank" style="color:var(--main); text-decoration:underline; font-weight:800;">ﾈﾃﾙ.exe（@suiminloop.bsky.social）</a>
+      が個人で作ったものです。<br>
       ご利用いただく際は自己責任でお願いします🙇
     </p>
 
