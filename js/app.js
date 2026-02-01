@@ -298,30 +298,35 @@ function calc() {
   const resultGrid = el("resultGrid");
   if (!resultGrid) return;
 
+  // 1. カテゴリー別に食材を合算
   const catSums = { "カレー・シチュー": new Map(), "サラダ": new Map(), "デザート・ドリンク": new Map() };
+  // ② レシピの並び順を保持するための配列
+  const ingredientOrder = [];
 
   state.recipeRows.forEach(row => {
     const r = RECIPES.find(x => x.id === row.recipeId);
     if (!r || row.meals <= 0) return;
     const map = catSums[row.cat];
     Object.entries(r.ingredients).forEach(([iid, qty]) => {
+      // 出現した順番に ID を記録（重複は避ける）
+      if (!ingredientOrder.includes(iid)) ingredientOrder.push(iid);
       map.set(iid, (map.get(iid) || 0) + (qty * row.meals));
     });
   });
 
+  // 2. カテゴリー間で最大値を採用
   const gross = new Map();
-  const allIids = new Set();
   Object.values(catSums).forEach(map => {
     map.forEach((val, iid) => {
-      allIids.add(iid);
       gross.set(iid, Math.max(gross.get(iid) || 0, val));
     });
   });
 
+  // 3. 描画（レシピの登録順 ingredientOrder に基づいてループ）
   resultGrid.innerHTML = "";
   let grandTotal = 0;
 
-  Array.from(allIids).sort().forEach(iid => {
+  ingredientOrder.forEach(iid => {
     if (exclude.has(iid)) return;
     const g = gross.get(iid) || 0;
     const finalNeed = Math.max(0, Math.round(g - ((perDay.get(iid) || 0) * 7)));
@@ -337,8 +342,11 @@ function calc() {
       </div>`;
   });
 
-  el("totalBadge").textContent = `総合計 ${grandTotal}個`;
+  // ① 総合計バッジの更新（右寄せにするためのクラス適用は CSS で行います）
+  const totalBadge = el("totalBadge");
+  if (totalBadge) totalBadge.textContent = `総合計 ${grandTotal}個`;
 }
+
 
 /* =========================================================
    onload / タブ切替
