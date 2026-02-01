@@ -189,7 +189,13 @@ function toNum(v) {
       container.innerHTML = `
         <div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">0 pt</div></div>
         <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">0 個</div></div>
-        <div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨<div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div></div><div class="lvResVal">0</div></div>`;
+        <div class="lvResRow">
+          <div class="lvResKey">
+            <span>必要なゆめのかけら量✨</span>
+            <div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div>
+          </div>
+          <div class="lvResVal" style="align-self: flex-start; margin-top: -2px;">0</div>
+        </div>`;
       return;
     }
 
@@ -223,12 +229,17 @@ function toNum(v) {
     let html = `
       <div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">${displayExpNeeded.toLocaleString()} pt</div></div>
       <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${finalNormalCandy.toLocaleString()} 個</div></div>
-      <div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨<div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div></div><div class="lvResVal">${resNormal.shards.toLocaleString()}</div></div>`;
+      <div class="lvResRow">
+        <div class="lvResKey">
+          <span>必要なゆめのかけら量✨</span>
+          <div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div>
+        </div>
+        <div class="lvResVal" style="align-self: flex-start; margin-top: -2px;">${resNormal.shards.toLocaleString()}</div>
+      </div>`;
 
     if (boostKind !== "none") {
       const resBoost = simulate({ lvNow, lvTarget, typeKey: type, natureKey: nature, initialProgress, freeExp, boostKind, boostCount: bCount });
       const finalBoostCandy = Math.max(0, resBoost.candies - ownedCandy);
-      
       const diffShard = resBoost.shards - resNormal.shards;
 
       let boostHeader = "";
@@ -246,8 +257,13 @@ function toNum(v) {
                  <div class="lvResVal">${finalBoostCandy.toLocaleString()} 個</div>
                </div>
                <div class="lvResRow">
-                 <div class="lvResKey">必要なゆめのかけら量✨<div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div></div>
-                 <div class="lvResVal">${resBoost.shards.toLocaleString()} <span style="color:#e74c3c; font-size:0.9em;">(+${diffShard.toLocaleString()})</span></div>
+                 <div class="lvResKey">
+                   <span>必要なゆめのかけら量✨</span>
+                   <div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div>
+                 </div>
+                 <div class="lvResVal" style="align-self: flex-start; margin-top: -2px;">
+                   ${resBoost.shards.toLocaleString()} <span style="color:#e74c3c; font-size:0.9em;">(+${diffShard.toLocaleString()})</span>
+                 </div>
                </div>`;
     }
     container.innerHTML = html;
