@@ -216,13 +216,13 @@ function toNum(v) {
 
     const ownedCandy = toNum(el("lvOwnedCandy").value);
 
-    // 通常時の計算（アメブーストなし）
+    // 通常時の計算
     const resNormal = simulate({ lvNow, lvTarget, typeKey: type, natureKey: nature, initialProgress, freeExp, boostKind: "none", boostCount: 0 });
     const finalNormalCandy = Math.max(0, resNormal.candies - ownedCandy);
 
     let html = `
       <div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">${displayExpNeeded.toLocaleString()} pt</div></div>
-      <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvlResVal">${finalNormalCandy.toLocaleString()} 個</div></div>
+      <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${finalNormalCandy.toLocaleString()} 個</div></div>
       <div class="lvResRow"><div class="lvResKey">必要なゆめのかけら量✨<div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div></div><div class="lvResVal">${resNormal.shards.toLocaleString()}</div></div>`;
 
     if (boostKind !== "none") {
@@ -232,7 +232,6 @@ function toNum(v) {
       const diffCandy = resNormal.candies - resBoost.candies;
       const diffShard = resBoost.shards - resNormal.shards;
 
-      // 見出しの動的生成
       let boostHeader = "";
       const boostRateInfo = boostKind === "mini" ? "(EXP2倍/かけら4倍)" : "(EXP2倍/かけら5倍)";
       
@@ -243,13 +242,13 @@ function toNum(v) {
       }
 
       html += `<div class="lvResSubTitle" style="font-size: 12.5px;">${boostHeader}</div>
-               <div class=\"lvResRow\">
-                 <div class=\"lvResKey\">必要なアメの数🍬</div>
-                 <div class=\"lvResVal\">${finalBoostCandy.toLocaleString()} 個 <span style=\"color:#007bff; font-size:0.9em;\">(-${diffCandy.toLocaleString()})</span></div>
+               <div class="lvResRow">
+                 <div class="lvResKey">必要なアメの数🍬</div>
+                 <div class="lvResVal">${finalBoostCandy.toLocaleString()} 個 <span style="color:#007bff; font-size:0.9em;">(-${diffCandy.toLocaleString()})</span></div>
                </div>
-               <div class=\"lvResRow\">
-                 <div class=\"lvResKey\">必要なゆめのかけら量✨<div style=\"font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;\">└ 数十程度の誤差が出る場合があります</div></div>
-                 <div class=\"lvResVal\">${resBoost.shards.toLocaleString()} <span style=\"color:#e74c3c; font-size:0.9em;\">(+${diffShard.toLocaleString()})</span></div>
+               <div class="lvResRow">
+                 <div class="lvResKey">必要なゆめのかけら量✨<div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div></div>
+                 <div class="lvResVal">${resBoost.shards.toLocaleString()} <span style="color:#e74c3c; font-size:0.9em;">(+${diffShard.toLocaleString()})</span></div>
                </div>`;
     }
     container.innerHTML = html;
@@ -259,14 +258,12 @@ function toNum(v) {
     init() {
       if (!window.__LV_BOUND__) {
         window.__LV_BOUND__ = true;
-        // タブ全体の入力監視
         el("tab3").addEventListener("input", (e) => {
           if (e.target.id === "lvBoostCount") boostCountTouched = true;
           onCalc();
         });
         el("tab3").addEventListener("change", onCalc);
         
-        // 新しいタイル構造に合わせてクリックイベントを監視
         el("tab3").addEventListener("click", (e) => {
           const btn = e.target.closest(".lvlQuickBtn");
           if (btn) {
@@ -276,7 +273,6 @@ function toNum(v) {
           }
         });
 
-        // クリアボタン
         const clearBtn = el("lvResultClear");
         if (clearBtn) {
           clearBtn.onclick = () => {
