@@ -77,9 +77,8 @@ const el = (id) => document.getElementById(id);
 const MEALS_PER_DAY = 3;
 const WEEK_DAYS = 7;
 const WEEK_MEALS = 21;
-const MAX_ROWS = 9; // 最大9行に拡張
+const MAX_ROWS = 9; 
 
-// NCピカ補正値
 const NC_APPLE = 12;
 const NC_CACAO = 5;
 const NC_HONEY = 3;
@@ -87,22 +86,6 @@ const NC_HONEY = 3;
 let state = {
   recipeRows: [], // { rowId, cat, recipeId, meals }
 };
-
-/* =========================================================
-   localStorage
-========================================================= */
-const OPT_KEYS = {
-  ncPika: "opt_nc_pika_subtract",
-};
-
-function getOptBool(key, def = false) {
-  const v = localStorage.getItem(key);
-  return v === null ? def : v === "1";
-}
-
-function setOptBool(key, val) {
-  localStorage.setItem(key, val ? "1" : "0");
-}
 
 /* =========================================================
    Helpers
@@ -157,17 +140,52 @@ function renderGrids() {
 }
 
 /* =========================================================
+   食数ドロップダウンの同期
+========================================================= */
+function refreshAllMealDropdowns() {
+  state.recipeRows.forEach(row => {
+    const wrap = document.querySelector(`.recipeRow[data-row-id="${row.rowId}"]`);
+    if (!wrap) return;
+    const mSel = wrap.querySelector(".mealsSel");
+    if (!mSel) return;
+
+    const currentVal = row.meals;
+    const otherTotal = state.recipeRows
+      .filter(r => r.rowId !== row.rowId)
+      .reduce((sum, r) => sum + r.meals, 0);
+    const maxAllowed = Math.max(0, 21 - otherTotal);
+
+    const prevVal = mSel.value;
+    mSel.innerHTML = "";
+    for (let i = 0; i <= maxAllowed; i++) {
+      const opt = document.createElement("option");
+      opt.value = i; opt.textContent = i;
+      mSel.appendChild(opt);
+    }
+    // 現在の値が上限を超えていれば補正
+    mSel.value = prevVal > maxAllowed ? maxAllowed : prevVal;
+    row.meals = Number(mSel.value);
+  });
+  updateSummary();
+}
+
+/* =========================================================
    料理行UI
 ========================================================= */
 function addRecipeRow(init) {
   if (state.recipeRows.length >= MAX_ROWS) return;
 
   const rowId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ("rid_" + Date.now() + "_" + Math.random().toString(16).slice(2));
+  
+  // 初期食数を決定（既存の合計から引く）
+  const currentTotal = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
+  const initialMeals = Math.min(init?.meals ?? 21, 21 - currentTotal);
+
   const rowData = {
     rowId,
     cat: init?.cat || "カレー・シチュー",
     recipeId: init?.recipeId || getFirstRecipeIdByCat(init?.cat || "カレー・シチュー"),
-    meals: Number(init?.meals ?? 21),
+    meals: initialMeals,
   };
   state.recipeRows.push(rowData);
 
@@ -203,15 +221,6 @@ function addRecipeRow(init) {
 
   cSel.value = rowData.cat;
 
-  // 食数の選択肢 (0-21)
-  mSel.innerHTML = "";
-  for (let i = 0; i <= 21; i++) {
-    const opt = document.createElement("option");
-    opt.value = i; opt.textContent = i;
-    mSel.appendChild(opt);
-  }
-  mSel.value = String(rowData.meals);
-
   const updateRecipeList = () => {
     const filtered = RECIPES.filter((r) => r.cat === cSel.value);
     rSel.innerHTML = filtered.map((r) => `<option value="${r.id}">${r.name}</option>`).join("");
@@ -227,44 +236,47 @@ function addRecipeRow(init) {
     const r = RECIPES.find((x) => x.id === rSel.value);
     if (r) {
       const totalIngredients = Object.values(r.ingredients).reduce((sum, c) => sum + c, 0);
-      let html = Object.entries(r.ingredients)
-        .map(([id, q]) => {
-          const ing = getIng(id);
-          return `<span><img src="${imgSrc(ing?.file)}" style="width:14px; height:14px; margin-right:4px; vertical-align:middle;">${q}</span>`;
-        }).join("");
+      let html = Object.entries(r.ingredients).map(([id, q]) => {
+        const ing = getIng(id);
+        return `<span><img src="${imgSrc(ing?.file)}" style="width:14px; height:14px; margin-right:4px; vertical-align:middle;">${q}</span>`;
+      }).join("");
       html += `<span class="badge" style="margin-left: auto; background:var(--main-soft); color:var(--main); border:1px solid #cce5ff; padding: 2px 10px; font-size: 11px;">${totalIngredients}個</span>`;
       pre.innerHTML = html;
     }
-    updateSummary();
     calc();
   };
 
   cSel.onchange = updateRecipeList;
   rSel.onchange = updatePreview;
-  mSel.onchange = updatePreview;
+  mSel.onchange = () => {
+    rowData.meals = Number(mSel.value);
+    refreshAllMealDropdowns(); // 他の行の選択肢を同期
+    updatePreview();
+  };
 
   wrap.querySelector(".removeBtn").onclick = () => {
     state.recipeRows = state.recipeRows.filter((r) => r.rowId !== rowId);
     wrap.remove();
-    updateSummary();
+    refreshAllMealDropdowns();
     calc();
   };
 
   updateRecipeList();
   el("recipeList").appendChild(wrap);
+  refreshAllMealDropdowns(); // 追加時に全体を同期
 }
 
 function updateSummary() {
   const totalMeals = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
   const badge = el("summaryBadge");
-  if (badge) badge.textContent = `合計 ${totalMeals}食 / 21食`;
+  if (badge) badge.textContent = `${totalMeals}食 / 21食`;
   
   const addBtn = el("addRecipe");
   if (addBtn) addBtn.disabled = state.recipeRows.length >= MAX_ROWS;
 }
 
 /* =========================================================
-   計算ロジック (ver1.0.6)
+   計算ロジック
 ========================================================= */
 function buildReplenishPerDayMap() {
   const map = new Map([...document.querySelectorAll(".repQty")].map(c => [c.dataset.iid, Number(c.value) || 0]));
@@ -286,7 +298,6 @@ function calc() {
   const resultGrid = el("resultGrid");
   if (!resultGrid) return;
 
-  // 1. カテゴリー別に食材を合算
   const catSums = { "カレー・シチュー": new Map(), "サラダ": new Map(), "デザート・ドリンク": new Map() };
 
   state.recipeRows.forEach(row => {
@@ -298,7 +309,6 @@ function calc() {
     });
   });
 
-  // 2. カテゴリー間で最大値を採用
   const gross = new Map();
   const allIids = new Set();
   Object.values(catSums).forEach(map => {
@@ -308,7 +318,6 @@ function calc() {
     });
   });
 
-  // 3. 描画
   resultGrid.innerHTML = "";
   let grandTotal = 0;
 
@@ -351,16 +360,16 @@ window.onload = () => {
 
   if (state.recipeRows.length === 0) addRecipeRow({ meals: 21 });
 
-  // モーダル制御
+  const savedTab = localStorage.getItem("activeTab") || "tab1";
+  switchTab(savedTab);
+
+  // モーダル
   const dM = el("docsModal"), nM = el("noticeModal"), vM = el("docViewerModal");
   el("openDocs").onclick = () => dM.style.display = "flex";
   el("closeDocs").onclick = () => dM.style.display = "none";
   el("openNotice").onclick = () => nM.style.display = "flex";
   el("closeNotice").onclick = () => nM.style.display = "none";
   el("closeDocViewer").onclick = () => vM.style.display = "none";
-
-  const savedTab = localStorage.getItem("activeTab") || "tab1";
-  switchTab(savedTab);
 };
 
 window.switchTab = function (tabId, clickedEl) {
@@ -375,7 +384,7 @@ window.switchTab = function (tabId, clickedEl) {
     items[idx]?.classList.add("active");
   }
 
-  el("headerTitle").textContent = { tab1: "食材ストック計算", tab2: "出現ポケモン一覧", tab3: "レベルシミュレーター", tab4: "月齢カレンダー" }[tabId];
+  el("headerTitle").textContent = { tab1: "食材ストック計算", tab2: "出現ポケモン一覧", tab3: "経験値シミュレーター", tab4: "月齢カレンダー" }[tabId];
   localStorage.setItem("activeTab", tabId);
 
   if (tabId === "tab2" && window.PokedexTab?.renderFieldMenu) window.PokedexTab.renderFieldMenu();
