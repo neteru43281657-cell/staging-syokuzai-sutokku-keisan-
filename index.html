@@ -788,6 +788,33 @@
     box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; z-index: 10;
   }
 
+  /* 小さなインフォメーションボタン */
+  .info-btn-tiny {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid var(--muted);
+    color: var(--muted);
+    font-size: 10px;
+    font-family: serif; /* "i" の文字をそれっぽく見せる */
+    font-weight: 700;
+    cursor: pointer;
+    margin-left: 3px;
+    margin-right: 6px;
+    background: #fff;
+    vertical-align: middle;
+    line-height: 1;
+   }
+    
+  /* ボタンを押したときの感触 */
+  .info-btn-tiny:active {
+    background: var(--muted);
+    color: #fff;
+  }
+
   @media (max-width: 520px) {
     #tab3 .lvlLabel { font-size: 13px; }
     #tab3 .lvlRight { gap: 6px; }
@@ -1016,17 +1043,22 @@
                   </div>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 2px; align-items: flex-start; width: fit-content; margin-left: auto;">
+                  
                   <div class="lvlOptLine" style="width: 100%; margin: 0; padding: 0;">
-                    <span class="lvlOptName" style="margin-right: 8px;">せいちょうのおこう</span>
+                    <span class="lvlOptName">せいちょうのおこう</span>
+                    <span class="info-btn-tiny" onclick="alert('最高効率で自動配分されます')">i</span>
                     <div class="lvlInputWrapper">
                       <input id="lvGrowthIncense" class="lvlInMini" type="number" placeholder="xxx">
                       <span class="lvlUnit">個</span>
                     </div>
                   </div>
                 </div>
+                
                 <div style="display: flex; flex-direction: column; gap: 2px; align-items: flex-start; width: fit-content; margin-left: auto; margin-top: 4px;">
+                  
                   <div class="lvlOptLine" style="width: 100%; margin: 0; padding: 0;">
-                    <span class="lvlOptName" style="margin-right: 8px;">グッドスリープデー</span>
+                    <span class="lvlOptName">グッドスリープデー</span>
+                    <span class="info-btn-tiny" onclick="alert('通しの3日間で1回扱いです')">i</span>
                     <div class="lvlInputWrapper">
                       <input id="lvGSD" class="lvlInMini" type="number" placeholder="xx">
                       <span class="lvlUnit">回</span>
