@@ -408,3 +408,18 @@ window.switchTab = function (tabId, clickedEl) {
   if (tabId === "tab3" && window.LevelTab?.init) window.LevelTab.init();
   if (tabId === "tab4" && window.CalendarTab?.renderYearCalendar) window.CalendarTab.renderYearCalendar();
 };
+
+/* =========================================================
+   簡易メッセージモーダル表示 (alertの代用)
+========================================================= */
+window.showInfo = function(msg) {
+  const modal = document.getElementById("simpleModal");
+  const msgBox = document.getElementById("simpleModalMsg");
+  if (modal && msgBox) {
+    msgBox.innerHTML = msg.replace(/\n/g, "<br>"); // 改行対応
+    modal.style.display = "flex";
+  } else {
+    // 万が一HTMLがない場合は通常のalertで代用
+    alert(msg);
+  }
+};
