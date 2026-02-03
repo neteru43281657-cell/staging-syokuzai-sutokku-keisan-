@@ -788,31 +788,25 @@
     box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; z-index: 10;
   }
 
-    /* 小さなインフォメーションボタン */
+    /* 小さなインフォメーションボタン（記号版） */
     .info-btn-tiny {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      border: 1px solid var(--muted);
+      display: inline-block;
       color: var(--muted);
-      font-size: 10px;
-      /* font-family: serif; ← これを削除してゴシック体に */
-      font-weight: 900;   /* ← 700から900へ変更してより太く */
+      font-size: 14px;
+      font-weight: 400;
       cursor: pointer;
-      margin-left: 3px;
+      margin-left: 2px;
       margin-right: 6px;
-      background: #fff;
       vertical-align: middle;
       line-height: 1;
+      opacity: 0.7;
+      transition: opacity 0.2s;
     }
     
-    /* ボタンを押したときの感触 */
+    /* 押したとき */
     .info-btn-tiny:active {
-      background: var(--muted);
-      color: #fff;
+      opacity: 1.0;
+      transform: scale(0.95);
     }
 
   @media (max-width: 520px) {
