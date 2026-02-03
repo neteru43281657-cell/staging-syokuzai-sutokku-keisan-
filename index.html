@@ -788,32 +788,32 @@
     box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; z-index: 10;
   }
 
-  /* 小さなインフォメーションボタン */
-  .info-btn-tiny {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    border: 1px solid var(--muted);
-    color: var(--muted);
-    font-size: 10px;
-    font-family: serif; /* "i" の文字をそれっぽく見せる */
-    font-weight: 700;
-    cursor: pointer;
-    margin-left: 3px;
-    margin-right: 6px;
-    background: #fff;
-    vertical-align: middle;
-    line-height: 1;
-   }
+    /* 小さなインフォメーションボタン */
+    .info-btn-tiny {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid var(--muted);
+      color: var(--muted);
+      font-size: 10px;
+      /* font-family: serif; ← これを削除してゴシック体に */
+      font-weight: 900;   /* ← 700から900へ変更してより太く */
+      cursor: pointer;
+      margin-left: 3px;
+      margin-right: 6px;
+      background: #fff;
+      vertical-align: middle;
+      line-height: 1;
+    }
     
-  /* ボタンを押したときの感触 */
-  .info-btn-tiny:active {
-    background: var(--muted);
-    color: #fff;
-  }
+    /* ボタンを押したときの感触 */
+    .info-btn-tiny:active {
+      background: var(--muted);
+      color: #fff;
+    }
 
   @media (max-width: 520px) {
     #tab3 .lvlLabel { font-size: 13px; }
