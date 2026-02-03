@@ -193,7 +193,7 @@ function toNum(v) {
         <div class="lvResRow" style="align-items: center;">
           <div class="lvResKey">
             <span>必要なゆめのかけら量✨</span>
-            <span class="info-btn-tiny" onclick="alert('数十程度の誤差が出る場合があります')">ⓘ</span>
+            <span class="info-btn-tiny" onclick="showInfo('数十程度の誤差が出る場合があります')">ⓘ</span>
           </div>
           <div class="lvResVal" style="padding-top: 2px;">0</div>
         </div>`;
@@ -233,7 +233,7 @@ function toNum(v) {
       <div class="lvResRow" style="align-items: center;">
         <div class="lvResKey">
           <span>必要なゆめのかけら量✨</span>
-          <span class="info-btn-tiny" onclick="alert('数十程度の誤差が出る場合があります')">ⓘ</span>
+          <span class="info-btn-tiny" onclick="showInfo('数十程度の誤差が出る場合があります')">ⓘ</span>
         </div>
         <div class="lvResVal" style="padding-top: 2px;">${resNormal.shards.toLocaleString()}</div>
       </div>`;
@@ -261,7 +261,7 @@ function toNum(v) {
                <div class="lvResRow" style="align-items: center;">
                  <div class="lvResKey">
                    <span>必要なゆめのかけら量✨</span>
-                   <span class="info-btn-tiny" onclick="alert('数十程度の誤差が出る場合があります')">ⓘ</span>
+                   <span class="info-btn-tiny" onclick="showInfo('数十程度の誤差が出る場合があります')">ⓘ</span>
                  </div>
                  <div class="lvResVal" style="padding-top: 2px;">
                    ${resBoost.shards.toLocaleString()} <span style="color:#e74c3c; font-size:0.9em;">(+${diffShard.toLocaleString()})</span>
@@ -310,3 +310,4 @@ function toNum(v) {
     }
   };
 })();
+
