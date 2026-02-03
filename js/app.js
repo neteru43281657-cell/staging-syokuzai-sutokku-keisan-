@@ -423,3 +423,15 @@ window.showInfo = function(msg) {
     alert(msg);
   }
 };
+
+/* =========================================================
+   資料ビューア
+========================================================= */
+window.openDoc = function(fileName) {
+  const modal = document.getElementById("docViewerModal");
+  const img = document.getElementById("docViewerImg");
+  if (modal && img) {
+    img.src = "images/" + fileName;
+    modal.style.display = "flex";
+  }
+};
