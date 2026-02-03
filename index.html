@@ -1039,7 +1039,7 @@
                 <div style="display: flex; flex-direction: column; gap: 2px; align-items: flex-start; width: fit-content; margin-left: auto;">
                   <div class="lvlOptLine" style="width: 100%; margin: 0; padding: 0;">
                     <span class="lvlOptName">せいちょうのおこう</span>
-                    <span class="info-btn-tiny" onclick="alert('最高効率で自動配分されます')">ⓘ</span>
+                    <span class="info-btn-tiny" onclick="showInfo('最高効率で自動配分されます')">ⓘ</span>
                     <div class="lvlInputWrapper">
                       <input id="lvGrowthIncense" class="lvlInMini" type="number" placeholder="xxx">
                       <span class="lvlUnit">個</span>
@@ -1050,7 +1050,7 @@
                 <div style="display: flex; flex-direction: column; gap: 2px; align-items: flex-start; width: fit-content; margin-left: auto; margin-top: 4px;">
                   <div class="lvlOptLine" style="width: 100%; margin: 0; padding: 0;">
                     <span class="lvlOptName">グッドスリープデー</span>
-                    <span class="info-btn-tiny" onclick="alert('通しの3日間で1回扱いです')">ⓘ</span>
+                    <span class="info-btn-tiny" onclick="showInfo('通しの3日間で1回扱いです')">ⓘ</span>
                     <div class="lvlInputWrapper">
                       <input id="lvGSD" class="lvlInMini" type="number" placeholder="xx">
                       <span class="lvlUnit">回</span>
@@ -1237,6 +1237,16 @@
 </div>
 
 
+<div id="simpleModal"
+  style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+         background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+  <div class="card" style="max-width:320px; width:100%; text-align:center; padding:20px;">
+    <div id="simpleModalMsg" style="font-size:13px; color:var(--text); line-height:1.6; font-weight:700; margin-bottom:16px;">
+    </div>
+    <button onclick="document.getElementById('simpleModal').style.display='none'" class="primary" style="width:100%;">OK</button>
+  </div>
+</div>
+  
 
 <!-- JS 読み込み（あなたの構成に合わせて） -->
 <script src="data/ingredients.js"></script>
