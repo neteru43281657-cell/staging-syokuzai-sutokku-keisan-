@@ -185,14 +185,15 @@ function toNum(v) {
     const type = getRadio("lvType");
     const container = el("lvResultIn");
 
+    // 1. 入力不足時の初期表示
     if (!lvNow || !lvTarget || !nature || !type) {
       container.innerHTML = `
         <div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">0 pt</div></div>
         <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">0 個</div></div>
-        <div class="lvResRow" style="align-items: flex-start;">
+        <div class="lvResRow" style="align-items: center;">
           <div class="lvResKey">
             <span>必要なゆめのかけら量✨</span>
-            <div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div>
+            <span class="info-btn-tiny" onclick="alert('数十程度の誤差が出る場合があります')">i</span>
           </div>
           <div class="lvResVal" style="padding-top: 2px;">0</div>
         </div>`;
@@ -225,13 +226,14 @@ function toNum(v) {
     const resNormal = simulate({ lvNow, lvTarget, typeKey: type, natureKey: nature, initialProgress, freeExp, boostKind: "none", boostCount: 0 });
     const finalNormalCandy = Math.max(0, resNormal.candies - ownedCandy);
 
+    // 2. 通常計算結果の表示
     let html = `
       <div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">${displayExpNeeded.toLocaleString()} pt</div></div>
       <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${finalNormalCandy.toLocaleString()} 個</div></div>
-      <div class="lvResRow" style="align-items: flex-start;">
+      <div class="lvResRow" style="align-items: center;">
         <div class="lvResKey">
           <span>必要なゆめのかけら量✨</span>
-          <div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div>
+          <span class="info-btn-tiny" onclick="alert('数十程度の誤差が出る場合があります')">i</span>
         </div>
         <div class="lvResVal" style="padding-top: 2px;">${resNormal.shards.toLocaleString()}</div>
       </div>`;
@@ -250,15 +252,16 @@ function toNum(v) {
         boostHeader = `${boostKind === "mini" ? "ミニアメブースト" : "アメブースト"} ${bCount}個適用時 ${boostRateInfo}`;
       }
 
+      // 3. ブースト計算結果の表示
       html += `<div class="lvResSubTitle" style="font-size: 12.5px;">${boostHeader}</div>
                <div class="lvResRow">
                  <div class="lvResKey">必要なアメの数🍬</div>
                  <div class="lvResVal">${finalBoostCandy.toLocaleString()} 個</div>
                </div>
-               <div class="lvResRow" style="align-items: flex-start;">
+               <div class="lvResRow" style="align-items: center;">
                  <div class="lvResKey">
                    <span>必要なゆめのかけら量✨</span>
-                   <div style="font-size:0.75em; font-weight:800; margin-top:2px; opacity: 0.8;">└ 数十程度の誤差が出る場合があります</div>
+                   <span class="info-btn-tiny" onclick="alert('数十程度の誤差が出る場合があります')">i</span>
                  </div>
                  <div class="lvResVal" style="padding-top: 2px;">
                    ${resBoost.shards.toLocaleString()} <span style="color:#e74c3c; font-size:0.9em;">(+${diffShard.toLocaleString()})</span>
