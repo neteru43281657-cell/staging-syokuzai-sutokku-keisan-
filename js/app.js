@@ -205,7 +205,7 @@ function addRecipeRow(init) {
     cat: init?.cat || "カレー・シチュー",
     recipeId: init?.recipeId || getFirstRecipeIdByCat(init?.cat || "カレー・シチュー"),
     meals: initialMeals,
-    level: init?.level || 1,
+    level: init?.level || 65,    // ★初期値を65に変更
     successType: init?.successType || "normal" // normal, great, sunday
   };
   state.recipeRows.push(rowData);
@@ -216,6 +216,12 @@ function addRecipeRow(init) {
 
   // ラジオボタンのname属性をユニークにする
   const radioName = `success_${rowId}`;
+
+  // レシピレベルの選択肢生成（65 -> 1 の降順）
+  let levelOptions = "";
+  for (let i = 65; i >= 1; i--) {
+    levelOptions += `<option value="${i}">${i}</option>`;
+  }
 
   wrap.innerHTML = `
     <button class="removeBtn" title="削除">×</button>
@@ -241,7 +247,9 @@ function addRecipeRow(init) {
         
         <div style="width:60px;">
           <label class="emphLabel">レシピLv</label>
-          <input type="number" class="lvlInput emphSelect" value="${rowData.level}" min="1" max="65" inputmode="numeric">
+          <select class="lvlInput emphSelect" style="text-align:center;">
+            ${levelOptions}
+          </select>
         </div>
 
         <div style="flex:1; min-width:160px;">
@@ -260,11 +268,12 @@ function addRecipeRow(init) {
   const cSel = wrap.querySelector(".catSel");
   const rSel = wrap.querySelector(".recipeSel");
   const mSel = wrap.querySelector(".mealsSel");
-  const lInp = wrap.querySelector(".lvlInput");
+  const lSel = wrap.querySelector(".lvlInput"); // ★変数名変更 lInp -> lSel
   const radios = wrap.querySelectorAll(`input[name="${radioName}"]`);
   const pre = wrap.querySelector(".preview");
 
   cSel.value = rowData.cat;
+  lSel.value = rowData.level; // ★初期値(65)を選択状態に
 
   const updateRecipeList = () => {
     const filtered = RECIPES.filter((r) => r.cat === cSel.value);
@@ -277,7 +286,7 @@ function addRecipeRow(init) {
     rowData.cat = cSel.value;
     rowData.recipeId = rSel.value;
     rowData.meals = Number(mSel.value);
-    rowData.level = Number(lInp.value) || 1;
+    rowData.level = Number(lSel.value) || 1; // ★selectの値を取得
     rowData.successType = wrap.querySelector(`input[name="${radioName}"]:checked`).value;
 
     const r = RECIPES.find((x) => x.id === rSel.value);
@@ -300,23 +309,13 @@ function addRecipeRow(init) {
     refreshAllMealDropdowns(); 
     updatePreview();
   };
-  lInp.oninput = () => {
-    let v = parseInt(lInp.value, 10);
-    // 入力中は空文字も許容
-    if (lInp.value === "") v = 1;
-    if (v < 1) v = 1; 
-    if (v > 65) v = 65;
-    rowData.level = v;
+  
+  // ★プルダウン変更時の処理 (数値入力チェックが不要になりシンプル化)
+  lSel.onchange = () => {
+    rowData.level = Number(lSel.value);
     calc();
   };
-  lInp.onblur = () => {
-    let v = parseInt(lInp.value, 10);
-    if(isNaN(v) || v < 1) v = 1; 
-    if(v > 65) v = 65;
-    lInp.value = v;
-    rowData.level = v;
-    calc();
-  };
+
   radios.forEach(ra => ra.onchange = updatePreview);
 
   wrap.querySelector(".removeBtn").onclick = () => {
