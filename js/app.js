@@ -42,7 +42,7 @@
    SW / Cache reset (一回だけ)
 ========================================================= */
 async function resetSWAndCacheOnce() {
-  const KEY = "sw_cache_reset_done_v110"; // verup
+  const KEY = "sw_cache_reset_done_v106";
   if (localStorage.getItem(KEY)) return;
   try {
     if ("serviceWorker" in navigator) {
@@ -83,24 +83,8 @@ const NC_APPLE = 12;
 const NC_CACAO = 5;
 const NC_HONEY = 3;
 
-// レシピレベルボーナス (index=レベル)
-// Lv1=0%, Lv2=2% ... Lv65=234%
-const RECIPE_LV_BONUS = [
-  0, 0, 0.02, 0.04, 0.06, 0.08, 0.09, 0.11, 0.13, 0.16, 0.18,
-  0.19, 0.21, 0.23, 0.24, 0.26, 0.28, 0.30, 0.31, 0.33, 0.35,
-  0.37, 0.40, 0.42, 0.45, 0.47, 0.50, 0.52, 0.55, 0.58, 0.61,
-  0.64, 0.67, 0.70, 0.74, 0.77, 0.81, 0.84, 0.88, 0.92, 0.96,
-  1.00, 1.04, 1.08, 1.13, 1.17, 1.22, 1.27, 1.32, 1.37, 1.42,
-  1.48, 1.53, 1.59, 1.65, 1.71, 1.77, 1.83, 1.90, 1.97, 2.03,
-  2.09, 2.15, 2.21, 2.27, 2.34
-];
-
-// フィールドボーナス (0, 5, ..., 100)
-const FIELD_BONUS_STEPS = [];
-for(let i=0; i<=100; i+=5) FIELD_BONUS_STEPS.push(i);
-
 let state = {
-  recipeRows: [], // { rowId, cat, recipeId, meals, level }
+  recipeRows: [], // { rowId, cat, recipeId, meals }
 };
 
 /* =========================================================
@@ -120,56 +104,39 @@ function getFirstRecipeIdByCat(cat) {
 }
 
 /* =========================================================
-   グリッド描画（統合版）
-   除外ChkとReplenishInputを1つのタイルにする
+   除外 / 1日当たり獲得量 グリッド描画
 ========================================================= */
 function renderGrids() {
-  const container = el("mergedIngGrid");
-  if (!container) return;
-  container.innerHTML = "";
+  const ex = el("excludeGrid"), rep = el("replenishGrid");
+  if (!ex || !rep) return;
+
+  ex.innerHTML = "";
+  rep.innerHTML = "";
 
   (window.INGREDIENTS || []).forEach((ing) => {
-    container.innerHTML += `
-      <div class="merged-tile">
-        <div class="merged-tile-head">
-          <img class="merged-tile-icon" src="${imgSrc(ing.file)}" alt="">
-          <div class="merged-tile-name" title="${ing.name}">${ing.name}</div>
+    ex.innerHTML += `
+      <div class="tile">
+        <div class="tileName" title="${ing.name}">${ing.name}</div>
+        <img class="icon" src="${imgSrc(ing.file)}" alt="">
+        <div class="exInputRow" style="width:100%; display:flex; justify-content:center; align-items:center;">
+          <label class="chkLabel"><input type="checkbox" class="exChk" data-iid="${ing.id}">除外</label>
         </div>
-        
-        <div class="merged-tile-ctrl">
-          <label class="merged-ex-label">
-            <input type="checkbox" class="merged-ex-chk" data-iid="${ing.id}">
-            除外
-          </label>
-          <div class="merged-rep-row">
-            <input type="number" class="merged-rep-input" data-iid="${ing.id}" placeholder="0">
-            <span class="merged-rep-unit">個/日</span>
-          </div>
+      </div>`;
+
+    rep.innerHTML += `
+      <div class="tile">
+        <div class="tileName" title="${ing.name}">${ing.name}</div>
+        <img class="icon" src="${imgSrc(ing.file)}" alt="">
+        <div class="repInputRow" style="padding: 0 8px;">
+          <input type="number" class="repQty" data-iid="${ing.id}" placeholder="0">
+          <span style="font-size:9px; font-weight:700; margin-left:1px;">個</span>
         </div>
       </div>`;
   });
 
-  document.querySelectorAll(".merged-ex-chk, .merged-rep-input").forEach((input) => {
+  document.querySelectorAll(".exChk, .repQty").forEach((input) => {
     input.oninput = () => calc();
   });
-}
-
-/* =========================================================
-   設定UI（フィールドボーナス等）
-========================================================= */
-function renderConfigUI() {
-  // フィールドボーナス生成
-  const fbSel = el("fieldBonusSel");
-  if (fbSel) {
-    fbSel.innerHTML = FIELD_BONUS_STEPS.map(v => `<option value="${v}">${v}%</option>`).join("");
-    // デフォルト60%くらいにしておく（適当）
-    fbSel.value = "0"; 
-  }
-  
-  // イベントはHTML直書きだが、リスナー設定
-  el("fieldBonusSel")?.addEventListener("change", calc);
-  el("eventBonusSel")?.addEventListener("change", calc);
-  document.querySelectorAll('input[name="evSit"]').forEach(r => r.addEventListener("change", calc));
 }
 
 /* =========================================================
@@ -195,6 +162,7 @@ function refreshAllMealDropdowns() {
       opt.value = i; opt.textContent = i;
       mSel.appendChild(opt);
     }
+    // 現在の値が上限を超えていれば補正
     mSel.value = prevVal > maxAllowed ? maxAllowed : prevVal;
     row.meals = Number(mSel.value);
   });
@@ -203,12 +171,13 @@ function refreshAllMealDropdowns() {
 
 /* =========================================================
    料理行UI
-   (Recipe Level入力を追加)
 ========================================================= */
 function addRecipeRow(init) {
   if (state.recipeRows.length >= MAX_ROWS) return;
 
   const rowId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ("rid_" + Date.now() + "_" + Math.random().toString(16).slice(2));
+  
+  // 初期食数を決定（既存の合計から引く）
   const currentTotal = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
   const initialMeals = Math.min(init?.meals ?? 21, 21 - currentTotal);
 
@@ -217,7 +186,6 @@ function addRecipeRow(init) {
     cat: init?.cat || "カレー・シチュー",
     recipeId: init?.recipeId || getFirstRecipeIdByCat(init?.cat || "カレー・シチュー"),
     meals: initialMeals,
-    level: init?.level || 1
   };
   state.recipeRows.push(rowData);
 
@@ -225,7 +193,6 @@ function addRecipeRow(init) {
   wrap.className = "recipeRow";
   wrap.dataset.rowId = rowId;
 
-  // レシピレベル入力欄を追加
   wrap.innerHTML = `
     <button class="removeBtn" title="削除">×</button>
     <div style="flex:1; min-width:100px;">
@@ -244,17 +211,12 @@ function addRecipeRow(init) {
       <label class="emphLabel">食数</label>
       <select class="mealsSel emphSelect"></select>
     </div>
-    <div style="width:50px; display:flex; flex-direction:column; align-items:center;">
-      <label class="emphLabel">Lv.</label>
-      <input type="number" class="recipeLvInput" min="1" max="65" value="${rowData.level}">
-    </div>
     <div class="preview"></div>
   `;
 
   const cSel = wrap.querySelector(".catSel");
   const rSel = wrap.querySelector(".recipeSel");
   const mSel = wrap.querySelector(".mealsSel");
-  const lIn = wrap.querySelector(".recipeLvInput");
   const pre = wrap.querySelector(".preview");
 
   cSel.value = rowData.cat;
@@ -270,14 +232,7 @@ function addRecipeRow(init) {
     rowData.cat = cSel.value;
     rowData.recipeId = rSel.value;
     rowData.meals = Number(mSel.value);
-    
-    // Levelバリデーション
-    let lv = parseInt(lIn.value, 10);
-    if(isNaN(lv) || lv < 1) lv = 1;
-    if(lv > 65) lv = 65;
-    rowData.level = lv;
-    // UI上の値を強制補正しない（入力中の利便性のため）が、計算には補正値を使う
-    
+
     const r = RECIPES.find((x) => x.id === rSel.value);
     if (r) {
       const totalIngredients = Object.values(r.ingredients).reduce((sum, c) => sum + c, 0);
@@ -295,10 +250,7 @@ function addRecipeRow(init) {
   rSel.onchange = updatePreview;
   mSel.onchange = () => {
     rowData.meals = Number(mSel.value);
-    refreshAllMealDropdowns(); 
-    updatePreview();
-  };
-  lIn.oninput = () => {
+    refreshAllMealDropdowns(); // 他の行の選択肢を同期
     updatePreview();
   };
 
@@ -311,7 +263,7 @@ function addRecipeRow(init) {
 
   updateRecipeList();
   el("recipeList").appendChild(wrap);
-  refreshAllMealDropdowns();
+  refreshAllMealDropdowns(); // 追加時に全体を同期
 }
 
 function updateSummary() {
@@ -327,8 +279,7 @@ function updateSummary() {
    計算ロジック
 ========================================================= */
 function buildReplenishPerDayMap() {
-  // 統合されたInputから取得
-  const map = new Map([...document.querySelectorAll(".merged-rep-input")].map(c => [c.dataset.iid, Number(c.value) || 0]));
+  const map = new Map([...document.querySelectorAll(".repQty")].map(c => [c.dataset.iid, Number(c.value) || 0]));
   if (el("optNcPika")?.checked) {
     map.set("apple", (map.get("apple") || 0) + NC_APPLE);
     map.set("cacao", (map.get("cacao") || 0) + NC_CACAO);
@@ -338,94 +289,18 @@ function buildReplenishPerDayMap() {
 }
 
 function buildExcludeSet() {
-  // 統合されたCheckboxから取得
-  return new Set([...document.querySelectorAll(".merged-ex-chk:checked")].map(c => c.dataset.iid));
-}
-
-// エナジー計算
-function calcEnergy() {
-  const fbVal = Number(el("fieldBonusSel")?.value || 0);
-  const evBaseStr = el("eventBonusSel")?.value || "1.0";
-  const evSit = document.querySelector('input[name="evSit"]:checked')?.value || "normal";
-  
-  // イベント倍率連動
-  // 平日(1.1) -> 大成功(2.2), 日曜(3.3)
-  // 小(1.25) -> 大成功(2.5), 日曜(3.75)
-  // 大(1.5) -> 大成功(3.0), 日曜(4.5)
-  // なし(1.0) -> 大成功(2.0), 日曜(1.0??) →仕様がないので通常通りとするが、ここでは「等倍」ベースで考える
-  
-  let baseMul = parseFloat(evBaseStr);
-  let finalEvMul = baseMul; // default normal
-
-  if (evSit === "extra") {
-    // 大成功はベースの2倍（平日1.1なら2.2）
-    // ただし「なし(1.0)」の場合は大成功2倍ルールを適用
-    finalEvMul = baseMul * 2.0;
-  } else if (evSit === "sunday") {
-    // 日曜はベースの3倍（平日1.1なら3.3）
-    // ただし「なし(1.0)」の場合、日曜鍋拡張はあるが倍率は1.0のまま等の解釈があるが、
-    // ここではユーザの指定意図(平日/小/大)に沿って3倍する
-    finalEvMul = baseMul * 3.0;
-  }
-  
-  // レシピごとの計算
-  let totalEnergy = 0;
-  
-  state.recipeRows.forEach(row => {
-    if (row.meals <= 0) return;
-    const r = RECIPES.find(x => x.id === row.recipeId);
-    if (!r) return;
-    
-    // 1. レシピ基本エナジー (r.baseEnergy)
-    const base = r.baseEnergy || 0;
-    
-    // 2. レシピレベルボーナス
-    // レベルは1~65
-    let lv = row.level || 1;
-    if(lv < 1) lv = 1; if(lv > 65) lv = 65;
-    const bonusPct = RECIPE_LV_BONUS[lv] || 0;
-    
-    const bonusVal = Math.round(base * bonusPct);
-    const recipeScreenEnergy = base + bonusVal;
-    
-    // 3. 追加食材 (Filler)
-    // 今回のUIにはFiller入力がないので 0 とする
-    const fillerEnergy = 0;
-    
-    // 4. 最終計算
-    // (レシピ画面表示 + 追加食材) * FB * イベント
-    const withFB = recipeScreenEnergy * (1 + fbVal / 100);
-    const withEvent = withFB * finalEvMul;
-    
-    // 切り捨て
-    const finalPerMeal = Math.floor(withEvent);
-    
-    totalEnergy += finalPerMeal * row.meals;
-  });
-  
-  const resVal = el("energyResultVal");
-  const resDesc = el("energyResultDesc");
-  
-  if (resVal) {
-    resVal.textContent = totalEnergy.toLocaleString();
-    let desc = `FB:${fbVal}% / イベント:x${finalEvMul.toFixed(2)}`;
-    if(state.recipeRows.length === 0) desc = "レシピを追加してください";
-    resDesc.textContent = desc;
-  }
+  return new Set([...document.querySelectorAll(".exChk:checked")].map(c => c.dataset.iid));
 }
 
 function calc() {
-  // ストック計算
   const exclude = buildExcludeSet();
   const perDay = buildReplenishPerDayMap();
   const resultGrid = el("resultGrid");
-  
-  // エナジー計算も実行
-  calcEnergy();
-
   if (!resultGrid) return;
 
+  // 1. カテゴリー別に食材を合算
   const catSums = { "カレー・シチュー": new Map(), "サラダ": new Map(), "デザート・ドリンク": new Map() };
+  // ② レシピの並び順を保持するための配列
   const ingredientOrder = [];
 
   state.recipeRows.forEach(row => {
@@ -433,11 +308,13 @@ function calc() {
     if (!r || row.meals <= 0) return;
     const map = catSums[row.cat];
     Object.entries(r.ingredients).forEach(([iid, qty]) => {
+      // 出現した順番に ID を記録（重複は避ける）
       if (!ingredientOrder.includes(iid)) ingredientOrder.push(iid);
       map.set(iid, (map.get(iid) || 0) + (qty * row.meals));
     });
   });
 
+  // 2. カテゴリー間で最大値を採用
   const gross = new Map();
   Object.values(catSums).forEach(map => {
     map.forEach((val, iid) => {
@@ -445,6 +322,7 @@ function calc() {
     });
   });
 
+  // 3. 描画（レシピの登録順 ingredientOrder に基づいてループ）
   resultGrid.innerHTML = "";
   let grandTotal = 0;
 
@@ -464,12 +342,16 @@ function calc() {
       </div>`;
   });
 
+  // ① 総合計バッジの更新
   const totalBadge = el("totalBadge");
   if (totalBadge) totalBadge.textContent = `総合計 ${grandTotal}個`;
 
+  // ▼▼▼ 追加：カテゴリー混在時の注釈表示制御 ▼▼▼
   const note = el("mode3Note");
   if (note) {
+    // 現在登録されているレシピのカテゴリー（重複なし）を取得
     const activeCats = new Set(state.recipeRows.map(r => r.cat));
+    // 2種類以上ある場合のみ表示
     note.style.display = (activeCats.size > 1) ? "block" : "none";
   }
 }
@@ -482,19 +364,14 @@ window.onload = () => {
   resetSWAndCacheOnce();
   registerSW();
   renderGrids();
-  renderConfigUI();
 
   el("optNcPika")?.addEventListener("change", () => calc());
   el("addRecipe").onclick = () => addRecipeRow();
   el("clearAll").onclick = () => {
     el("recipeList").innerHTML = "";
     state.recipeRows = [];
-    document.querySelectorAll(".merged-ex-chk").forEach(c => c.checked = false);
-    document.querySelectorAll(".merged-rep-input").forEach(i => i.value = "");
-    // Default reset for bonus
-    if(el("fieldBonusSel")) el("fieldBonusSel").value = "0";
-    if(el("eventBonusSel")) el("eventBonusSel").value = "1.0";
-    
+    document.querySelectorAll(".exChk").forEach(c => c.checked = false);
+    document.querySelectorAll(".repQty").forEach(i => i.value = "");
     addRecipeRow({ meals: 21 });
   };
 
@@ -503,6 +380,7 @@ window.onload = () => {
   const savedTab = localStorage.getItem("activeTab") || "tab1";
   switchTab(savedTab);
 
+  // モーダル
   const dM = el("docsModal"), nM = el("noticeModal"), vM = el("docViewerModal");
   el("openDocs").onclick = () => dM.style.display = "flex";
   el("closeDocs").onclick = () => dM.style.display = "none";
@@ -523,7 +401,7 @@ window.switchTab = function (tabId, clickedEl) {
     items[idx]?.classList.add("active");
   }
 
-  el("headerTitle").textContent = { tab1: "食材ストック計算", tab2: "出現ポケモン一覧", tab3: "経験値シミュ", tab4: "月齢カレンダー" }[tabId];
+  el("headerTitle").textContent = { tab1: "食材ストック計算", tab2: "出現ポケモン一覧", tab3: "経験値シミュレーター", tab4: "月齢カレンダー" }[tabId];
   localStorage.setItem("activeTab", tabId);
 
   if (tabId === "tab2" && window.PokedexTab?.renderFieldMenu) window.PokedexTab.renderFieldMenu();
@@ -531,17 +409,24 @@ window.switchTab = function (tabId, clickedEl) {
   if (tabId === "tab4" && window.CalendarTab?.renderYearCalendar) window.CalendarTab.renderYearCalendar();
 };
 
+/* =========================================================
+   簡易メッセージモーダル表示 (alertの代用)
+========================================================= */
 window.showInfo = function(msg) {
   const modal = document.getElementById("simpleModal");
   const msgBox = document.getElementById("simpleModalMsg");
   if (modal && msgBox) {
-    msgBox.innerHTML = msg.replace(/\n/g, "<br>");
+    msgBox.innerHTML = msg.replace(/\n/g, "<br>"); // 改行対応
     modal.style.display = "flex";
   } else {
+    // 万が一HTMLがない場合は通常のalertで代用
     alert(msg);
   }
 };
 
+/* =========================================================
+   資料ビューア
+========================================================= */
 window.openDoc = function(fileName) {
   const modal = document.getElementById("docViewerModal");
   const img = document.getElementById("docViewerImg");
