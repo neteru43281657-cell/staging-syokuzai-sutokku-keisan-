@@ -302,7 +302,7 @@ function addRecipeRow(init) {
   };
   lInp.oninput = () => {
     let v = parseInt(lInp.value, 10);
-    // 入力中は空文字も許容したいが、計算は1として走らせる
+    // 入力中は空文字も許容
     if (lInp.value === "") v = 1;
     if (v < 1) v = 1; 
     if (v > 65) v = 65;
