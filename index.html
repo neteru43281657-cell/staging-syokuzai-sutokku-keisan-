@@ -152,11 +152,39 @@
       color: var(--text);
     }
 
-    select.emphSelect{
-      font-weight: 800;
+    /* selectとinputでデザイン・高さを完全に統一 */
+    .emphSelect {
+      font-weight: 800 !important;
+      border: 2px solid var(--main) !important;
+      background: #fff !important;
+      box-shadow: 0 6px 14px rgba(0,0,0,.08) !important;
+      border-radius: 10px !important;
+      height: 44px !important; /* 高さを固定して不揃いを防ぐ */
+      padding: 0 10px !important;
+      color: var(--text) !important;
+      width: 100% !important;
+      font-size: 14px !important;
+      box-sizing: border-box !important;
+      appearance: none; /* ブラウザ標準の見た目をリセット */
+    }
+    
+    /* レシピLv入力欄の文字位置調整 */
+    input.emphSelect {
+      text-align: center;
+    }
+
+    /* エナジー結果エリア（青色統一版） */
+    .energyResultBox {
+      background: #f0f7ff; /* 薄い青背景 */
       border: 2px solid var(--main);
-      background: #fff;
-      box-shadow: 0 6px 14px rgba(0,0,0,.08);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--main);
+      /* 影は削除してフラットに、または控えめに */
     }
 
     /* =========================================================
@@ -882,8 +910,7 @@
 </header>
 
 <main>
-  <div id="tab1" class="tab-content active">
-    
+  <div id="tab1" class="tab-content active">  
     <section class="card">
       <div class="settingsHeaderRow">
         <div id="condBlock">
@@ -899,7 +926,7 @@
       <div style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; padding:10px; background:#f8f9fa; border-radius:12px; border:1px solid var(--line);">
         <div style="flex:1; min-width:140px;">
            <label style="margin-bottom:4px;">フィールドボーナス</label>
-           <select id="fieldBonusSel" style="font-weight:700;">
+           <select id="fieldBonusSel" style="font-weight:700; border-radius:8px; border:1px solid var(--line);">
              <option value="0">0%</option>
              <option value="5">5%</option>
              <option value="10">10%</option>
@@ -924,8 +951,8 @@
            </select>
         </div>
         <div style="flex:1; min-width:140px;">
-          <label style="margin-bottom:4px;">イベントボーナス</label>
-          <select id="eventBonusSel" style="font-weight:700;">
+           <label style="margin-bottom:4px;">イベントボーナス</label>
+           <select id="eventBonusSel" style="font-weight:700; border-radius:8px; border:1px solid var(--line);">
              <option value="0">なし (平日1倍/大成功2倍/日曜3倍)</option>
              <option value="1">パターン① (平日1.1倍/大成功2.2倍/日曜3.3倍)</option>
              <option value="2">パターン② (平日1.25倍/大成功2.5倍/日曜3.75倍)</option>
@@ -937,14 +964,46 @@
       <div id="recipeList"></div>
     </section>
 
-    <section class="card" style="border: 2px solid #ffa502;">
-      <div class="sectionTitle" style="color:#e67e22; border-color:#ffa502;">エナジー計算</div>
+    <section class="card">
+      <div class="replenishHeaderRow">
+        <div>
+          <div class="sectionTitle">食材設定</div>
+        </div>
+        <div>
+          <label class="chkLabel ncPikaOpt">
+            <input type="checkbox" id="optNcPika">
+            NCピカチュウ分を引く
+          </label>
+        </div>
+        <div></div>
+      </div>
+    
+      <div id="ingredientSettingsGrid" class="grid5"></div>
+    </section>
+
+    <section class="result-card">
+      <div class="resultHeader">
+        <div class="resultTitle">計算結果</div>
+        <span class="badge total-badge" id="totalBadge">総合計 0個</span>
+      </div>
+    
+      <div id="mode3Note" class="mode3Note">
+        💡 カテゴリーを跨いで計算する場合、各レシピの中で「一番多く使う分量」に合わせて計算しています（食材の不足を防ぐため）
+      </div>
+    
+      <div class="resultDivider"></div>
+      <div style="font-size:12px; font-weight:900; color:var(--text); margin-bottom:8px;">不足している食材</div>
+      <div id="resultGrid" class="grid5"></div>
+      
+      <div class="resultDivider" style="margin-top: 24px; margin-bottom: 24px; height: 2px; opacity: 0.3;"></div>
+
+      <div style="font-size:12px; font-weight:900; color:var(--text); margin-bottom:8px;">獲得エナジー</div>
       <div class="energyResultBox">
-        <div style="font-size:12px; font-weight:800; opacity:0.8;">獲得エナジー合計</div>
-        <div style="font-size:24px; font-weight:900;" id="energyResultVal">0</div>
-        <div style="font-size:10px; margin-top:4px;">※追加食材なしの概算値</div>
+        <div style="font-size:28px; font-weight:900; line-height:1;" id="energyResultVal">0</div>
+        <div style="font-size:10px; margin-top:6px; opacity:0.8;">※追加食材なしの概算値</div>
       </div>
     </section>
+  </div>
 
     <section class="card">
       <div class="replenishHeaderRow">
