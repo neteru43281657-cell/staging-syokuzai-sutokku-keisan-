@@ -409,9 +409,6 @@
     .energy-value-main { font-size: 24px; font-weight: 900; color: var(--main); line-height: 1.2; }
     .energy-value-sub { font-size: 11px; font-weight: 700; color: var(--muted); margin-top: 4px; }
 
-    /* タブ3, 2 等のスタイルは維持 */
-    /* ... (Level Tab styles omitted for brevity as they are unchanged) ... */
-    
     /* レシピレベル入力用 */
     .recipeLvInput {
       width: 50px !important;
@@ -422,12 +419,6 @@
       border-radius: 8px;
     }
     
-    .field-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .field-item { border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; background: #fff; transition: transform 0.1s, box-shadow 0.1s; }
-    .field-item:active { transform: scale(0.98); background: var(--main-soft); }
-    .field-img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 8px; }
-    .field-name { font-size: 11px; font-weight: 800; color: var(--text); }
-
     /* Energy Config Grid */
     .energy-config-grid {
       display: grid;
@@ -445,10 +436,86 @@
     }
     .info-btn-tiny:active { opacity: 1.0; transform: scale(0.95); }
 
-    /* タブ3などのCSSも引き継ぎ */
-    #tab3 .lvlForm { display: flex; flex-direction: column; gap: 16px; font-family: inherit; }
-    /* ... (既存CSS) ... */
-    #tab3 input[type="number"] { font-weight: 900; }
+    /* ========================================================
+       タブ2 (Pokedex / Field) 用 CSS
+       ※前回欠落していた部分
+    ======================================================== */
+    .field-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .field-item { border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; background: #fff; transition: transform 0.1s, box-shadow 0.1s; }
+    .field-item:active { transform: scale(0.98); background: var(--main-soft); }
+    .field-img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 8px; }
+    .field-name { font-size: 11px; font-weight: 800; color: var(--text); }
+
+    .field-header { display: flex; align-items: center; gap: 16px; border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 12px; }
+    .field-header img { width: 60px; height: 60px; object-fit: contain; }
+    .field-title { font-size: 16px; font-weight: 900; color: var(--text); }
+    
+    .energy-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .energy-table th { text-align: left; color: var(--muted); font-weight: 400; border-bottom: 1px solid var(--line); padding: 4px; }
+    .energy-table td { padding: 4px; border-bottom: 1px solid #f0f0f0; font-weight: 800; color: var(--text); }
+    
+    .sleep-section { margin-top: 20px; }
+    .sleep-label { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+    .sleep-badge { font-size: 11px; font-weight: 900; color: #fff; padding: 3px 10px; border-radius: 999px; }
+    .badge-uto { background: #f1c40f; } /* うとうと */
+    .badge-suya { background: #3498db; } /* すやすや */
+    .badge-gusu { background: #2ecc71; } /* ぐっすり */
+
+    .poke-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); gap: 8px; }
+    .poke-item { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+    .poke-item img { width: 44px; height: 44px; object-fit: contain; }
+    .poke-name { font-size: 9px; font-weight: 700; text-align: center; line-height: 1.2; word-break: break-all; }
+
+    /* ========================================================
+       タブ3 (Level Calc) 用 CSS
+       ※前回欠落していた部分
+    ======================================================== */
+    .lvlForm { display: flex; flex-direction: column; gap: 16px; font-family: inherit; }
+    .lvlGroup { display: flex; flex-direction: column; gap: 12px; }
+    .lvlRow { display: flex; flex-direction: column; gap: 4px; }
+    .lvlRowTop { flex-direction: row; justify-content: space-between; align-items: flex-start; gap: 12px; border-bottom: 1px dashed var(--line); padding-bottom: 12px; margin-bottom: 4px; }
+    .lvlRowStack { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+    
+    .lvlLabel { font-size: 11px; font-weight: 800; color: var(--muted); display: flex; align-items: center; gap: 2px; }
+    .lvlReq { color: var(--danger); font-size: 12px; }
+    
+    .lvlRight { flex: 1; display: flex; flex-direction: column; align-items: flex-end; width: 100%; }
+    .lvlInputWrapper { position: relative; width: 100%; display: flex; align-items: center; }
+    .lvlInputWrapper input { width: 100%; padding-right: 32px; font-weight: 900; }
+    .lvlUnit { position: absolute; right: 10px; font-size: 10px; font-weight: 700; color: var(--muted); pointer-events: none; }
+    
+    .lvlQuickBtn {
+      padding: 4px 0; background: #fff; border: 1px solid var(--line); border-radius: 6px;
+      font-size: 10px; font-weight: 800; color: var(--muted); cursor: pointer; transition: 0.1s;
+    }
+    .lvlQuickBtn:active { background: var(--main-soft); border-color: var(--main); color: var(--main); }
+    
+    .lvlRadios, .lvlBoostRadios { display: flex; flex-wrap: wrap; gap: 8px; }
+    .lvlRadio { cursor: pointer; margin: 0; }
+    .lvlRadio input { display: none; }
+    .lvlRadio span {
+      display: block; padding: 6px 12px; border: 1px solid var(--line); border-radius: 20px;
+      background: #fff; font-size: 11px; font-weight: 700; color: var(--muted); transition: 0.1s;
+    }
+    .lvlRadio input:checked + span {
+      background: var(--main-soft); border-color: var(--main); color: var(--main); box-shadow: 0 2px 5px rgba(0,123,255,0.15);
+    }
+    
+    .lvlDivider { height: 1px; background: var(--line); opacity: 0.5; margin: 4px 0; }
+    
+    .lvlOptItems { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+    .lvlOptLine { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; }
+    .lvlOptName { font-size: 11px; font-weight: 700; color: var(--text); }
+    
+    .lvlInMain { font-size: 16px; padding: 10px; }
+    .lvlInSub { font-size: 14px; padding: 8px; }
+    .lvlInMini { font-size: 12px; padding: 6px; width: 80px !important; text-align: right; }
+    
+    .lvResRow { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f5f8fa; }
+    .lvResRow:last-child { border-bottom: none; }
+    .lvResKey { font-size: 11px; font-weight: 700; color: var(--muted); }
+    .lvResVal { font-size: 14px; font-weight: 900; color: var(--text); }
+    .lvResSubTitle { margin-top: 12px; margin-bottom: 4px; font-size: 11px; font-weight: 900; color: var(--main); border-left: 3px solid var(--main); padding-left: 6px; }
 
   </style>
 </head>
@@ -568,7 +635,7 @@
       </div>
 
       <div id="mode3Note" class="mode3Note">
-        💡 カテゴリーを跨いで計算する場合、各レシピの中で「一番多く使う分量」に合わせて計算しています
+        💡 カテゴリーを跨いで計算する場合、各レシピの中で「一番多く使う分量」に合わせて計算されます
       </div>
     
       <div class="resultDivider"></div>
