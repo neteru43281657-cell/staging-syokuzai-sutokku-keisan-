@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>食材ストック計算</title>
+  <title>料理計算</title>
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-GNGLETKNNR"></script>
   <script>
@@ -24,7 +24,7 @@
   <meta name="background-color" content="#f5f8fa">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="食材ストック">
+  <meta name="apple-mobile-web-app-title" content="料理計算">
   
   </head>
 
@@ -50,7 +50,7 @@
     }
 
     header {
-      padding: 10px 20px;
+      padding: 8px 16px; /* 10px 20px -> 8px 16px */
       background: var(--main);
       color: #fff;
       position: sticky;
@@ -61,24 +61,24 @@
       align-items: center;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    .title-text { font-weight: 800; letter-spacing: 0.03em; font-size: 18px; }
-    .ver-text { font-size: 11px; font-weight: 400; opacity: 0.8; margin-top: 2px; }
+    .title-text { font-weight: 800; letter-spacing: 0.03em; font-size: 16px; /* 18 -> 16 */ }
+    .ver-text { font-size: 10px; font-weight: 400; opacity: 0.8; margin-top: 2px; }
 
     main {
       max-width: 980px;
       margin: 0 auto;
-      padding: 16px;
+      padding: 12px; /* 16px -> 12px */
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      padding-bottom: 100px;
+      gap: 10px; /* 16px -> 10px (隙間削減) */
+      padding-bottom: 90px;
     }
 
     .tab-content { display: none; }
     .tab-content.active {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 10px; /* 16px -> 10px */
     }
 
     .bottom-nav {
@@ -86,7 +86,7 @@
       bottom: 0;
       left: 0;
       width: 100%;
-      height: 65px;
+      height: 60px; /* 65px -> 60px */
       background: #fff;
       border-top: 1px solid var(--line);
       display: flex;
@@ -101,22 +101,22 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       color: var(--muted);
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 700;
       cursor: pointer;
       flex: 1;
-      padding: 8px 0;
+      padding: 6px 0;
     }
     .nav-item.active { color: var(--main); }
-    .nav-icon { font-size: 20px; }
+    .nav-icon { font-size: 18px; }
 
     .card {
       background: var(--card);
       border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 16px;
+      border-radius: 14px; /* 16px -> 14px */
+      padding: 12px; /* 16px -> 12px (内部余白削減) */
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
 
@@ -126,27 +126,27 @@
     .result-card {
       border: 2px solid var(--main);
       background: #ffffff;
-      border-radius: 16px;
-      padding: 16px;
+      border-radius: 14px;
+      padding: 12px; /* 16px -> 12px */
       box-shadow: 0 4px 20px rgba(0,123,255,0.1);
       overflow: hidden;
     }
 
-    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .grid5 {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
-      gap: 8px;
+      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); /* 75 -> 70 */
+      gap: 6px; /* 8 -> 6 */
       width: 100%;
     }
 
-    label { font-size: 11px; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px; }
+    label { font-size: 11px; font-weight: 700; color: var(--muted); display: block; margin-bottom: 2px; /* 4 -> 2 */ }
 
     select, input[type="number"] {
-      padding: 10px;
+      padding: 8px; /* 10px -> 8px */
       border: 1px solid var(--line);
       border-radius: 10px;
-      font-size: 14px;
+      font-size: 13px;
       width: 100%;
       background: #fff;
       color: var(--text);
@@ -157,13 +157,13 @@
       font-weight: 800 !important;
       border: 2px solid var(--main) !important;
       background: #fff !important;
-      box-shadow: 0 6px 14px rgba(0,0,0,.08) !important;
+      box-shadow: 0 4px 10px rgba(0,0,0,.06) !important; /* 影を少し弱く */
       border-radius: 10px !important;
-      height: 44px !important; /* 高さを固定して不揃いを防ぐ */
-      padding: 0 10px !important;
+      height: 38px !important; /* ★高さ変更 44px -> 38px */
+      padding: 0 8px !important;
       color: var(--text) !important;
       width: 100% !important;
-      font-size: 14px !important;
+      font-size: 13px !important;
       box-sizing: border-box !important;
       appearance: none; /* ブラウザ標準の見た目をリセット */
     }
@@ -178,53 +178,179 @@
       background: #f0f7ff; /* 薄い青背景 */
       border: 2px solid var(--main);
       border-radius: 12px;
-      padding: 12px;
+      padding: 8px; /* 12 -> 8 */
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       color: var(--main);
-      /* 影は削除してフラットに、または控えめに */
     }
 
-    
-    /* =========================================================
-       モード②：2行目以降の「カテゴリは変更できません」を見た目で伝える
-    ========================================================= */
-    .recipeRow.catLocked .catSel{
-      background: #f3f6fa !important;
-      border-color: #e3eaf2 !important;
-      color: #8a97a6 !important;
-      box-shadow: none !important;
+    /* レイアウト修正版 v2：余白・整列・スマホ対応の強化 */
+    .sectionTitle {
+      font-weight: 900;
+      font-size: 13px;
+      border-left: 4px solid var(--main);
+      padding-left: 8px;
+      color: var(--text);
+      margin-bottom: 6px; /* 10 -> 6 */
     }
     
-    .recipeRow.catLocked .catSel.emphSelect{
-      border: 1px solid #e3eaf2 !important;
-      box-shadow: none !important;
-      font-weight: 400 !important;
+    /* ラジオボタンボタン化グループ */
+    .radioGroup {
+      display: flex;
+      background: #f3f6fa;
+      border-radius: 8px;
+      padding: 2px;
+      border: 1px solid var(--line);
+    }
+    .radioGroup label {
+      flex: 1;
+      text-align: center;
+      cursor: pointer;
+      padding: 6px 2px; /* 8px 4px -> 6px 2px */
+      border-radius: 6px;
+      font-size: 10px;
+      margin: 0;
+      color: var(--muted);
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+    .radioGroup input { display: none; }
+    .radioGroup label:has(input:checked) {
+      background: #fff;
+      color: var(--main);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      border: 1px solid var(--line);
     }
 
-    select:disabled{
-      background: #f3f6fa !important;   /* ← catLocked と同じ */
-      border-color: #e3eaf2 !important;
-      color: #8a97a6 !important;
-      box-shadow: none !important;
-      font-weight: 400 !important;      /* 通常の字体 */
-      opacity: 1 !important;            /* ブラウザ既定の薄さを無効化 */
+    /* ... NCピカなど ... */
+    .ncPikaOpt{
+      min-height: 28px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .ncPikaOpt input[type="checkbox"] { margin: 0; transform: scale(1.1); }
+    
+    .mode3Note {
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.5;
+      color: var(--muted);
+      background: var(--main-soft);
+      padding: 8px;
+      border-radius: 8px;
+      margin-top: 8px;
+      border: 1px solid #d0e7ff;
+      display: none;
     }
     
-    label.emphLabel{
+    .repInputRow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      width: 100%;
+      padding: 0 2px;
+    }
+    .repQty {
+      width: 100% !important;
+      height: 22px !important; /* 24 -> 22 */
+      padding: 0 2px !important;
+      font-size: 13px !important;
+      font-weight: 800 !important;
+      text-align: center;
+      border-radius: 6px !important;
+    }
+
+    .recipeRow {
+      border: 1px solid var(--line);
+      background: #fcfdfe;
+      border-radius: 14px;
+      padding: 12px; /* 16px -> 12px */
+      display: flex;
+      gap: 8px; /* 12px -> 8px */
+      flex-wrap: wrap;
+      align-items: flex-end;
+      margin-bottom: 8px; /* 12px -> 8px */
+      position: relative;
+    }
+    .removeBtn {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--danger);
+      width: 24px; /* 26 -> 24 */
+      height: 24px;
+      padding: 0;
+      line-height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .preview { font-size: 11px; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; border-top: 1px solid var(--line); padding-top: 8px; width: 100%; align-items: center; }
+    .preview span { display: flex; align-items: center; background: var(--main-soft); color: var(--main); padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 1px solid #d0e7ff; }
+
+    /* タイル */
+    .tile {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 4px 2px; /* 6px 3px -> 4px 2px */
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      background: #fff;
+      align-items: center;
+      text-align: center;
+      min-height: 85px; /* 95px -> 85px (高さ圧縮) */
+      justify-content: space-between;
+      overflow: hidden;
+    }
+    .icon { width: 26px; height: 26px; object-fit: contain; }
+    .tileName { font-size: 8px; font-weight: 700; width: 100%; overflow: hidden; text-overflow: clip; white-space: nowrap; line-height: 1.1; }
+    
+    .chkLabel {
+      font-size: 9px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      width: auto;
+      height: 20px;
+      margin: 0;
+      padding: 0 2px;
+    }
+
+    /* その他ヘッダー調整 */
+    .settingsHeaderRow, .replenishHeaderRow { gap: 10px; margin-bottom: 8px; }
+
+    /* ラベル強調用（新規追加した「emphLabel」） */
+    label.emphLabel {
       font-weight: 900;
       color: var(--text);
     }
     
     button {
-      padding: 10px 16px;
+      padding: 8px 14px;
       border: 1px solid var(--line);
       border-radius: 10px;
       font-weight: 800;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 13px;
     }
     button.primary { background: var(--main); color: #fff; border-color: var(--main); }
     button.danger { color: var(--danger); border-color: #fadbd8; background: #fff; }
@@ -493,7 +619,7 @@
     .poke-item img { width: 44px; height: 44px; object-fit: contain; }
     .poke-name { font-size: 9px; font-weight: 800; color: var(--muted); text-align: center; line-height: 1.2; word-break: keep-all; }
 
-/* =========================================================
+  /* =========================================================
        レイアウト修正版 v2：余白・整列・スマホ対応の強化
     ========================================================= */
 
@@ -894,7 +1020,7 @@
 
 <header>
   <div>
-    <div id="headerTitle" class="title-text">食材ストック計算</div>
+    <div id="headerTitle" class="title-text">料理計算</div>
     <div id="headerVer" class="ver-text">ver1.0.6</div>
   </div>
 
@@ -925,35 +1051,18 @@
         </div>
       </div>
       
-      <div style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; padding:10px; background:#f8f9fa; border-radius:12px; border:1px solid var(--line);">
+      <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; padding:8px; background:#f8f9fa; border-radius:12px; border:1px solid var(--line);">
         <div style="flex:1; min-width:140px;">
-          <label style="margin-bottom:4px;">フィールドボーナス</label>
-          <select id="fieldBonusSel" style="font-weight:700; border-radius:8px; border:1px solid var(--line);">
+          <label class="emphLabel" style="margin-bottom:4px;">フィールドボーナス</label>
+          <select id="fieldBonusSel" style="font-weight:700; border-radius:8px; border:1px solid var(--line); padding: 8px;">
              <option value="0">0%</option>
-             <option value="5">5%</option>
-             <option value="10">10%</option>
-             <option value="15">15%</option>
-             <option value="20">20%</option>
-             <option value="25">25%</option>
-             <option value="30">30%</option>
-             <option value="35">35%</option>
-             <option value="40">40%</option>
-             <option value="45">45%</option>
-             <option value="50">50%</option>
-             <option value="55">55%</option>
-             <option value="60">60%</option>
-             <option value="65">65%</option>
-             <option value="70">70%</option>
-             <option value="75">75%</option>
-             <option value="80">80%</option>
-             <option value="85" selected>85%</option> <option value="90">90%</option>
-             <option value="95">95%</option>
+             <option value="85" selected>85%</option>
              <option value="100">100%</option>
            </select>
         </div>
         <div style="flex:1; min-width:140px;">
-           <label style="margin-bottom:4px;">イベントボーナス</label>
-           <select id="eventBonusSel" style="font-weight:700; border-radius:8px; border:1px solid var(--line);">
+           <label class="emphLabel" style="margin-bottom:4px;">イベントボーナス</label>
+           <select id="eventBonusSel" style="font-weight:700; border-radius:8px; border:1px solid var(--line); padding: 8px;">
              <option value="0">なし (平日1倍/大成功2倍/日曜大成功3倍)</option>
              <option value="1">イベント1 (平日1.1倍/大成功2.2倍/日曜大成功3.3倍)</option>
              <option value="2">イベント2 (平日1.25倍/大成功2.5倍/日曜大成功3.75倍)</option>
@@ -1191,7 +1300,7 @@
 <nav class="bottom-nav">
   <div class="nav-item active" onclick="switchTab('tab1', this)">
     <span class="nav-icon">🍎</span>
-    <span>食材ストック計算</span>
+    <span>料理計算</span>
   </div>
 
   <div class="nav-item" onclick="switchTab('tab2', this)">
@@ -1319,13 +1428,14 @@
     </div>
     <div style="font-weight:900; margin-bottom:6px; margin-top:14px; border-top:1px solid var(--line); padding-top:10px;">更新情報</div>
     <div style="font-size:11px; color:var(--muted); line-height:1.8; max-height:100px; overflow-y:auto;">
+      <div><span style="display:inline-block; width:55px;">ver1.0.7</span>料理エナジーの計算機能を実装</div>      
       <div><span style="display:inline-block; width:55px;">ver1.0.6</span>UIを微修正</div>
       <div><span style="display:inline-block; width:55px;">ver1.0.5</span>UIを微修正</div>
       <div><span style="display:inline-block; width:55px;">ver1.0.4</span>経験値シミュレータ―を実装</div>
       <div><span style="display:inline-block; width:55px;">ver1.0.3</span>出現ポケモン一覧・月齢カレンダーを実装</div>
       <div><span style="display:inline-block; width:55px;">ver1.0.2</span>UIを微修正</div>
       <div><span style="display:inline-block; width:55px;">ver1.0.1</span>UIを微修正</div>
-      <div><span style="display:inline-block; width:55px;">ver1.0.0</span>食材ストック計算を実装</div>
+      <div><span style="display:inline-block; width:55px;">ver1.0.0</span>料理計算を実装</div>
     </div>
     
     <button id="closeNotice" class="primary" style="width:100%; margin-top:10px;">閉じる</button>
