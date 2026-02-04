@@ -191,11 +191,14 @@ function refreshAllMealDropdowns() {
 
     const prevVal = mSel.value;
     mSel.innerHTML = "";
-    for (let i = 0; i <= maxAllowed; i++) {
+    
+    // ★修正: maxAllowed から 0 に向かってループ (降順)
+    for (let i = maxAllowed; i >= 0; i--) {
       const opt = document.createElement("option");
       opt.value = i; opt.textContent = i;
       mSel.appendChild(opt);
     }
+    
     // 現在の値が上限を超えていれば補正
     mSel.value = prevVal > maxAllowed ? maxAllowed : prevVal;
     row.meals = Number(mSel.value);
