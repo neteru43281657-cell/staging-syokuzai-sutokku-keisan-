@@ -253,9 +253,9 @@ function addRecipeRow(init) {
         </div>
 
         <div style="flex:1; min-width:160px;">
-          <label class="emphLabel">ボーナス</label>
+          <label class="emphLabel">大成功</label>
           <div class="radioGroup" style="height:38px; align-items:center;">
-             <label><input type="radio" name="${radioName}" value="normal" checked>平日</label>
+             <label><input type="radio" name="${radioName}" value="normal" checked>なし</label>
              <label><input type="radio" name="${radioName}" value="great">大成功</label>
              <label><input type="radio" name="${radioName}" value="sunday">日曜大成功</label>
           </div>
