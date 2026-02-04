@@ -97,10 +97,10 @@ const RECIPE_LEVEL_BONUS = [
 
 // イベントボーナスパターン
 const EVENT_PATTERNS = {
-  "0": { normal: 1.0, great: 2.0, sunday: 1.0 }, // なし
-  "1": { normal: 1.1, great: 2.2, sunday: 3.3 }, // パターン1
+  "0": { normal: 1.0, great: 2.0, sunday: 3.0 },  // なし (日曜日3倍)
+  "1": { normal: 1.1, great: 2.2, sunday: 3.3 },   // パターン1
   "2": { normal: 1.25, great: 2.5, sunday: 3.75 }, // パターン2
-  "3": { normal: 1.5, great: 3.0, sunday: 4.5 }  // パターン3
+  "3": { normal: 1.5, great: 3.0, sunday: 4.5 }    // パターン3
 };
 
 let state = {
