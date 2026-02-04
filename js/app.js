@@ -241,12 +241,12 @@ function addRecipeRow(init) {
         
         <div style="width:60px;">
           <label class="emphLabel">レシピLv</label>
-          <input type="number" class="lvlInput emphSelect" value="${rowData.level}" min="1" max="65" style="padding:10px 4px; text-align:center;">
+          <input type="number" class="lvlInput emphSelect" value="${rowData.level}" min="1" max="65" inputmode="numeric">
         </div>
 
         <div style="flex:1; min-width:160px;">
           <label class="emphLabel">ボーナス</label>
-          <div class="radioGroup">
+          <div class="radioGroup" style="height:44px; align-items:center;">
              <label><input type="radio" name="${radioName}" value="normal" checked>平日</label>
              <label><input type="radio" name="${radioName}" value="great">大成功</label>
              <label><input type="radio" name="${radioName}" value="sunday">日曜</label>
@@ -301,16 +301,15 @@ function addRecipeRow(init) {
     updatePreview();
   };
   lInp.oninput = () => {
-    // 範囲制限
     let v = parseInt(lInp.value, 10);
-    if(v < 1) v = 1; 
-    if(v > 65) v = 65;
-    // UI入力中は極力邪魔しないが、計算用にデータ更新
+    // 入力中は空文字も許容したいが、計算は1として走らせる
+    if (lInp.value === "") v = 1;
+    if (v < 1) v = 1; 
+    if (v > 65) v = 65;
     rowData.level = v;
     calc();
   };
   lInp.onblur = () => {
-    // フォーカス外れたら値を整形
     let v = parseInt(lInp.value, 10);
     if(isNaN(v) || v < 1) v = 1; 
     if(v > 65) v = 65;
