@@ -77,14 +77,34 @@ const el = (id) => document.getElementById(id);
 const MEALS_PER_DAY = 3;
 const WEEK_DAYS = 7;
 const WEEK_MEALS = 21;
-const MAX_ROWS = 9; 
+const MAX_ROWS = 12;
 
 const NC_APPLE = 12;
 const NC_CACAO = 5;
 const NC_HONEY = 3;
 
+// レシピレベルボーナス (index=レベル)
+const RECIPE_LEVEL_BONUS = [
+  0, // Lv0 (placeholder)
+  0.00, 0.02, 0.04, 0.06, 0.08, 0.09, 0.11, 0.13, 0.16, 0.18, // Lv1-10
+  0.19, 0.21, 0.23, 0.24, 0.26, 0.28, 0.30, 0.31, 0.33, 0.35, // Lv11-20
+  0.37, 0.40, 0.42, 0.45, 0.47, 0.50, 0.52, 0.55, 0.58, 0.61, // Lv21-30
+  0.64, 0.67, 0.70, 0.74, 0.77, 0.81, 0.84, 0.88, 0.92, 0.96, // Lv31-40
+  1.00, 1.04, 1.08, 1.13, 1.17, 1.22, 1.27, 1.32, 1.37, 1.42, // Lv41-50
+  1.48, 1.53, 1.59, 1.65, 1.71, 1.77, 1.83, 1.90, 1.97, 2.03, // Lv51-60
+  2.09, 2.15, 2.21, 2.27, 2.34                                // Lv61-65
+];
+
+// イベントボーナスパターン
+const EVENT_PATTERNS = {
+  "0": { normal: 1.0, great: 2.0, sunday: 1.0 }, // なし
+  "1": { normal: 1.1, great: 2.2, sunday: 3.3 }, // パターン1
+  "2": { normal: 1.25, great: 2.5, sunday: 3.75 }, // パターン2
+  "3": { normal: 1.5, great: 3.0, sunday: 4.5 }  // パターン3
+};
+
 let state = {
-  recipeRows: [], // { rowId, cat, recipeId, meals }
+  recipeRows: [], // { rowId, cat, recipeId, meals, level, successType }
 };
 
 /* =========================================================
@@ -104,32 +124,31 @@ function getFirstRecipeIdByCat(cat) {
 }
 
 /* =========================================================
-   除外 / 1日当たり獲得量 グリッド描画
+   食材設定（除外 / 1日当たり獲得量） グリッド描画
 ========================================================= */
 function renderGrids() {
-  const ex = el("excludeGrid"), rep = el("replenishGrid");
-  if (!ex || !rep) return;
+  const grid = el("ingredientSettingsGrid");
+  if (!grid) return;
 
-  ex.innerHTML = "";
-  rep.innerHTML = "";
+  grid.innerHTML = "";
 
   (window.INGREDIENTS || []).forEach((ing) => {
-    ex.innerHTML += `
-      <div class="tile">
+    grid.innerHTML += `
+      <div class="tile" style="min-height: 110px;">
         <div class="tileName" title="${ing.name}">${ing.name}</div>
         <img class="icon" src="${imgSrc(ing.file)}" alt="">
-        <div class="exInputRow" style="width:100%; display:flex; justify-content:center; align-items:center;">
-          <label class="chkLabel"><input type="checkbox" class="exChk" data-iid="${ing.id}">除外</label>
-        </div>
-      </div>`;
-
-    rep.innerHTML += `
-      <div class="tile">
-        <div class="tileName" title="${ing.name}">${ing.name}</div>
-        <img class="icon" src="${imgSrc(ing.file)}" alt="">
-        <div class="repInputRow" style="padding: 0 8px;">
-          <input type="number" class="repQty" data-iid="${ing.id}" placeholder="0">
-          <span style="font-size:9px; font-weight:700; margin-left:1px;">個</span>
+        
+        <div style="width:100%; padding:0 4px; margin-top:4px;">
+           <div class="repInputRow" style="margin-bottom:4px;">
+             <input type="number" class="repQty" data-iid="${ing.id}" placeholder="0">
+             <span style="font-size:9px; font-weight:700; margin-left:1px;">個</span>
+           </div>
+           <div style="display:flex; justify-content:center;">
+             <label class="chkLabel" style="background:var(--bg); border-radius:4px; padding:2px 6px;">
+               <input type="checkbox" class="exChk" data-iid="${ing.id}">
+               <span style="font-size:9px;">除外</span>
+             </label>
+           </div>
         </div>
       </div>`;
   });
@@ -186,6 +205,8 @@ function addRecipeRow(init) {
     cat: init?.cat || "カレー・シチュー",
     recipeId: init?.recipeId || getFirstRecipeIdByCat(init?.cat || "カレー・シチュー"),
     meals: initialMeals,
+    level: init?.level || 1,
+    successType: init?.successType || "normal" // normal, great, sunday
   };
   state.recipeRows.push(rowData);
 
@@ -193,9 +214,13 @@ function addRecipeRow(init) {
   wrap.className = "recipeRow";
   wrap.dataset.rowId = rowId;
 
+  // ラジオボタンのname属性をユニークにする
+  const radioName = `success_${rowId}`;
+
   wrap.innerHTML = `
     <button class="removeBtn" title="削除">×</button>
-    <div style="flex:1; min-width:100px;">
+    
+    <div style="flex:1 1 120px;">
       <label class="emphLabel">カテゴリー</label>
       <select class="catSel emphSelect">
         <option value="カレー・シチュー">カレー・シチュー</option>
@@ -203,20 +228,40 @@ function addRecipeRow(init) {
         <option value="デザート・ドリンク">デザート・ドリンク</option>
       </select>
     </div>
-    <div style="flex:2; min-width:140px;">
+    <div style="flex:2 1 180px;">
       <label class="emphLabel">料理</label>
       <select class="recipeSel emphSelect"></select>
     </div>
-    <div style="width:60px;">
-      <label class="emphLabel">食数</label>
-      <select class="mealsSel emphSelect"></select>
+
+    <div style="display:flex; gap:10px; width:100%; flex-wrap:wrap; align-items:flex-end;">
+        <div style="width:60px;">
+          <label class="emphLabel">食数</label>
+          <select class="mealsSel emphSelect"></select>
+        </div>
+        
+        <div style="width:60px;">
+          <label class="emphLabel">レシピLv</label>
+          <input type="number" class="lvlInput emphSelect" value="${rowData.level}" min="1" max="65" style="padding:10px 4px; text-align:center;">
+        </div>
+
+        <div style="flex:1; min-width:160px;">
+          <label class="emphLabel">ボーナス</label>
+          <div class="radioGroup">
+             <label><input type="radio" name="${radioName}" value="normal" checked>平日</label>
+             <label><input type="radio" name="${radioName}" value="great">大成功</label>
+             <label><input type="radio" name="${radioName}" value="sunday">日曜</label>
+          </div>
+        </div>
     </div>
+
     <div class="preview"></div>
   `;
 
   const cSel = wrap.querySelector(".catSel");
   const rSel = wrap.querySelector(".recipeSel");
   const mSel = wrap.querySelector(".mealsSel");
+  const lInp = wrap.querySelector(".lvlInput");
+  const radios = wrap.querySelectorAll(`input[name="${radioName}"]`);
   const pre = wrap.querySelector(".preview");
 
   cSel.value = rowData.cat;
@@ -232,6 +277,8 @@ function addRecipeRow(init) {
     rowData.cat = cSel.value;
     rowData.recipeId = rSel.value;
     rowData.meals = Number(mSel.value);
+    rowData.level = Number(lInp.value) || 1;
+    rowData.successType = wrap.querySelector(`input[name="${radioName}"]:checked`).value;
 
     const r = RECIPES.find((x) => x.id === rSel.value);
     if (r) {
@@ -250,9 +297,28 @@ function addRecipeRow(init) {
   rSel.onchange = updatePreview;
   mSel.onchange = () => {
     rowData.meals = Number(mSel.value);
-    refreshAllMealDropdowns(); // 他の行の選択肢を同期
+    refreshAllMealDropdowns(); 
     updatePreview();
   };
+  lInp.oninput = () => {
+    // 範囲制限
+    let v = parseInt(lInp.value, 10);
+    if(v < 1) v = 1; 
+    if(v > 65) v = 65;
+    // UI入力中は極力邪魔しないが、計算用にデータ更新
+    rowData.level = v;
+    calc();
+  };
+  lInp.onblur = () => {
+    // フォーカス外れたら値を整形
+    let v = parseInt(lInp.value, 10);
+    if(isNaN(v) || v < 1) v = 1; 
+    if(v > 65) v = 65;
+    lInp.value = v;
+    rowData.level = v;
+    calc();
+  };
+  radios.forEach(ra => ra.onchange = updatePreview);
 
   wrap.querySelector(".removeBtn").onclick = () => {
     state.recipeRows = state.recipeRows.filter((r) => r.rowId !== rowId);
@@ -263,7 +329,7 @@ function addRecipeRow(init) {
 
   updateRecipeList();
   el("recipeList").appendChild(wrap);
-  refreshAllMealDropdowns(); // 追加時に全体を同期
+  refreshAllMealDropdowns(); 
 }
 
 function updateSummary() {
@@ -276,7 +342,7 @@ function updateSummary() {
 }
 
 /* =========================================================
-   計算ロジック
+   計算ロジック（エナジー計算 ＆ ストック計算）
 ========================================================= */
 function buildReplenishPerDayMap() {
   const map = new Map([...document.querySelectorAll(".repQty")].map(c => [c.dataset.iid, Number(c.value) || 0]));
@@ -296,25 +362,61 @@ function calc() {
   const exclude = buildExcludeSet();
   const perDay = buildReplenishPerDayMap();
   const resultGrid = el("resultGrid");
-  if (!resultGrid) return;
+  
+  // ▼ エナジー計算用の設定読み込み
+  const fbVal = Number(el("fieldBonusSel")?.value || 0);
+  const fbMul = 1 + (fbVal / 100);
+  const evPatKey = el("eventBonusSel")?.value || "0";
+  const evPattern = EVENT_PATTERNS[evPatKey];
 
-  // 1. カテゴリー別に食材を合算
+  // 1. カテゴリー別に食材を合算 & エナジー計算
   const catSums = { "カレー・シチュー": new Map(), "サラダ": new Map(), "デザート・ドリンク": new Map() };
-  // ② レシピの並び順を保持するための配列
   const ingredientOrder = [];
+  let totalEnergy = 0;
 
   state.recipeRows.forEach(row => {
     const r = RECIPES.find(x => x.id === row.recipeId);
     if (!r || row.meals <= 0) return;
+
+    // --- エナジー計算 ---
+    // レシピ基本エナジー (レシピ定義の baseEnergy を使用)
+    const baseEnergy = r.baseEnergy;
+    // レシピレベルボーナス分 = Round[ (レシピ基本エナジー)×(レシピレベルボーナス) ]
+    const lv = Math.max(1, Math.min(65, row.level || 1));
+    const bonusPct = RECIPE_LEVEL_BONUS[lv];
+    const lvBonusVal = Math.round(baseEnergy * bonusPct);
+    
+    // レシピ画面の表示エナジー
+    const displayEnergy = baseEnergy + lvBonusVal;
+
+    // 最終エナジー = (レシピ画面の表示エナジー + 追加食材(0))×(1+FB)×(イベント)
+    // イベント補正
+    let evMul = 1.0;
+    if (row.successType === "great") evMul = evPattern.great;
+    else if (row.successType === "sunday") evMul = evPattern.sunday;
+    else evMul = evPattern.normal;
+
+    // 1食あたりの最終エナジー
+    const oneMealEnergy = Math.floor(displayEnergy * fbMul * evMul);
+    
+    // 合計加算
+    totalEnergy += (oneMealEnergy * row.meals);
+
+    // --- ストック計算用の食材集計 ---
     const map = catSums[row.cat];
     Object.entries(r.ingredients).forEach(([iid, qty]) => {
-      // 出現した順番に ID を記録（重複は避ける）
       if (!ingredientOrder.includes(iid)) ingredientOrder.push(iid);
       map.set(iid, (map.get(iid) || 0) + (qty * row.meals));
     });
   });
 
-  // 2. カテゴリー間で最大値を採用
+  // エナジー結果表示
+  const energyRes = el("energyResultVal");
+  if (energyRes) energyRes.textContent = totalEnergy.toLocaleString();
+
+  if (!resultGrid) return;
+
+  // 2. ストック計算：カテゴリー間で最大値を採用
   const gross = new Map();
   Object.values(catSums).forEach(map => {
     map.forEach((val, iid) => {
@@ -322,7 +424,7 @@ function calc() {
     });
   });
 
-  // 3. 描画（レシピの登録順 ingredientOrder に基づいてループ）
+  // 3. ストック描画
   resultGrid.innerHTML = "";
   let grandTotal = 0;
 
@@ -342,20 +444,17 @@ function calc() {
       </div>`;
   });
 
-  // ① 総合計バッジの更新
+  // 総合計バッジ
   const totalBadge = el("totalBadge");
   if (totalBadge) totalBadge.textContent = `総合計 ${grandTotal}個`;
 
-  // ▼▼▼ 追加：カテゴリー混在時の注釈表示制御 ▼▼▼
+  // カテゴリー混在時の注釈
   const note = el("mode3Note");
   if (note) {
-    // 現在登録されているレシピのカテゴリー（重複なし）を取得
     const activeCats = new Set(state.recipeRows.map(r => r.cat));
-    // 2種類以上ある場合のみ表示
     note.style.display = (activeCats.size > 1) ? "block" : "none";
   }
 }
-
 
 /* =========================================================
    onload / タブ切替
@@ -363,7 +462,11 @@ function calc() {
 window.onload = () => {
   resetSWAndCacheOnce();
   registerSW();
-  renderGrids();
+  renderGrids(); // 統合グリッドを描画
+
+  // グローバル設定のイベントリスナー追加
+  el("fieldBonusSel")?.addEventListener("change", calc);
+  el("eventBonusSel")?.addEventListener("change", calc);
 
   el("optNcPika")?.addEventListener("change", () => calc());
   el("addRecipe").onclick = () => addRecipeRow();
@@ -401,7 +504,7 @@ window.switchTab = function (tabId, clickedEl) {
     items[idx]?.classList.add("active");
   }
 
-  el("headerTitle").textContent = { tab1: "食材ストック計算", tab2: "出現ポケモン一覧", tab3: "経験値シミュレーター", tab4: "月齢カレンダー" }[tabId];
+  el("headerTitle").textContent = { tab1: "料理計算", tab2: "出現ポケモン一覧", tab3: "経験値シミュレーター", tab4: "月齢カレンダー" }[tabId];
   localStorage.setItem("activeTab", tabId);
 
   if (tabId === "tab2" && window.PokedexTab?.renderFieldMenu) window.PokedexTab.renderFieldMenu();
