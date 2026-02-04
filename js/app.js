@@ -140,7 +140,7 @@ function renderGrids() {
         
         <div style="width:100%; padding:0 4px; margin-top:4px;">
            <div class="repInputRow" style="margin-bottom:4px;">
-             <input type="number" class="repQty" data-iid="${ing.id}" placeholder="0">
+             <input type="number" class="repQty" data-iid="${ing.id}" placeholder="0" min="0" max="999">
              <span style="font-size:9px; font-weight:700; margin-left:1px;">個</span>
            </div>
            <div style="display:flex; justify-content:center;">
@@ -153,8 +153,23 @@ function renderGrids() {
       </div>`;
   });
 
-  document.querySelectorAll(".exChk, .repQty").forEach((input) => {
-    input.oninput = () => calc();
+  // ★修正② 入力イベントを分離し、数値の範囲制限(0-999)を追加
+  document.querySelectorAll(".exChk").forEach((chk) => {
+    chk.onchange = () => calc();
+  });
+
+  document.querySelectorAll(".repQty").forEach((input) => {
+    input.oninput = () => {
+      // マイナス値や999超えを強制補正
+      if (input.value !== "") {
+        let v = parseInt(input.value, 10);
+        if (v < 0) v = 0;
+        if (v > 999) v = 999;
+        // 値が変わった場合のみ書き戻し（UXのため）
+        if (String(v) !== input.value) input.value = v;
+      }
+      calc();
+    };
   });
 }
 
