@@ -42,7 +42,7 @@
    SW / Cache reset (一回だけ)
 ========================================================= */
 async function resetSWAndCacheOnce() {
-  const KEY = "sw_cache_reset_done_v106";
+  const KEY = "sw_cache_reset_done_v107";
   if (localStorage.getItem(KEY)) return;
   try {
     if ("serviceWorker" in navigator) {
@@ -205,8 +205,8 @@ function addRecipeRow(init) {
     cat: init?.cat || "カレー・シチュー",
     recipeId: init?.recipeId || getFirstRecipeIdByCat(init?.cat || "カレー・シチュー"),
     meals: initialMeals,
-    level: init?.level || 65,    // ★初期値を65に変更
-    successType: init?.successType || "normal" // normal, great, sunday
+    level: init?.level || 65,
+    successType: init?.successType || "normal"
   };
   state.recipeRows.push(rowData);
 
@@ -239,7 +239,7 @@ function addRecipeRow(init) {
       <select class="recipeSel emphSelect"></select>
     </div>
 
-    <div style="display:flex; gap:10px; width:100%; flex-wrap:wrap; align-items:flex-end;">
+    <div style="display:flex; gap:8px; width:100%; flex-wrap:wrap; align-items:flex-end;">
         <div style="width:60px;">
           <label class="emphLabel">食数</label>
           <select class="mealsSel emphSelect"></select>
@@ -247,14 +247,14 @@ function addRecipeRow(init) {
         
         <div style="width:60px;">
           <label class="emphLabel">レシピLv</label>
-          <select class="lvlInput emphSelect" style="text-align:center;">
+          <select class="lvlInput" style="text-align:center; height:38px; border:1px solid var(--line); border-radius:10px; background:#fff; font-weight:800;">
             ${levelOptions}
           </select>
         </div>
 
         <div style="flex:1; min-width:160px;">
           <label class="emphLabel">ボーナス</label>
-          <div class="radioGroup" style="height:44px; align-items:center;">
+          <div class="radioGroup" style="height:38px; align-items:center;">
              <label><input type="radio" name="${radioName}" value="normal" checked>平日</label>
              <label><input type="radio" name="${radioName}" value="great">大成功</label>
              <label><input type="radio" name="${radioName}" value="sunday">日曜</label>
@@ -268,12 +268,12 @@ function addRecipeRow(init) {
   const cSel = wrap.querySelector(".catSel");
   const rSel = wrap.querySelector(".recipeSel");
   const mSel = wrap.querySelector(".mealsSel");
-  const lSel = wrap.querySelector(".lvlInput"); // ★変数名変更 lInp -> lSel
+  const lSel = wrap.querySelector(".lvlInput");
   const radios = wrap.querySelectorAll(`input[name="${radioName}"]`);
   const pre = wrap.querySelector(".preview");
 
   cSel.value = rowData.cat;
-  lSel.value = rowData.level; // ★初期値(65)を選択状態に
+  lSel.value = rowData.level;
 
   const updateRecipeList = () => {
     const filtered = RECIPES.filter((r) => r.cat === cSel.value);
@@ -286,7 +286,7 @@ function addRecipeRow(init) {
     rowData.cat = cSel.value;
     rowData.recipeId = rSel.value;
     rowData.meals = Number(mSel.value);
-    rowData.level = Number(lSel.value) || 1; // ★selectの値を取得
+    rowData.level = Number(lSel.value) || 1;
     rowData.successType = wrap.querySelector(`input[name="${radioName}"]:checked`).value;
 
     const r = RECIPES.find((x) => x.id === rSel.value);
@@ -310,7 +310,6 @@ function addRecipeRow(init) {
     updatePreview();
   };
   
-  // ★プルダウン変更時の処理 (数値入力チェックが不要になりシンプル化)
   lSel.onchange = () => {
     rowData.level = Number(lSel.value);
     calc();
