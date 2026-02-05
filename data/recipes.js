@@ -34,7 +34,7 @@ const RECIPES = [
   { cat:"サラダ", id:"mushroom_spore_salad", name:"キノコのほうしサラダ", baseEnergy:5859, ingredients: { mushroom:17, tomato:8, oil:8 } },
   { cat:"サラダ", id:"overheat_salad", name:"オーバーヒートサラダ", baseEnergy:5225, ingredients: { herb:17, ginger:10, tomato:8 } },
   { cat:"サラダ", id:"gluttony_potato_salad", name:"くいしんぼうポテトサラダ", baseEnergy:5040, ingredients: { potato:14, egg:9, soymeat:7, apple:6 } },
-  { cat:"サラダ", id:"choco_mint_salad", name:"ムラっけチョコミントサラダ", baseEnergy:3665, ingredients: { cacao:14, soymeat:9 } },
+  { cat:"サラダ", id:"choco_mint_salad", name:"ムラっけチョコミートサラダ", baseEnergy:3665, ingredients: { cacao:14, soymeat:9 } },
   { cat:"サラダ", id:"tofu_salad", name:"うるおいとうふサラダ", baseEnergy:3113, ingredients: { soy:15, tomato:9 } },
   { cat:"サラダ", id:"wild_salad", name:"ばかぢからワイルドサラダ", baseEnergy:3046, ingredients: { soymeat:9, ginger:6, egg:5, potato:3 } },
   { cat:"サラダ", id:"caprese", name:"モーモーカプレーゼ", baseEnergy:2942, ingredients: { milk:12, tomato:6, oil:5 } },
