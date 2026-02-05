@@ -45,6 +45,7 @@ const RECIPES = [
   { cat:"サラダ", id:"caesar_salad", name:"ゆきかきシーザーサラダ", baseEnergy:1898, ingredients: { milk:10, soymeat:6 } },
 
   // デザート・ドリンク
+  { cat:"デザート・ドリンク", id:"honey_choco_waffle", name:"みつあつめチョコワッフル", baseEnergy:25484, ingredients: { honey:38, corn:28, oil:28, cacao:21 } },
   { cat:"デザート・ドリンク", id:"pancake", name:"ドキドキこわいかおパンケーキ", baseEnergy:24354, ingredients: { pumpkin:18, egg:24, honey:32, tomato:29 } },
   { cat:"デザート・ドリンク", id:"eclair", name:"ドオーのエクレア", baseEnergy:20885, ingredients: { cacao:30, milk:26, coffee:24, honey:22 } },
   { cat:"デザート・ドリンク", id:"cola", name:"スパークスパイスコーラ", baseEnergy:17494, ingredients: { apple:35, ginger:20, leek:20, coffee:12 } },
