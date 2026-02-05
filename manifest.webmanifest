@@ -1,6 +1,6 @@
 {
-  "name": "食材計算とか",
-  "short_name": "食材計算とか",
+  "name": "料理計算とか",
+  "short_name": "料理計算とか",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f5f8fa",
