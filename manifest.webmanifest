@@ -7,16 +7,15 @@
   "theme_color": "#007bff",
   "icons": [
     {
-      "src": "images/アイコン_ios.png",
+      "src": "images/appicon_IOS.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "images/アイコン_maskable.png",
+      "src": "images/appicon_Android.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     }
   ]
-}
