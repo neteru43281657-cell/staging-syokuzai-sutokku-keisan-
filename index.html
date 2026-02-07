@@ -1011,6 +1011,7 @@
       transform: scale(0.95);
     }
 
+
     
   /* --- ポケモン詳細モーダル用スタイル --- */
     
@@ -1062,6 +1063,8 @@
       line-height: 1.2;
     }
 
+
+    
   /* --- 詳細モーダル追加スタイル --- */
     /* バケッチャ等の個体差テーブル */
     .poke-vars-table th, .poke-vars-table td {
@@ -1071,38 +1074,36 @@
       border-bottom: none;
     }
 
-  /* --- 新しい出現ポケモン一覧（カード型）のスタイル --- */
+
+    
+/* --- 出現ポケモン一覧（タイル型・情報追加版） --- */
     .poke-grid {
-      display: grid;
-      /* スマホの幅に合わせて、最低100pxの幅を持つカードを敷き詰める */
-      grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+      display: flex;
+      flex-wrap: wrap;
       gap: 8px;
-      padding: 8px 4px;
+      padding: 4px;
     }
 
     .poke-item {
+      /* スマホで横4列〜3列くらいになるサイズ感 */
+      width: calc(33.33% - 6px); 
+      max-width: 100px; 
       background: #fff;
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 6px;
+      padding: 4px;
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-      cursor: pointer;
-      transition: transform 0.1s;
-    }
-    .poke-item:active {
-      transform: scale(0.96);
-      background: #f0f2f5;
+      position: relative;
     }
 
-    /* 画像部分 */
+    /* 画像 */
     .poke-img-area {
-      width: 50px;
-      height: 50px;
-      margin-bottom: 4px;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 2px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1113,51 +1114,51 @@
       object-fit: contain;
     }
 
-    /* 名前部分（長くても崩れないように調整） */
+    /* 名前：長い名前でも崩れないよう高さ確保＆文字サイズ調整 */
     .poke-name {
-      font-size: 11px;
-      font-weight: 900;
-      line-height: 1.3;
-      margin-bottom: 6px;
-      min-height: 2.6em; /* 2行分確保してガタつき防止 */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      word-break: break-all; /* 長い単語も折り返す */
-    }
-
-    /* 情報アイコンエリア */
-    .poke-info-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      margin-top: auto; /* 下寄せ */
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 4px;
       width: 100%;
-      padding-top: 4px;
-      border-top: 1px dashed #eee;
+      min-height: 24px; /* 2行分確保 */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      word-wrap: break-word;
     }
 
-    .info-icon {
-      width: 16px;
-      height: 16px;
+    /* アイコン・タグエリア */
+    .poke-tags {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      width: 100%;
+    }
+
+    /* 小さなアイコン */
+    .mini-icon {
+      width: 14px;
+      height: 14px;
       object-fit: contain;
     }
 
-    .specialty-tag {
-      font-size: 9px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: #f0f0f0;
-      color: #555;
-      font-weight: 700;
+    /* とくいラベル（極小） */
+    .mini-tag {
+      font-size: 8px;
+      padding: 1px 3px;
+      border-radius: 3px;
+      background: #eee;
+      color: #333;
       white-space: nowrap;
+      transform: scale(0.9); /* さらに小さく */
     }
-    /* とくいタイプ別の色 */
-    .sp-k { background: #e8f5e9; color: #2e7d32; } /* きのみ */
-    .sp-i { background: #fff3e0; color: #ef6c00; } /* 食材 */
-    .sp-s { background: #e3f2fd; color: #1565c0; } /* スキル */
+    .tag-k { background: #e8f5e9; color: #2e7d32; } /* きのみ */
+    .tag-i { background: #fff3e0; color: #ef6c00; } /* 食材 */
+    .tag-s { background: #e3f2fd; color: #1565c0; } /* スキル */
     
+
     
   @media (max-width: 520px) {
     #tab3 .lvlLabel { font-size: 13px; }
