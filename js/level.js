@@ -271,7 +271,7 @@ function toNum(v) {
     container.innerHTML = html;
   }
 
-  window.LevelTab = {
+window.LevelTab = {
     init() {
       if (!window.__LV_BOUND__) {
         window.__LV_BOUND__ = true;
@@ -284,6 +284,13 @@ function toNum(v) {
         el("tab3").addEventListener("click", (e) => {
           const btn = e.target.closest(".lvlQuickBtn");
           if (btn) {
+            // ★GAイベント追加：目標レベルのクイックボタンが押されたら計測
+            if (btn.dataset.target && typeof gtag === 'function') {
+              gtag('event', 'click_quick_level', {
+                'target_level': btn.dataset.target
+              });
+            }
+
             if (btn.dataset.now) el("lvNow").value = btn.dataset.now;
             if (btn.dataset.target) el("lvTarget").value = btn.dataset.target;
             onCalc();
@@ -310,4 +317,5 @@ function toNum(v) {
     }
   };
 })();
+
 
