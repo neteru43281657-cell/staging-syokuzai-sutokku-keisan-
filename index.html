@@ -1065,12 +1065,12 @@
 
 
     
-/* --- 出現ポケモン一覧（横8列完全固定） --- */
+  /* --- 出現ポケモン一覧（横8列固定） --- */
     .poke-grid {
       display: grid;
-      /* 強制的に8等分する */
+      /* 強制的に8等分 */
       grid-template-columns: repeat(8, 1fr);
-      gap: 4px; /* 隙間 */
+      gap: 2px; /* 隙間をさらに詰める */
       padding: 4px;
     }
 
@@ -1080,9 +1080,8 @@
       align-items: center;
       text-align: center;
       cursor: pointer;
-      /* はみ出し防止 */
       overflow: hidden; 
-      padding-bottom: 4px;
+      padding-bottom: 2px;
     }
     
     .poke-item img {
@@ -1090,19 +1089,24 @@
       height: auto;
       aspect-ratio: 1 / 1;
       object-fit: contain;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
     }
 
     .poke-name {
-      font-size: 9px; /* 8列だと幅が狭いので文字を小さく */
-      line-height: 1.1;
-      color: #333;
-      word-break: break-all; /* 長い名前は折り返す */
+      /* 6文字を1行に入れるための極小サイズ */
+      font-size: 8px; 
+      line-height: 1.0;
+      /* 色を薄い灰色に変更（--muted と同じ色 #6c757d を直接指定してもOK） */
+      color: var(--muted);
+      word-break: keep-all; /* 勝手な改行を禁止 */
+      white-space: nowrap;  /* 1行を強制 */
       width: 100%;
+      overflow: hidden;     /* 万が一のはみ出しは隠す */
+      transform: scale(0.9); /* さらに90%縮小して無理やり押し込む */
+      transform-origin: center top;
     }
 
     /* --- 詳細モーダル用スタイル --- */
-    /* タイプと得意タグの行 */
     .type-badge-row {
       display: flex;
       align-items: center;
@@ -1110,7 +1114,6 @@
       margin-bottom: 6px;
     }
     
-    /* タイプの見た目 */
     .element-type {
       display: flex;
       align-items: center;
