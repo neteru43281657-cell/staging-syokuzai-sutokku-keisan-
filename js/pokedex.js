@@ -36,8 +36,7 @@ async function loadTypeIcons() {
     const map = new Map();
     const lines = text.split(/\r?\n/).filter(Boolean);
     for (let i = 1; i < lines.length; i++) {
-      // アイコン定義ファイルはタブ区切りが確実なので split(/\t+/) でも良いが念のため
-      const cols = lines[i].split("\t").map(s => s.trim()); 
+      const cols = lines[i].split("\t").map(s => s.trim());
       if (cols.length >= 2 && cols[0]) {
         map.set(cols[0], { typeIcon: cols[1] });
       }
@@ -73,14 +72,13 @@ async function loadPokemonMaster() {
   if (POKE_LIST) return { list: POKE_LIST, map: POKE_MAP };
 
   const tsv = await fetchText("pokedex_master.txt");
-  const lines = tsv.split(/\r?\n/).filter(Boolean); // 空行だけ削除
+  const lines = tsv.split(/\r?\n/).filter(Boolean);
 
   const list = [];
   const map = new Map();
 
   for (let i = 1; i < lines.length; i++) {
-    // ★重要修正: split(/\t+/) だと空欄が詰められてズレるため、
-    // split("\t") で空欄も1つの要素として維持する
+    // 空欄があっても列がズレないように単純分割
     const cols = lines[i].split("\t").map(s => s.trim());
     
     if (cols.length < 5) continue;
@@ -368,10 +366,22 @@ async function openDetail(name) {
   };
 
   const makeIngItem = (name) => {
-    const icon = getIngIcon(name);
+    // ★「なし」変換ロジック
+    // 空欄、"-"、null などを全て「なし」という文字として扱う
+    let dispName = name;
+    if (!dispName || dispName === "-" || dispName.trim() === "") {
+      dispName = "なし";
+    }
+
+    const icon = getIngIcon(name); // 元の名前（キー）で画像検索
+    
+    // アイコンがあれば画像、なければ「なし」などの文字を表示
     return `
       <div class="ing-item">
-        ${icon ? `<img src="${icon}" class="ing-icon">` : `<span class="ing-name" style="font-size:9px;">${name}</span>`}
+        ${icon 
+          ? `<img src="${icon}" class="ing-icon">` 
+          : `<span class="ing-name" style="font-size:10px; color:var(--muted);">${dispName}</span>`
+        }
       </div>
     `;
   };
