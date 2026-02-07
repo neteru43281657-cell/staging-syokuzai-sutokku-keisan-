@@ -343,7 +343,7 @@ async function openDetail(name) {
         <div style="background:#f0f0f0; height:6px; border-radius:3px; overflow:hidden; margin-bottom:2px;">
            <div style="width:${w2}%; background:${col2}; height:100%;"></div>
         </div>
-        <div style="font-size:9px; color:var(--muted); text-align:right;">同タイプ平均: ${avgVal.toFixed(1)}${unit}</div>
+        <div style="font-size:9px; color:var(--muted); text-align:right;">同タイプ平均： ${avgVal.toFixed(1)}${unit}</div>
         ` : ""}
       </div>
     `;
