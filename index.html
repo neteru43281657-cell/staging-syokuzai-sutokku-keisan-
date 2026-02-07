@@ -1065,13 +1065,13 @@
 
 
     
-/* --- 出現ポケモン一覧（シンプル表示に戻す） --- */
+  /* --- 出現ポケモン一覧（横8列構成） --- */
     .poke-grid {
       display: grid;
-      /* 以前と同じ、スマホで見やすいサイズ感のグリッド */
-      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-      gap: 10px;
-      padding: 8px;
+      /* スマホ幅でも強制的に8列収まるように最小幅を小さく設定 */
+      grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+      gap: 4px; /* 隙間も詰める */
+      padding: 4px;
     }
 
     .poke-item {
@@ -1080,21 +1080,26 @@
       align-items: center;
       text-align: center;
       cursor: pointer;
+      overflow: hidden; /* はみ出し防止 */
     }
     
     .poke-item img {
-      width: 48px;
-      height: 48px;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1 / 1;
       object-fit: contain;
-      margin-bottom: 4px;
-      /* 画像がない場合の枠線等はJS側で制御 */
+      margin-bottom: 2px;
     }
 
     .poke-name {
-      font-size: 10px;
-      line-height: 1.2;
+      font-size: 8px; /* 8列だと狭いので文字を小さく */
+      line-height: 1.1;
       color: #333;
       word-break: break-all;
+      width: 100%;
+      white-space: nowrap; /* 1行に収める */
+      overflow: hidden;
+      text-overflow: ellipsis; /* はみ出たら...にする */
     }
 
     /* --- 詳細モーダル用スタイル --- */
@@ -1102,7 +1107,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-top: 4px;
+      margin-bottom: 8px; /* 名前との間隔 */
     }
     
     .element-type {
