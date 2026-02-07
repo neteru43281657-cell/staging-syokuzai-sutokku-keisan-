@@ -5,9 +5,10 @@ const pokEl = (id) => document.getElementById(id);
 function imgSrc(file) { return "images/" + encodeURIComponent(file); }
 
 // caches
-let POKE_LIST = null;     // 配列: 全ポケモンの代表データ（重複なし）
-let POKE_MAP = null;      // Map: 名前 -> データオブジェクト（variations配列を含む）
+let POKE_LIST = null;     // 配列: 全ポケモンの代表データ
+let POKE_MAP = null;      // Map: 名前 -> データ
 let SKILL_MAP = null;     // Map: スキル名 -> URL
+let TYPE_ICON_MAP = null; // Map: タイプ名 -> { typeIcon, berryIcon }
 let ENERGY_MAP = null;
 let STATS_AVG = null;
 
@@ -27,6 +28,33 @@ async function fetchText(path) {
 /* =========================================================
    データ読み込み関連
 ========================================================= */
+
+// 新規：タイプアイコン情報の読み込み
+async function loadTypeIcons() {
+  if (TYPE_ICON_MAP) return TYPE_ICON_MAP;
+  try {
+    const text = await fetchText("typeicon.txt");
+    const map = new Map();
+    // ヘッダー飛ばし
+    const lines = text.split(/\r?\n/).filter(Boolean);
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(/\t+/);
+      if (cols.length >= 3) {
+        // Map: "ほのお" -> { typeIcon: "ほのおタイプ.png", berryIcon: "leppaberry.png" }
+        map.set(cols[0].trim(), {
+          typeIcon: cols[1].trim(),
+          berryIcon: cols[2].trim()
+        });
+      }
+    }
+    TYPE_ICON_MAP = map;
+  } catch (e) {
+    console.warn("Type icon load failed", e);
+    TYPE_ICON_MAP = new Map();
+  }
+  return TYPE_ICON_MAP;
+}
+
 async function loadSkillData() {
   if (SKILL_MAP) return SKILL_MAP;
   try {
@@ -55,24 +83,27 @@ async function loadPokemonMaster() {
   const list = [];
   const map = new Map();
 
+  // 1行目はヘッダー。列構成が変わったので注意
+  // 0:ID, 1:名前, 2:タイプ(NEW), 3:進化, 4:とくい, 5:睡眠...
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(/\t+/);
-    if (cols.length < 3) continue;
+    if (cols.length < 5) continue;
 
     const p = {
       id: cols[0],
       name: cols[1],
-      evo: Number(cols[2]) || 1,
-      type: cols[3],
-      sleep: cols[4],
-      helpTime: Number(cols[5]) || 0,
-      ingProb: Number(cols[6]) || 0,
-      skillProb: Number(cols[7]) || 0,
-      skillName: cols[8] || "-",
-      ing1: cols[9] || "-",
-      ing2: cols[10] || "-",
-      ing3: cols[11] || "-",
-      carry: Number(cols[12]) || 0,
+      typeName: cols[2] || "-", // NEW: タイプ
+      evo: Number(cols[3]) || 1,
+      type: cols[4], // 食材/きのみ/スキル (とくい)
+      sleep: cols[5],
+      helpTime: Number(cols[6]) || 0,
+      ingProb: Number(cols[7]) || 0,
+      skillProb: Number(cols[8]) || 0,
+      skillName: cols[9] || "-",
+      ing1: cols[10] || "-",
+      ing2: cols[11] || "-",
+      ing3: cols[12] || "-",
+      carry: Number(cols[13]) || 0,
       file: `${cols[0]}.webp`,
       variations: [] 
     };
@@ -97,25 +128,19 @@ async function loadPokemonMaster() {
 
 function calcAverages() {
   const sums = {}; 
-
   POKE_LIST.forEach(p => {
     if (!p.type || !p.evo) return;
     const key = `${p.type}_${p.evo}`;
     if (!sums[key]) sums[key] = { iSum:0, sSum:0, count:0 };
-    
     sums[key].iSum += p.ingProb;
     sums[key].sSum += p.skillProb;
     sums[key].count++;
   });
-
   STATS_AVG = {};
   Object.keys(sums).forEach(k => {
     const d = sums[k];
     if (d.count > 0) {
-      STATS_AVG[k] = {
-        ing: d.iSum / d.count,
-        skill: d.sSum / d.count
-      };
+      STATS_AVG[k] = { ing: d.iSum / d.count, skill: d.sSum / d.count };
     }
   });
 }
@@ -176,13 +201,11 @@ async function loadFieldPokemon(fieldName) {
 function sortByDexOrder(names, pokeList) {
   const dexOrderMap = new Map();
   pokeList.forEach((p, i) => dexOrderMap.set(p.name, i));
-
   const base = [...names].sort((a, b) => {
     const ai = dexOrderMap.has(a) ? dexOrderMap.get(a) : 99999;
     const bi = dexOrderMap.has(b) ? dexOrderMap.get(b) : 99999;
     return ai - bi;
   });
-
   DEX_ORDER_OVERRIDES.forEach(rule => {
     const idx = base.indexOf(rule.name);
     if (idx === -1) return;
@@ -200,7 +223,7 @@ function sortByDexOrder(names, pokeList) {
   return base;
 }
 
-function buildPokemonGridHTML(label, badgeClass, names, pokeMap, pokeList) {
+function buildPokemonGridHTML(label, badgeClass, names, pokeMap, pokeList, typeIconMap) {
   const sorted = sortByDexOrder(names, pokeList);
 
   const items = sorted.map(name => {
@@ -208,12 +231,34 @@ function buildPokemonGridHTML(label, badgeClass, names, pokeMap, pokeList) {
     const src = p ? imgSrc(p.file) : "";
     const imgHtml = p
       ? `<img src="${src}" alt="${name}">`
-      : `<div style="width:44px;height:44px;border:1px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--muted);">no img</div>`;
+      : `<div style="font-size:8px; color:var(--muted);">no img</div>`;
+    
+    // アイコン情報の取得
+    const typeInfo = p ? typeIconMap.get(p.typeName) : null;
+    const typeIconSrc = typeInfo ? imgSrc(typeInfo.typeIcon) : "";
+    const berryIconSrc = typeInfo ? imgSrc(typeInfo.berryIcon) : "";
+
+    // とくい区分のスタイル
+    let spClass = "";
+    if (p && p.type === "きのみ") spClass = "sp-k";
+    if (p && p.type === "食材") spClass = "sp-i";
+    if (p && p.type === "スキル") spClass = "sp-s";
 
     return `
       <div class="poke-item" title="${name}" onclick="window.PokedexTab.openDetail('${name}')">
-        ${imgHtml}
+        <div class="poke-img-area">
+          ${imgHtml}
+        </div>
         <div class="poke-name">${name}</div>
+        
+        <div class="poke-info-row">
+          <span class="specialty-tag ${spClass}">${p ? p.type : "-"}</span>
+          
+          <div style="margin-left:auto; display:flex; gap:2px;">
+            ${typeIconSrc ? `<img src="${typeIconSrc}" class="info-icon" title="${p.typeName}">` : ""}
+            ${berryIconSrc ? `<img src="${berryIconSrc}" class="info-icon">` : ""}
+          </div>
+        </div>
       </div>
     `;
   }).join("");
@@ -248,11 +293,13 @@ async function showFieldDetail(fieldId, opts = {}) {
   }
 
   try {
+    // データ一括読み込み
     const { list, map } = await loadPokemonMaster();
+    const typeIconMap = await loadTypeIcons(); // 追加
     const energyMap = await loadEnergyMap();
     const pokeBySleep = await loadFieldPokemon(field.name);
 
-    // ★修正箇所：数値セル（td）に font-weight:900 を追加して太字化
+    // 数値を太字に
     const eRows = energyMap.get(field.name) || [];
     const eTrs = eRows.filter(r => r.count >= 4 && r.count <= 8)
       .map(r => `<tr><td style="font-weight:900;">${r.count}体</td><td style="font-weight:900;">${r.energyText}</td></tr>`).join("");
@@ -272,9 +319,9 @@ async function showFieldDetail(fieldId, opts = {}) {
       </div>
     `;
 
-    const uto = buildPokemonGridHTML("うとうと", "badge-uto", pokeBySleep["うとうと"], map, list);
-    const suya = buildPokemonGridHTML("すやすや", "badge-suya", pokeBySleep["すやすや"], map, list);
-    const gusu = buildPokemonGridHTML("ぐっすり", "badge-gusu", pokeBySleep["ぐっすり"], map, list);
+    const uto = buildPokemonGridHTML("うとうと", "badge-uto", pokeBySleep["うとうと"], map, list, typeIconMap);
+    const suya = buildPokemonGridHTML("すやすや", "badge-suya", pokeBySleep["すやすや"], map, list, typeIconMap);
+    const gusu = buildPokemonGridHTML("ぐっすり", "badge-gusu", pokeBySleep["ぐっすり"], map, list, typeIconMap);
 
     pokEl("detailContent").innerHTML = `
       ${headerHtml}
@@ -299,37 +346,32 @@ function getIngIcon(name) {
 }
 
 async function openDetail(name) {
-  // ★GAイベント追加：どのポケモンが見られたか計測
-  if (typeof gtag === 'function') {
-    gtag('event', 'view_pokemon_detail', {
-      'pokemon_name': name
-    });
-  }
-
   const { map } = await loadPokemonMaster();
   const skills = await loadSkillData();
+  const typeIcons = await loadTypeIcons(); // アイコン情報取得
+
   const p = map.get(name);
   if (!p) return;
 
   const modal = pokEl("pokeDetailModal");
   const body = pokEl("pokeDetailBody");
 
-  // スキルリンク（注釈付き）
   const skillUrl = skills.get(p.skillName) || null;
   const skillHtml = skillUrl 
     ? `<a href="${skillUrl}" target="_blank" style="color:var(--main); text-decoration:underline; font-weight:900;">${p.skillName} <span style="font-size:10px;">↗</span></a><br><span style="font-size:10px; color:var(--muted); font-weight:normal;">※外部Wikiへ遷移します</span>`
     : p.skillName;
 
-  // 平均比較データ
   const avgKey = `${p.type}_${p.evo}`;
   const avg = STATS_AVG ? STATS_AVG[avgKey] : null;
 
-  // タイプバッジ
   let typeClass = "type-berry";
   if (p.type === "食材") typeClass = "type-ing";
   if (p.type === "スキル") typeClass = "type-skill";
 
-  // グラフ描画
+  // アイコン
+  const tInfo = typeIcons.get(p.typeName);
+  const typeIconHtml = tInfo ? `<img src="${imgSrc(tInfo.typeIcon)}" style="width:16px; height:16px;">` : "";
+
   const makeBar = (label, val, avgVal, unit) => {
     const max = Math.max(val, avgVal || 0) * 1.2 || 1; 
     const w1 = Math.min(100, (val / max) * 100);
@@ -350,7 +392,7 @@ async function openDetail(name) {
         <div style="background:#f0f0f0; height:6px; border-radius:3px; overflow:hidden; margin-bottom:2px;">
            <div style="width:${w2}%; background:${col2}; height:100%;"></div>
         </div>
-        <div style="font-size:9px; color:var(--muted); text-align:right;">同タイプ平均： ${avgVal.toFixed(1)}${unit}</div>
+        <div style="font-size:9px; color:var(--muted); text-align:right;">同タイプ平均: ${avgVal.toFixed(1)}${unit}</div>
         ` : ""}
       </div>
     `;
@@ -365,7 +407,6 @@ async function openDetail(name) {
     `;
   };
 
-  // バケッチャ等の表記（小・中・大・特大）
   const sizeLabels = ["小", "中", "大", "特大"];
 
   let statsHtml = "";
@@ -425,7 +466,10 @@ async function openDetail(name) {
       <div>
         <div style="font-size:20px; font-weight:900; line-height:1.2; margin-bottom:6px; display:flex; align-items:center; gap:8px;">
           <span>${p.name}</span>
+        </div>
+        <div style="display:flex; gap:6px; align-items:center;">
           <span class="type-badge ${typeClass}" style="font-size:11px; padding:2px 10px; min-width:auto;">${p.type}</span>
+          ${typeIconHtml} <span style="font-size:11px; font-weight:bold; color:#555;">${p.typeName}</span>
         </div>
       </div>
     </div>
