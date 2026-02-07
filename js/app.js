@@ -520,6 +520,13 @@ window.onload = () => {
 };
 
 window.switchTab = function (tabId, clickedEl) {
+  // ★GAイベント追加：タブを開いた回数を計測
+  if (typeof gtag === 'function') {
+    gtag('event', 'tab_view', {
+      'tab_name': tabId
+    });
+  }
+
   document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
   el(tabId)?.classList.add("active");
 
