@@ -5,10 +5,10 @@ const pokEl = (id) => document.getElementById(id);
 function imgSrc(file) { return "images/" + encodeURIComponent(file); }
 
 // caches
-let POKE_LIST = null;     // 配列: 全ポケモンの代表データ
-let POKE_MAP = null;      // Map: 名前 -> データ
-let SKILL_MAP = null;     // Map: スキル名 -> URL
-let TYPE_ICON_MAP = null; // Map: タイプ名 -> { typeIcon, berryIcon }
+let POKE_LIST = null;     
+let POKE_MAP = null;      
+let SKILL_MAP = null;     
+let TYPE_ICON_MAP = null; 
 let ENERGY_MAP = null;
 let STATS_AVG = null;
 
@@ -29,18 +29,16 @@ async function fetchText(path) {
    データ読み込み関連
 ========================================================= */
 
-// 新規：タイプアイコン情報の読み込み
 async function loadTypeIcons() {
   if (TYPE_ICON_MAP) return TYPE_ICON_MAP;
   try {
     const text = await fetchText("typeicon.txt");
     const map = new Map();
-    // ヘッダー飛ばし
     const lines = text.split(/\r?\n/).filter(Boolean);
+    // ヘッダー行(0)をスキップして i=1 から
     for (let i = 1; i < lines.length; i++) {
       const cols = lines[i].split(/\t+/);
       if (cols.length >= 3) {
-        // Map: "ほのお" -> { typeIcon: "ほのおタイプ.png", berryIcon: "leppaberry.png" }
         map.set(cols[0].trim(), {
           typeIcon: cols[1].trim(),
           berryIcon: cols[2].trim()
@@ -83,8 +81,9 @@ async function loadPokemonMaster() {
   const list = [];
   const map = new Map();
 
-  // 1行目はヘッダー。列構成が変わったので注意
-  // 0:ID, 1:名前, 2:タイプ(NEW), 3:進化, 4:とくい, 5:睡眠...
+  // 1行目はヘッダーなので i=1 から
+  // ★重要★ 列定義の修正
+  // 0:ID, 1:名前, 2:タイプ, 3:進化, 4:とくい, 5:睡眠...
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(/\t+/);
     if (cols.length < 5) continue;
@@ -92,9 +91,9 @@ async function loadPokemonMaster() {
     const p = {
       id: cols[0],
       name: cols[1],
-      typeName: cols[2] || "-", // NEW: タイプ
-      evo: Number(cols[3]) || 1,
-      type: cols[4], // 食材/きのみ/スキル (とくい)
+      typeName: cols[2] || "-", // ここが「タイプ」
+      evo: Number(cols[3]) || 1, // ここが「進化」
+      type: cols[4],            // ここが「とくい」
       sleep: cols[5],
       helpTime: Number(cols[6]) || 0,
       ingProb: Number(cols[7]) || 0,
@@ -229,35 +228,32 @@ function buildPokemonGridHTML(label, badgeClass, names, pokeMap, pokeList, typeI
   const items = sorted.map(name => {
     const p = pokeMap.get(name);
     const src = p ? imgSrc(p.file) : "";
-    const imgHtml = p
-      ? `<img src="${src}" alt="${name}">`
-      : `<div style="font-size:8px; color:var(--muted);">no img</div>`;
     
     // アイコン情報の取得
     const typeInfo = p ? typeIconMap.get(p.typeName) : null;
     const typeIconSrc = typeInfo ? imgSrc(typeInfo.typeIcon) : "";
     const berryIconSrc = typeInfo ? imgSrc(typeInfo.berryIcon) : "";
 
-    // とくい区分のスタイル
-    let spClass = "";
-    if (p && p.type === "きのみ") spClass = "sp-k";
-    if (p && p.type === "食材") spClass = "sp-i";
-    if (p && p.type === "スキル") spClass = "sp-s";
+    // とくいラベルのスタイル
+    let tagClass = "";
+    let tagText = p ? p.type.substr(0, 1) : "-"; // 1文字だけ表示（食/き/ス）
+    if (p) {
+        if (p.type === "きのみ") { tagClass = "tag-k"; tagText = "きのみ"; }
+        else if (p.type === "食材") { tagClass = "tag-i"; tagText = "食材"; }
+        else if (p.type === "スキル") { tagClass = "tag-s"; tagText = "スキル"; }
+    }
 
     return `
       <div class="poke-item" title="${name}" onclick="window.PokedexTab.openDetail('${name}')">
         <div class="poke-img-area">
-          ${imgHtml}
+          <img src="${src}" alt="${name}">
         </div>
         <div class="poke-name">${name}</div>
         
-        <div class="poke-info-row">
-          <span class="specialty-tag ${spClass}">${p ? p.type : "-"}</span>
-          
-          <div style="margin-left:auto; display:flex; gap:2px;">
-            ${typeIconSrc ? `<img src="${typeIconSrc}" class="info-icon" title="${p.typeName}">` : ""}
-            ${berryIconSrc ? `<img src="${berryIconSrc}" class="info-icon">` : ""}
-          </div>
+        <div class="poke-tags">
+          ${typeIconSrc ? `<img src="${typeIconSrc}" class="mini-icon" title="${p.typeName}">` : ""}
+          ${berryIconSrc ? `<img src="${berryIconSrc}" class="mini-icon">` : ""}
+          <span class="mini-tag ${tagClass}">${tagText}</span>
         </div>
       </div>
     `;
@@ -293,13 +289,11 @@ async function showFieldDetail(fieldId, opts = {}) {
   }
 
   try {
-    // データ一括読み込み
     const { list, map } = await loadPokemonMaster();
-    const typeIconMap = await loadTypeIcons(); // 追加
+    const typeIconMap = await loadTypeIcons(); 
     const energyMap = await loadEnergyMap();
     const pokeBySleep = await loadFieldPokemon(field.name);
 
-    // 数値を太字に
     const eRows = energyMap.get(field.name) || [];
     const eTrs = eRows.filter(r => r.count >= 4 && r.count <= 8)
       .map(r => `<tr><td style="font-weight:900;">${r.count}体</td><td style="font-weight:900;">${r.energyText}</td></tr>`).join("");
@@ -348,7 +342,7 @@ function getIngIcon(name) {
 async function openDetail(name) {
   const { map } = await loadPokemonMaster();
   const skills = await loadSkillData();
-  const typeIcons = await loadTypeIcons(); // アイコン情報取得
+  const typeIcons = await loadTypeIcons(); 
 
   const p = map.get(name);
   if (!p) return;
@@ -368,7 +362,7 @@ async function openDetail(name) {
   if (p.type === "食材") typeClass = "type-ing";
   if (p.type === "スキル") typeClass = "type-skill";
 
-  // アイコン
+  // 詳細画面用アイコン
   const tInfo = typeIcons.get(p.typeName);
   const typeIconHtml = tInfo ? `<img src="${imgSrc(tInfo.typeIcon)}" style="width:16px; height:16px;">` : "";
 
