@@ -1,6 +1,6 @@
 // service-worker.js
 
-const CACHE_NAME = "stockcalc-v1.9.3"; // ★更新のたびに必ず上げること
+const CACHE_NAME = "stockcalc-v1.9.4"; // ★更新のたびに必ず上げること
 
 // 事前キャッシュ（最低限）
 const ASSETS = [
@@ -38,6 +38,7 @@ const ASSETS = [
   // 最低限の画像（PWAアイコンなど）
   "./images/appicon_IOS.png",
   "./images/appicon_Android.png",
+  "./images/該当なし.webp"
 ];
 
 self.addEventListener("install", (e) => {
