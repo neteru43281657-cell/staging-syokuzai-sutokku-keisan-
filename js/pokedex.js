@@ -38,10 +38,10 @@ async function loadTypeIcons() {
     // ヘッダー行(0)をスキップして i=1 から
     for (let i = 1; i < lines.length; i++) {
       const cols = lines[i].split(/\t+/);
-      if (cols.length >= 3) {
+      if (cols.length >= 2) { // 必要なのはタイプ名とタイプアイコンのみ
         map.set(cols[0].trim(), {
-          typeIcon: cols[1].trim(),
-          berryIcon: cols[2].trim()
+          typeIcon: cols[1].trim()
+          // berryIconは今回使わないので読み込まなくてOK
         });
       }
     }
@@ -81,9 +81,7 @@ async function loadPokemonMaster() {
   const list = [];
   const map = new Map();
 
-  // 1行目はヘッダーなので i=1 から
-  // ★重要★ 列定義の修正
-  // 0:ID, 1:名前, 2:タイプ, 3:進化, 4:とくい, 5:睡眠...
+  // 列定義: 0:ID, 1:名前, 2:タイプ, 3:進化, 4:とくい, 5:睡眠...
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(/\t+/);
     if (cols.length < 5) continue;
@@ -91,9 +89,9 @@ async function loadPokemonMaster() {
     const p = {
       id: cols[0],
       name: cols[1],
-      typeName: cols[2] || "-", // ここが「タイプ」
-      evo: Number(cols[3]) || 1, // ここが「進化」
-      type: cols[4],            // ここが「とくい」
+      typeName: cols[2] || "-", // ポケモンタイプ（くさ、ほのお等）
+      evo: Number(cols[3]) || 1, 
+      type: cols[4],            // とくい（食材/きのみ/スキル）
       sleep: cols[5],
       helpTime: Number(cols[6]) || 0,
       ingProb: Number(cols[7]) || 0,
@@ -222,39 +220,21 @@ function sortByDexOrder(names, pokeList) {
   return base;
 }
 
-function buildPokemonGridHTML(label, badgeClass, names, pokeMap, pokeList, typeIconMap) {
+// ★修正：一覧はシンプルに（画像＋名前のみ）
+function buildPokemonGridHTML(label, badgeClass, names, pokeMap, pokeList) {
   const sorted = sortByDexOrder(names, pokeList);
 
   const items = sorted.map(name => {
     const p = pokeMap.get(name);
     const src = p ? imgSrc(p.file) : "";
+    const imgHtml = p
+      ? `<img src="${src}" alt="${name}">`
+      : `<div style="width:48px;height:48px;border:1px dashed #ccc;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#999;">no img</div>`;
     
-    // アイコン情報の取得
-    const typeInfo = p ? typeIconMap.get(p.typeName) : null;
-    const typeIconSrc = typeInfo ? imgSrc(typeInfo.typeIcon) : "";
-    const berryIconSrc = typeInfo ? imgSrc(typeInfo.berryIcon) : "";
-
-    // とくいラベルのスタイル
-    let tagClass = "";
-    let tagText = p ? p.type.substr(0, 1) : "-"; // 1文字だけ表示（食/き/ス）
-    if (p) {
-        if (p.type === "きのみ") { tagClass = "tag-k"; tagText = "きのみ"; }
-        else if (p.type === "食材") { tagClass = "tag-i"; tagText = "食材"; }
-        else if (p.type === "スキル") { tagClass = "tag-s"; tagText = "スキル"; }
-    }
-
     return `
       <div class="poke-item" title="${name}" onclick="window.PokedexTab.openDetail('${name}')">
-        <div class="poke-img-area">
-          <img src="${src}" alt="${name}">
-        </div>
+        ${imgHtml}
         <div class="poke-name">${name}</div>
-        
-        <div class="poke-tags">
-          ${typeIconSrc ? `<img src="${typeIconSrc}" class="mini-icon" title="${p.typeName}">` : ""}
-          ${berryIconSrc ? `<img src="${berryIconSrc}" class="mini-icon">` : ""}
-          <span class="mini-tag ${tagClass}">${tagText}</span>
-        </div>
       </div>
     `;
   }).join("");
@@ -290,7 +270,8 @@ async function showFieldDetail(fieldId, opts = {}) {
 
   try {
     const { list, map } = await loadPokemonMaster();
-    const typeIconMap = await loadTypeIcons(); 
+    // typeIconMapは一覧では使わないが、読み込んでおく（詳細用）
+    await loadTypeIcons(); 
     const energyMap = await loadEnergyMap();
     const pokeBySleep = await loadFieldPokemon(field.name);
 
@@ -313,9 +294,10 @@ async function showFieldDetail(fieldId, opts = {}) {
       </div>
     `;
 
-    const uto = buildPokemonGridHTML("うとうと", "badge-uto", pokeBySleep["うとうと"], map, list, typeIconMap);
-    const suya = buildPokemonGridHTML("すやすや", "badge-suya", pokeBySleep["すやすや"], map, list, typeIconMap);
-    const gusu = buildPokemonGridHTML("ぐっすり", "badge-gusu", pokeBySleep["ぐっすり"], map, list, typeIconMap);
+    // 第6引数のtypeIconMapは不要になったので削除
+    const uto = buildPokemonGridHTML("うとうと", "badge-uto", pokeBySleep["うとうと"], map, list);
+    const suya = buildPokemonGridHTML("すやすや", "badge-suya", pokeBySleep["すやすや"], map, list);
+    const gusu = buildPokemonGridHTML("ぐっすり", "badge-gusu", pokeBySleep["ぐっすり"], map, list);
 
     pokEl("detailContent").innerHTML = `
       ${headerHtml}
@@ -358,14 +340,17 @@ async function openDetail(name) {
   const avgKey = `${p.type}_${p.evo}`;
   const avg = STATS_AVG ? STATS_AVG[avgKey] : null;
 
+  // とくいの色分け
   let typeClass = "type-berry";
   if (p.type === "食材") typeClass = "type-ing";
   if (p.type === "スキル") typeClass = "type-skill";
 
-  // 詳細画面用アイコン
+  // ★詳細画面用の情報生成
+  // タイプアイコン
   const tInfo = typeIcons.get(p.typeName);
-  const typeIconHtml = tInfo ? `<img src="${imgSrc(tInfo.typeIcon)}" style="width:16px; height:16px;">` : "";
-
+  const typeIconHtml = tInfo ? `<img src="${imgSrc(tInfo.typeIcon)}" style="width:14px; height:14px;">` : "";
+  
+  // 棒グラフ
   const makeBar = (label, val, avgVal, unit) => {
     const max = Math.max(val, avgVal || 0) * 1.2 || 1; 
     const w1 = Math.min(100, (val / max) * 100);
@@ -458,12 +443,17 @@ async function openDetail(name) {
     <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
       <img src="${imgSrc(p.file)}" style="width:72px; height:72px; object-fit:contain; border:1px solid var(--line); border-radius:16px; background:#fff;">
       <div>
-        <div style="font-size:20px; font-weight:900; line-height:1.2; margin-bottom:6px; display:flex; align-items:center; gap:8px;">
-          <span>${p.name}</span>
+        <div style="font-size:20px; font-weight:900; line-height:1.2; margin-bottom:6px;">
+          ${p.name}
         </div>
-        <div style="display:flex; gap:6px; align-items:center;">
+        
+        <div class="type-badge-row">
           <span class="type-badge ${typeClass}" style="font-size:11px; padding:2px 10px; min-width:auto;">${p.type}</span>
-          ${typeIconHtml} <span style="font-size:11px; font-weight:bold; color:#555;">${p.typeName}</span>
+          
+          <div class="element-type">
+            ${typeIconHtml}
+            <span>${p.typeName}</span>
+          </div>
         </div>
       </div>
     </div>
