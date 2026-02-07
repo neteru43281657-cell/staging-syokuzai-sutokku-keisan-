@@ -376,10 +376,13 @@ async function openDetail(name) {
   };
 
   const makeIngItem = (name) => {
-    // 「なし」変換ロジック
-    let dispName = name;
-    if (!dispName || dispName === "-" || dispName.trim() === "") {
-      dispName = "なし";
+    // データがない、または「-」の場合は「該当なし」画像を表示して終了
+    if (!name || name === "-" || name.trim() === "") {
+      return `
+        <div class="ing-item">
+          <img src="images/該当なし.webp" class="ing-icon" alt="該当なし">
+        </div>
+      `;
     }
 
     const icon = getIngIcon(name); 
@@ -388,7 +391,7 @@ async function openDetail(name) {
       <div class="ing-item">
         ${icon 
           ? `<img src="${icon}" class="ing-icon">` 
-          : `<span class="ing-name" style="font-size:10px; color:var(--muted);">${dispName}</span>`
+          : `<span class="ing-name" style="font-size:10px; color:var(--muted);">${name}</span>`
         }
       </div>
     `;
