@@ -215,15 +215,18 @@ function sortByDexOrder(names, pokeList) {
   return base;
 }
 
+// ★修正：以前のシンプルなHTML生成に戻す
 function buildPokemonGridHTML(label, badgeClass, names, pokeMap, pokeList) {
   const sorted = sortByDexOrder(names, pokeList);
 
   const items = sorted.map(name => {
     const p = pokeMap.get(name);
     const src = p ? imgSrc(p.file) : "";
+    
+    // 画像がない場合のダミーも以前のスタイルに近いものへ
     const imgHtml = p
       ? `<img src="${src}" alt="${name}">`
-      : `<div style="width:100%; aspect-ratio:1; border:1px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:8px; color:#999;">no img</div>`;
+      : `<div style="width:44px;height:44px;border:1px dashed #ccc;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#999;">no img</div>`;
     
     return `
       <div class="poke-item" title="${name}" onclick="window.PokedexTab.openDetail('${name}')">
@@ -366,16 +369,14 @@ async function openDetail(name) {
   };
 
   const makeIngItem = (name) => {
-    // ★「なし」変換ロジック
-    // 空欄、"-"、null などを全て「なし」という文字として扱う
+    // 「なし」変換ロジック
     let dispName = name;
     if (!dispName || dispName === "-" || dispName.trim() === "") {
       dispName = "なし";
     }
 
-    const icon = getIngIcon(name); // 元の名前（キー）で画像検索
+    const icon = getIngIcon(name); 
     
-    // アイコンがあれば画像、なければ「なし」などの文字を表示
     return `
       <div class="ing-item">
         ${icon 
