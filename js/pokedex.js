@@ -36,11 +36,10 @@ async function loadTypeIcons() {
     const map = new Map();
     const lines = text.split(/\r?\n/).filter(Boolean);
     for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split(/\t+/);
-      if (cols.length >= 2) {
-        map.set(cols[0].trim(), {
-          typeIcon: cols[1].trim()
-        });
+      // アイコン定義ファイルはタブ区切りが確実なので split(/\t+/) でも良いが念のため
+      const cols = lines[i].split("\t").map(s => s.trim()); 
+      if (cols.length >= 2 && cols[0]) {
+        map.set(cols[0], { typeIcon: cols[1] });
       }
     }
     TYPE_ICON_MAP = map;
@@ -74,13 +73,16 @@ async function loadPokemonMaster() {
   if (POKE_LIST) return { list: POKE_LIST, map: POKE_MAP };
 
   const tsv = await fetchText("pokedex_master.txt");
-  const lines = tsv.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  const lines = tsv.split(/\r?\n/).filter(Boolean); // 空行だけ削除
 
   const list = [];
   const map = new Map();
 
   for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(/\t+/);
+    // ★重要修正: split(/\t+/) だと空欄が詰められてズレるため、
+    // split("\t") で空欄も1つの要素として維持する
+    const cols = lines[i].split("\t").map(s => s.trim());
+    
     if (cols.length < 5) continue;
 
     const p = {
