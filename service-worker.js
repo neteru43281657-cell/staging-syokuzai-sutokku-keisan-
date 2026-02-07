@@ -1,6 +1,6 @@
 // service-worker.js
 
-const CACHE_NAME = "stockcalc-v1.7.7"; // ★更新のたびに必ず上げること
+const CACHE_NAME = "stockcalc-v1.7.8"; // ★更新のたびに必ず上げること
 
 // 事前キャッシュ（最低限）
 const ASSETS = [
@@ -18,6 +18,7 @@ const ASSETS = [
   "./data/shard_table.txt",
   "./data/energy.txt",
   "./data/pokedex_master.txt",
+  "./data/skill_data.txt",
   
   "./data/ingredients.js",
   "./data/recipes.js",
