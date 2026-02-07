@@ -55,6 +55,7 @@ async function loadPokemonMaster() {
   const list = [];
   const map = new Map();
 
+  // 1行目はヘッダーなので i=1 から開始
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(/\t+/);
     if (cols.length < 3) continue;
@@ -105,7 +106,6 @@ function calcAverages() {
 
   POKE_LIST.forEach(p => {
     // 平均計算には「代表データ（最初の1行）」を使用する
-    // バケッチャ等はサイズによる差があるが、概算として代表値を使う
     if (!p.type || !p.evo) return;
     const key = `${p.type}_${p.evo}`;
     if (!sums[key]) sums[key] = { iSum:0, sSum:0, count:0 };
@@ -313,10 +313,10 @@ async function openDetail(name) {
   const modal = pokEl("pokeDetailModal");
   const body = pokEl("pokeDetailBody");
 
-  // スキルリンク
+  // スキルリンク（注釈付き）
   const skillUrl = skills.get(p.skillName) || null;
   const skillHtml = skillUrl 
-    ? `<a href="${skillUrl}" target="_blank" style="color:var(--main); text-decoration:underline; font-weight:900;">${p.skillName} <span style="font-size:10px;">↗</span></a>`
+    ? `<a href="${skillUrl}" target="_blank" style="color:var(--main); text-decoration:underline; font-weight:900;">${p.skillName} <span style="font-size:10px;">↗</span></a><br><span style="font-size:10px; color:var(--muted); font-weight:normal;">※外部Wikiへ遷移します</span>`
     : p.skillName;
 
   // 平均比較データ
@@ -328,8 +328,7 @@ async function openDetail(name) {
   if (p.type === "食材") typeClass = "type-ing";
   if (p.type === "スキル") typeClass = "type-skill";
 
-  // グラフ描画ヘルパー（修正：平均ラベルをバーの下へ）
-  // 複数データがある場合、グラフは「代表データ(p)」のものだけ表示する（複雑になりすぎるため）
+  // グラフ描画ヘルパー
   const makeBar = (label, val, avgVal, unit) => {
     const max = Math.max(val, avgVal || 0) * 1.2 || 1; 
     const w1 = Math.min(100, (val / max) * 100);
@@ -359,7 +358,6 @@ async function openDetail(name) {
   // 食材アイテム（Lv表記なし、画像のみ）
   const makeIngItem = (name) => {
     const icon = getIngIcon(name);
-    // 画像がない場合は文字だけ出すなどのフォールバック
     return `
       <div class="ing-item">
         ${icon ? `<img src="${icon}" class="ing-icon">` : `<span class="ing-name" style="font-size:9px;">${name}</span>`}
@@ -370,8 +368,7 @@ async function openDetail(name) {
   // ステータス表示エリア生成（複数データ対応）
   let statsHtml = "";
   if (p.variations.length > 1) {
-    // データが複数の場合（バケッチャ等）：テーブル表示
-    // ※データ順序は読み込み順（通常は小さい順に並んでいる想定）
+    // データが複数の場合：テーブル表示
     const trs = p.variations.map((v, idx) => `
       <tr>
         <td style="font-weight:900;">#${idx+1}</td>
@@ -384,7 +381,7 @@ async function openDetail(name) {
     
     statsHtml = `
       <div style="margin-bottom:12px; overflow-x:auto;">
-        <table style="width:100%; font-size:11px; border-collapse:collapse; text-align:center;">
+        <table style="width:100%; font-size:11px; border-collapse:collapse; text-align:center;" class="poke-vars-table">
           <thead>
             <tr style="background:#f0f2f5; color:var(--muted);">
               <th style="padding:4px;">個体</th>
@@ -399,7 +396,7 @@ async function openDetail(name) {
       </div>
     `;
   } else {
-    // データが1つの場合：従来通りのカード表示
+    // データが1つの場合：カード表示
     statsHtml = `
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
         <div style="background:#f8f9fa; padding:10px; border-radius:12px; text-align:center;">
@@ -444,7 +441,7 @@ async function openDetail(name) {
 
       <div>
         <div style="font-size:11px; color:var(--muted); font-weight:700; margin-bottom:4px;">メインスキル</div>
-        <div style="font-size:14px; font-weight:900;">${skillHtml}</div>
+        <div style="font-size:14px; font-weight:900; line-height:1.4;">${skillHtml}</div>
       </div>
     </div>
   `;
@@ -452,9 +449,13 @@ async function openDetail(name) {
   modal.style.display = "flex";
 }
 
-pokEl("closePokeDetail").onclick = () => pokEl("pokeDetailModal").style.display = "none";
-pokEl("pokeDetailModal").onclick = (e) => {
-  if (e.target === pokEl("pokeDetailModal")) pokEl("pokeDetailModal").style.display = "none";
+// 閉じる処理
+const closeBtn = pokEl("closePokeDetail");
+if (closeBtn) closeBtn.onclick = () => pokEl("pokeDetailModal").style.display = "none";
+
+const modalEl = pokEl("pokeDetailModal");
+if (modalEl) modalEl.onclick = (e) => {
+  if (e.target === modalEl) modalEl.style.display = "none";
 };
 
 /* =========================================================
@@ -464,12 +465,14 @@ function renderFieldMenu() {
   pokEl("fieldMenu").style.display = "block";
   pokEl("fieldDetail").style.display = "none";
   const grid = document.querySelector(".field-grid");
-  grid.innerHTML = FIELDS.map(field => `
-    <div class="field-item" onclick="window.PokedexTab.showFieldDetail('${field.id}')">
-      <img src="images/${field.file}" class="field-img">
-      <div class="field-name">${field.name}</div>
-    </div>
-  `).join("");
+  if (grid) {
+    grid.innerHTML = FIELDS.map(field => `
+      <div class="field-item" onclick="window.PokedexTab.showFieldDetail('${field.id}')">
+        <img src="images/${field.file}" class="field-img">
+        <div class="field-name">${field.name}</div>
+      </div>
+    `).join("");
+  }
   replaceMenuState();
 }
 
@@ -496,7 +499,8 @@ function backToMenu(viaPop = false) {
 window.addEventListener("popstate", (e) => {
   const st = e.state?.pokedex;
   const modal = pokEl("pokeDetailModal");
-  if (modal.style.display !== "none") {
+  // モーダルが開いていたら閉じる
+  if (modal && modal.style.display !== "none") {
     modal.style.display = "none";
     return;
   }
