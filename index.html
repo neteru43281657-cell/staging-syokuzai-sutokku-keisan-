@@ -1065,55 +1065,40 @@
 
 
     
-  /* --- 出現ポケモン一覧（8列～12列 自動調整版） --- */
+/* --- 出現ポケモン一覧（以前のデザインに戻す） --- */
     .poke-grid {
+      padding: 10px 10px 12px;
       display: grid;
-      /* 最小幅を38pxまたは画面の1/12(8.33%)のうち大きい方に設定 
-         これにより、スマホでは約38px基準で8~10列になり、
-         大画面でも12列を超えないように制御されます
-      */
-      grid-template-columns: repeat(auto-fill, minmax(max(38px, 8.333%), 1fr));
-      gap: 2px;
-      padding: 4px;
+      /* 以前の設定：46px以上で自動詰め込み */
+      grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+      gap: 8px;
     }
 
     .poke-item {
       display: flex;
       flex-direction: column;
       align-items: center;
-      text-align: center;
+      gap: 4px;
       cursor: pointer;
-      overflow: hidden; 
-      padding-bottom: 2px;
     }
     
     .poke-item img {
-      width: 100%;
-      height: auto;
-      aspect-ratio: 1 / 1;
+      width: 44px;
+      height: 44px;
       object-fit: contain;
-      margin-bottom: 0px;
     }
 
     .poke-name {
-      /* 6文字を1行に入れるための調整 */
-      font-size: 9px; 
-      line-height: 1.0;
-      color: var(--muted);
-      
-      /* 改行禁止セット */
-      word-break: keep-all; 
-      white-space: nowrap;  
-      
-      /* はみ出し対策 */
-      width: 120%; /* 枠より少し広く確保して */
-      margin-left: -10%; /* 中央寄せ */
-      transform: scale(0.85); /* 縮小して枠内に収める */
-      transform-origin: center top;
-      overflow: visible; /* 縮小しているのでvisibleでOK */
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--muted); /* 文字色を薄い灰色に戻す */
+      text-align: center;
+      line-height: 1.2;
+      word-break: keep-all; /* 勝手な改行をしない */
+      /* 幅制限や変形（transform）は削除 */
     }
 
-    /* --- 詳細モーダル用スタイル --- */
+    /* --- 詳細モーダル用スタイル（ここは最新の見やすいレイアウトを維持） --- */
     .type-badge-row {
       display: flex;
       align-items: center;
