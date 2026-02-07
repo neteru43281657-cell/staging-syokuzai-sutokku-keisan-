@@ -317,6 +317,13 @@ function getIngIcon(name) {
 }
 
 async function openDetail(name) {
+  // ★ここにGAイベントを復活させます
+  if (typeof gtag === 'function') {
+    gtag('event', 'view_pokemon_detail', {
+      'pokemon_name': name
+    });
+  }
+
   const { map } = await loadPokemonMaster();
   const skills = await loadSkillData();
   const typeIcons = await loadTypeIcons(); 
@@ -479,6 +486,7 @@ async function openDetail(name) {
 
   modal.style.display = "flex";
 }
+
 
 const closeBtn = pokEl("closePokeDetail");
 if (closeBtn) closeBtn.onclick = () => pokEl("pokeDetailModal").style.display = "none";
