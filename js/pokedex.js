@@ -5,12 +5,10 @@ const pokEl = (id) => document.getElementById(id);
 function imgSrc(file) { return "images/" + encodeURIComponent(file); }
 
 // caches
-let POKE_LIST = null;     // 配列: 全ポケモンのデータオブジェクト
-let POKE_MAP = null;      // Map: 名前 -> データオブジェクト
+let POKE_LIST = null;     // 配列: 全ポケモンの代表データ（重複なし）
+let POKE_MAP = null;      // Map: 名前 -> データオブジェクト（variations配列を含む）
 let SKILL_MAP = null;     // Map: スキル名 -> URL
 let ENERGY_MAP = null;
-
-// 平均値キャッシュ { type: { 1: {ing, skill}, 2:..., 3:... } }
 let STATS_AVG = null;
 
 const DEX_ORDER_OVERRIDES = [
@@ -51,7 +49,6 @@ async function loadSkillData() {
 async function loadPokemonMaster() {
   if (POKE_LIST) return { list: POKE_LIST, map: POKE_MAP };
 
-  // pokedex_master.txt (= pokemon_stats.txtの中身)
   const tsv = await fetchText("pokedex_master.txt");
   const lines = tsv.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
 
@@ -62,11 +59,12 @@ async function loadPokemonMaster() {
     const cols = lines[i].split(/\t+/);
     if (cols.length < 3) continue;
 
+    // 基本データ生成
     const p = {
-      id: cols[0], // 710など
+      id: cols[0],
       name: cols[1],
       evo: Number(cols[2]) || 1,
-      type: cols[3], // 食材/きのみ/スキル
+      type: cols[3],
       sleep: cols[4],
       helpTime: Number(cols[5]) || 0,
       ingProb: Number(cols[6]) || 0,
@@ -76,13 +74,22 @@ async function loadPokemonMaster() {
       ing2: cols[10] || "-",
       ing3: cols[11] || "-",
       carry: Number(cols[12]) || 0,
-      
-      // 画像パスは ID.webp
-      file: `${cols[0]}.webp`
+      file: `${cols[0]}.webp`,
+      // 複数データ用（初期状態は自分自身のみ）
+      variations: [] 
     };
 
-    list.push(p);
-    map.set(p.name, p);
+    // 既に同じ名前のポケモンがいる場合（バケッチャ等）
+    if (map.has(p.name)) {
+      const parent = map.get(p.name);
+      // 親のvariationsに自分を追加
+      parent.variations.push(p);
+    } else {
+      // 新規登録
+      p.variations.push(p); // 自分もvariationの1つとして入れておく
+      list.push(p);
+      map.set(p.name, p);
+    }
   }
 
   POKE_LIST = list;
@@ -97,6 +104,8 @@ function calcAverages() {
   const sums = {}; 
 
   POKE_LIST.forEach(p => {
+    // 平均計算には「代表データ（最初の1行）」を使用する
+    // バケッチャ等はサイズによる差があるが、概算として代表値を使う
     if (!p.type || !p.evo) return;
     const key = `${p.type}_${p.evo}`;
     if (!sums[key]) sums[key] = { iSum:0, sSum:0, count:0 };
@@ -289,7 +298,6 @@ async function showFieldDetail(fieldId, opts = {}) {
    ポケモン詳細モーダル関連
 ========================================================= */
 
-// 食材名から画像パスを探すヘルパー
 function getIngIcon(name) {
   if (!window.INGREDIENTS) return "";
   const found = window.INGREDIENTS.find(i => i.name === name);
@@ -315,12 +323,13 @@ async function openDetail(name) {
   const avgKey = `${p.type}_${p.evo}`;
   const avg = STATS_AVG ? STATS_AVG[avgKey] : null;
 
-  // タイプごとの色クラス決定
+  // タイプバッジ
   let typeClass = "type-berry";
   if (p.type === "食材") typeClass = "type-ing";
   if (p.type === "スキル") typeClass = "type-skill";
 
-  // グラフ描画
+  // グラフ描画ヘルパー（修正：平均ラベルをバーの下へ）
+  // 複数データがある場合、グラフは「代表データ(p)」のものだけ表示する（複雑になりすぎるため）
   const makeBar = (label, val, avgVal, unit) => {
     const max = Math.max(val, avgVal || 0) * 1.2 || 1; 
     const w1 = Math.min(100, (val / max) * 100);
@@ -338,69 +347,104 @@ async function openDetail(name) {
           <div style="width:${w1}%; background:${col1}; height:100%;"></div>
         </div>
         ${avgVal ? `
-        <div style="display:flex; align-items:center; gap:6px;">
-          <div style="flex:1; background:#f0f0f0; height:6px; border-radius:3px; overflow:hidden;">
-            <div style="width:${w2}%; background:${col2}; height:100%;"></div>
-          </div>
-          <div style="font-size:9px; color:var(--muted);">同タイプ平均: ${avgVal.toFixed(1)}${unit}</div>
+        <div style="background:#f0f0f0; height:6px; border-radius:3px; overflow:hidden; margin-bottom:2px;">
+           <div style="width:${w2}%; background:${col2}; height:100%;"></div>
         </div>
+        <div style="font-size:9px; color:var(--muted); text-align:right;">同タイプ平均: ${avgVal.toFixed(1)}${unit}</div>
         ` : ""}
       </div>
     `;
   };
 
-  // 食材リスト生成
-  const makeIngItem = (lv, name) => {
+  // 食材アイテム（Lv表記なし、画像のみ）
+  const makeIngItem = (name) => {
     const icon = getIngIcon(name);
+    // 画像がない場合は文字だけ出すなどのフォールバック
     return `
       <div class="ing-item">
-        <span class="ing-lv">${lv}</span>
-        ${icon ? `<img src="${icon}" class="ing-icon">` : ""}
-        <span class="ing-name">${name}</span>
+        ${icon ? `<img src="${icon}" class="ing-icon">` : `<span class="ing-name" style="font-size:9px;">${name}</span>`}
       </div>
     `;
   };
+
+  // ステータス表示エリア生成（複数データ対応）
+  let statsHtml = "";
+  if (p.variations.length > 1) {
+    // データが複数の場合（バケッチャ等）：テーブル表示
+    // ※データ順序は読み込み順（通常は小さい順に並んでいる想定）
+    const trs = p.variations.map((v, idx) => `
+      <tr>
+        <td style="font-weight:900;">#${idx+1}</td>
+        <td>${v.helpTime}秒</td>
+        <td>${v.ingProb}%</td>
+        <td>${v.skillProb}%</td>
+        <td>${v.carry}個</td>
+      </tr>
+    `).join("");
+    
+    statsHtml = `
+      <div style="margin-bottom:12px; overflow-x:auto;">
+        <table style="width:100%; font-size:11px; border-collapse:collapse; text-align:center;">
+          <thead>
+            <tr style="background:#f0f2f5; color:var(--muted);">
+              <th style="padding:4px;">個体</th>
+              <th style="padding:4px;">時間</th>
+              <th style="padding:4px;">食材</th>
+              <th style="padding:4px;">スキル</th>
+              <th style="padding:4px;">所持</th>
+            </tr>
+          </thead>
+          <tbody>${trs}</tbody>
+        </table>
+      </div>
+    `;
+  } else {
+    // データが1つの場合：従来通りのカード表示
+    statsHtml = `
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div style="background:#f8f9fa; padding:10px; border-radius:12px; text-align:center;">
+          <div style="font-size:10px; color:var(--muted); font-weight:700;">おてつだい時間</div>
+          <div style="font-size:15px; font-weight:900;">${p.helpTime}秒</div>
+        </div>
+        <div style="background:#f8f9fa; padding:10px; border-radius:12px; text-align:center;">
+          <div style="font-size:10px; color:var(--muted); font-weight:700;">最大所持数</div>
+          <div style="font-size:15px; font-weight:900;">${p.carry}個</div>
+        </div>
+      </div>
+      
+      <div style="border-top:1px solid var(--line); padding-top:12px; margin-bottom:12px;">
+        ${makeBar("食材確率", p.ingProb, avg?.ing, "%")}
+        ${makeBar("スキル確率", p.skillProb, avg?.skill, "%")}
+      </div>
+    `;
+  }
 
   body.innerHTML = `
     <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
       <img src="${imgSrc(p.file)}" style="width:72px; height:72px; object-fit:contain; border:1px solid var(--line); border-radius:16px; background:#fff;">
       <div>
-        <div style="font-size:20px; font-weight:900; line-height:1.2; margin-bottom:6px;">${p.name}</div>
-        <div>
-           <span class="type-badge ${typeClass}">${p.type}</span>
+        <div style="font-size:20px; font-weight:900; line-height:1.2; margin-bottom:6px; display:flex; align-items:center; gap:8px;">
+          <span>${p.name}</span>
+          <span class="type-badge ${typeClass}" style="font-size:11px; padding:2px 10px; min-width:auto;">${p.type}</span>
         </div>
       </div>
     </div>
 
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
-      <div style="background:#f8f9fa; padding:10px; border-radius:12px; text-align:center;">
-        <div style="font-size:10px; color:var(--muted); font-weight:700;">おてつだい時間</div>
-        <div style="font-size:15px; font-weight:900;">${p.helpTime}秒</div>
-      </div>
-      <div style="background:#f8f9fa; padding:10px; border-radius:12px; text-align:center;">
-        <div style="font-size:10px; color:var(--muted); font-weight:700;">最大所持数</div>
-        <div style="font-size:15px; font-weight:900;">${p.carry}個</div>
-      </div>
-    </div>
-
-    <div style="border-top:1px solid var(--line); padding-top:16px; margin-bottom:16px;">
-      ${makeBar("食材確率", p.ingProb, avg?.ing, "%")}
-      ${makeBar("スキル確率", p.skillProb, avg?.skill, "%")}
-    </div>
+    ${statsHtml}
 
     <div style="border-top:1px solid var(--line); padding-top:16px;">
       <div style="margin-bottom:16px;">
-        <div style="font-size:11px; color:var(--muted); font-weight:700; margin-bottom:4px;">メインスキル</div>
-        <div style="font-size:14px; font-weight:900;">${skillHtml}</div>
-      </div>
-      
-      <div>
         <div style="font-size:11px; color:var(--muted); font-weight:700; margin-bottom:4px;">食材</div>
         <div class="ing-list">
-           ${makeIngItem("Lv1", p.ing1)}
-           ${makeIngItem("Lv30", p.ing2)}
-           ${makeIngItem("Lv60", p.ing3)}
+           ${makeIngItem(p.ing1)}
+           ${makeIngItem(p.ing2)}
+           ${makeIngItem(p.ing3)}
         </div>
+      </div>
+
+      <div>
+        <div style="font-size:11px; color:var(--muted); font-weight:700; margin-bottom:4px;">メインスキル</div>
+        <div style="font-size:14px; font-weight:900;">${skillHtml}</div>
       </div>
     </div>
   `;
