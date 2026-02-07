@@ -51,21 +51,19 @@ async function loadSkillData() {
 async function loadPokemonMaster() {
   if (POKE_LIST) return { list: POKE_LIST, map: POKE_MAP };
 
-  // 新しい pokedex_master.txt (= pokemon_stats.txtの中身) を読む
-  // 列: ID, 名前, 進化, とくい, 睡眠, 時間, 食材率, スキル率, スキル名, 食材1, 2, 3, 所持
+  // pokedex_master.txt (= pokemon_stats.txtの中身)
   const tsv = await fetchText("pokedex_master.txt");
   const lines = tsv.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
 
   const list = [];
   const map = new Map();
 
-  // 1行目はヘッダーなのでスキップ
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(/\t+/);
     if (cols.length < 3) continue;
 
     const p = {
-      id: cols[0], // ファイル名(拡張子なし)
+      id: cols[0], // 710など
       name: cols[1],
       evo: Number(cols[2]) || 1,
       type: cols[3], // 食材/きのみ/スキル
@@ -79,7 +77,7 @@ async function loadPokemonMaster() {
       ing3: cols[11] || "-",
       carry: Number(cols[12]) || 0,
       
-      // 画像パスは固定で .webp を付与
+      // 画像パスは ID.webp
       file: `${cols[0]}.webp`
     };
 
@@ -90,15 +88,13 @@ async function loadPokemonMaster() {
   POKE_LIST = list;
   POKE_MAP = map;
   
-  // 平均値の計算
   calcAverages();
 
   return { list, map };
 }
 
 function calcAverages() {
-  // タイプ別・進化段階別の合計とカウント
-  const sums = {}; // keys: "食材_1", "きのみ_2" etc
+  const sums = {}; 
 
   POKE_LIST.forEach(p => {
     if (!p.type || !p.evo) return;
@@ -125,7 +121,6 @@ function calcAverages() {
 async function loadEnergyMap() {
   if (ENERGY_MAP) return ENERGY_MAP;
   const text = await fetchText("energy.txt");
-  // (中略: 既存ロジックと同じ)
   const lines = text.split(/\r?\n/);
   const map = new Map();
   let currentField = null;
@@ -154,7 +149,6 @@ async function loadEnergyMap() {
 }
 
 async function loadFieldPokemon(fieldName) {
-  // 既存のフィールド出現リスト（名前だけのリスト）
   const text = await fetchText(`${fieldName}.txt`);
   const lines = text.split(/\r?\n/);
   const result = { "うとうと": [], "すやすや": [], "ぐっすり": [] };
@@ -177,9 +171,7 @@ async function loadFieldPokemon(fieldName) {
    表示ロジック
 ========================================================= */
 
-// 図鑑順ソート
 function sortByDexOrder(names, pokeList) {
-  // 名前リストを、POKE_LISTの並び順（＝図鑑順）に合わせてソート
   const dexOrderMap = new Map();
   pokeList.forEach((p, i) => dexOrderMap.set(p.name, i));
 
@@ -189,7 +181,6 @@ function sortByDexOrder(names, pokeList) {
     return ai - bi;
   });
 
-  // 例外ルール適用
   DEX_ORDER_OVERRIDES.forEach(rule => {
     const idx = base.indexOf(rule.name);
     if (idx === -1) return;
@@ -207,20 +198,16 @@ function sortByDexOrder(names, pokeList) {
   return base;
 }
 
-// 一覧HTML生成
 function buildPokemonGridHTML(label, badgeClass, names, pokeMap, pokeList) {
   const sorted = sortByDexOrder(names, pokeList);
 
   const items = sorted.map(name => {
     const p = pokeMap.get(name);
     const src = p ? imgSrc(p.file) : "";
-    
-    // 画像がない場合のダミー
     const imgHtml = p
       ? `<img src="${src}" alt="${name}">`
       : `<div style="width:44px;height:44px;border:1px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--muted);">no img</div>`;
 
-    // クリックイベント追加
     return `
       <div class="poke-item" title="${name}" onclick="window.PokedexTab.openDetail('${name}')">
         ${imgHtml}
@@ -240,14 +227,12 @@ function buildPokemonGridHTML(label, badgeClass, names, pokeMap, pokeList) {
   `;
 }
 
-// 詳細画面（Fieldメニュー）
 async function showFieldDetail(fieldId, opts = {}) {
   const fromPop = !!opts.fromPop;
   const field = FIELDS.find(f => f.id === fieldId);
   pokEl("fieldMenu").style.display = "none";
   pokEl("fieldDetail").style.display = "block";
 
-  // ローディング
   pokEl("detailContent").innerHTML = `
     <div class="card" style="text-align:center;">
       <div style="font-weight:900;">読み込み中...</div>
@@ -265,7 +250,6 @@ async function showFieldDetail(fieldId, opts = {}) {
     const energyMap = await loadEnergyMap();
     const pokeBySleep = await loadFieldPokemon(field.name);
 
-    // エナジー表作成
     const eRows = energyMap.get(field.name) || [];
     const eTrs = eRows.filter(r => r.count >= 4 && r.count <= 8)
       .map(r => `<tr><td>${r.count}体</td><td>${r.energyText}</td></tr>`).join("");
@@ -304,6 +288,14 @@ async function showFieldDetail(fieldId, opts = {}) {
 /* =========================================================
    ポケモン詳細モーダル関連
 ========================================================= */
+
+// 食材名から画像パスを探すヘルパー
+function getIngIcon(name) {
+  if (!window.INGREDIENTS) return "";
+  const found = window.INGREDIENTS.find(i => i.name === name);
+  return found ? imgSrc(found.file) : "";
+}
+
 async function openDetail(name) {
   const { map } = await loadPokemonMaster();
   const skills = await loadSkillData();
@@ -316,21 +308,23 @@ async function openDetail(name) {
   // スキルリンク
   const skillUrl = skills.get(p.skillName) || null;
   const skillHtml = skillUrl 
-    ? `<a href="${skillUrl}" target="_blank" style="color:var(--main); text-decoration:underline;">${p.skillName} <span style="font-size:10px;">↗</span></a>`
+    ? `<a href="${skillUrl}" target="_blank" style="color:var(--main); text-decoration:underline; font-weight:900;">${p.skillName} <span style="font-size:10px;">↗</span></a>`
     : p.skillName;
 
   // 平均比較データ
   const avgKey = `${p.type}_${p.evo}`;
   const avg = STATS_AVG ? STATS_AVG[avgKey] : null;
 
-  // グラフ描画ヘルパー
+  // タイプごとの色クラス決定
+  let typeClass = "type-berry";
+  if (p.type === "食材") typeClass = "type-ing";
+  if (p.type === "スキル") typeClass = "type-skill";
+
+  // グラフ描画
   const makeBar = (label, val, avgVal, unit) => {
-    // グラフの最大値を、本人と平均の大きい方の1.2倍くらいにする
     const max = Math.max(val, avgVal || 0) * 1.2 || 1; 
     const w1 = Math.min(100, (val / max) * 100);
     const w2 = Math.min(100, (avgVal / max) * 100);
-    
-    // 色: タイプ別などにしても良いがシンプルに
     const col1 = "#007bff"; 
     const col2 = "#bdc3c7"; 
 
@@ -348,53 +342,64 @@ async function openDetail(name) {
           <div style="flex:1; background:#f0f0f0; height:6px; border-radius:3px; overflow:hidden;">
             <div style="width:${w2}%; background:${col2}; height:100%;"></div>
           </div>
-          <div style="font-size:9px; color:var(--muted);">同タイプ進化Lv${p.evo}平均: ${avgVal.toFixed(1)}${unit}</div>
+          <div style="font-size:9px; color:var(--muted);">同タイプ平均: ${avgVal.toFixed(1)}${unit}</div>
         </div>
         ` : ""}
       </div>
     `;
   };
 
+  // 食材リスト生成
+  const makeIngItem = (lv, name) => {
+    const icon = getIngIcon(name);
+    return `
+      <div class="ing-item">
+        <span class="ing-lv">${lv}</span>
+        ${icon ? `<img src="${icon}" class="ing-icon">` : ""}
+        <span class="ing-name">${name}</span>
+      </div>
+    `;
+  };
+
   body.innerHTML = `
     <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
-      <img src="${imgSrc(p.file)}" style="width:64px; height:64px; object-fit:contain; border:1px solid var(--line); border-radius:12px; background:#f8f9fa;">
+      <img src="${imgSrc(p.file)}" style="width:72px; height:72px; object-fit:contain; border:1px solid var(--line); border-radius:16px; background:#fff;">
       <div>
-        <div style="font-size:18px; font-weight:900;">${p.name}</div>
-        <div style="display:flex; gap:6px; margin-top:4px;">
-           <span class="badge" style="background:#eee; color:#333;">${p.type}</span>
-           ${p.evo ? `<span class="badge" style="background:#eee; color:#333;">${p.evo}進化</span>` : ""}
+        <div style="font-size:20px; font-weight:900; line-height:1.2; margin-bottom:6px;">${p.name}</div>
+        <div>
+           <span class="type-badge ${typeClass}">${p.type}</span>
         </div>
       </div>
     </div>
 
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;">
-      <div style="background:#f8f9fa; padding:8px; border-radius:8px; text-align:center;">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
+      <div style="background:#f8f9fa; padding:10px; border-radius:12px; text-align:center;">
         <div style="font-size:10px; color:var(--muted); font-weight:700;">おてつだい時間</div>
-        <div style="font-size:14px; font-weight:900;">${p.helpTime}秒</div>
+        <div style="font-size:15px; font-weight:900;">${p.helpTime}秒</div>
       </div>
-      <div style="background:#f8f9fa; padding:8px; border-radius:8px; text-align:center;">
+      <div style="background:#f8f9fa; padding:10px; border-radius:12px; text-align:center;">
         <div style="font-size:10px; color:var(--muted); font-weight:700;">最大所持数</div>
-        <div style="font-size:14px; font-weight:900;">${p.carry}個</div>
+        <div style="font-size:15px; font-weight:900;">${p.carry}個</div>
       </div>
     </div>
 
-    <div style="border-top:1px solid var(--line); padding-top:12px; margin-bottom:12px;">
+    <div style="border-top:1px solid var(--line); padding-top:16px; margin-bottom:16px;">
       ${makeBar("食材確率", p.ingProb, avg?.ing, "%")}
       ${makeBar("スキル確率", p.skillProb, avg?.skill, "%")}
     </div>
 
-    <div style="border-top:1px solid var(--line); padding-top:12px;">
-      <div style="margin-bottom:10px;">
-        <div style="font-size:11px; color:var(--muted); font-weight:700;">メインスキル</div>
-        <div style="font-size:13px; font-weight:900;">${skillHtml}</div>
+    <div style="border-top:1px solid var(--line); padding-top:16px;">
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11px; color:var(--muted); font-weight:700; margin-bottom:4px;">メインスキル</div>
+        <div style="font-size:14px; font-weight:900;">${skillHtml}</div>
       </div>
       
       <div>
-        <div style="font-size:11px; color:var(--muted); font-weight:700; margin-bottom:4px;">拾ってくる食材</div>
-        <div style="font-size:12px; display:grid; grid-template-columns:auto 1fr; gap:6px 12px; align-items:center;">
-           <span style="font-weight:700; color:#888;">Lv1</span> <span>${p.ing1}</span>
-           <span style="font-weight:700; color:#888;">Lv30</span> <span>${p.ing2}</span>
-           <span style="font-weight:700; color:#888;">Lv60</span> <span>${p.ing3}</span>
+        <div style="font-size:11px; color:var(--muted); font-weight:700; margin-bottom:4px;">食材</div>
+        <div class="ing-list">
+           ${makeIngItem("Lv1", p.ing1)}
+           ${makeIngItem("Lv30", p.ing2)}
+           ${makeIngItem("Lv60", p.ing3)}
         </div>
       </div>
     </div>
@@ -403,12 +408,10 @@ async function openDetail(name) {
   modal.style.display = "flex";
 }
 
-// 閉じる処理
 pokEl("closePokeDetail").onclick = () => pokEl("pokeDetailModal").style.display = "none";
 pokEl("pokeDetailModal").onclick = (e) => {
   if (e.target === pokEl("pokeDetailModal")) pokEl("pokeDetailModal").style.display = "none";
 };
-
 
 /* =========================================================
    共通エクスポート
@@ -436,7 +439,7 @@ function replaceMenuState() {
 function backToMenu(viaPop = false) {
   pokEl("fieldMenu").style.display = "block";
   pokEl("fieldDetail").style.display = "none";
-  pokEl("pokeDetailModal").style.display = "none"; // 詳細も閉じる
+  pokEl("pokeDetailModal").style.display = "none";
   if (!viaPop) {
     const st = history.state?.pokedex;
     if (st?.view === "detail") {
@@ -446,17 +449,13 @@ function backToMenu(viaPop = false) {
   }
 }
 
-// 履歴操作
 window.addEventListener("popstate", (e) => {
   const st = e.state?.pokedex;
-  
-  // モーダルが開いていたら閉じるだけ
   const modal = pokEl("pokeDetailModal");
   if (modal.style.display !== "none") {
     modal.style.display = "none";
     return;
   }
-
   if (st?.view === "detail" && st.fieldId) {
     showFieldDetail(st.fieldId, { fromPop: true });
     return;
