@@ -252,9 +252,10 @@ async function showFieldDetail(fieldId, opts = {}) {
     const energyMap = await loadEnergyMap();
     const pokeBySleep = await loadFieldPokemon(field.name);
 
+    // ★修正箇所：数値セル（td）に font-weight:900 を追加して太字化
     const eRows = energyMap.get(field.name) || [];
     const eTrs = eRows.filter(r => r.count >= 4 && r.count <= 8)
-      .map(r => `<tr><td>${r.count}体</td><td>${r.energyText}</td></tr>`).join("");
+      .map(r => `<tr><td style="font-weight:900;">${r.count}体</td><td style="font-weight:900;">${r.energyText}</td></tr>`).join("");
     const energyHtml = eTrs ? `
       <table class="energy-table">
         <thead><tr><th>出現ポケモン数</th><th>必要エナジー</th></tr></thead>
@@ -357,13 +358,12 @@ async function openDetail(name) {
     `;
   };
 
-  // ★修正：バケッチャ等の表記変更（小・中・大・特大）
+  // バケッチャ等の表記（小・中・大・特大）
   const sizeLabels = ["小", "中", "大", "特大"];
 
   let statsHtml = "";
   if (p.variations.length > 1) {
     const trs = p.variations.map((v, idx) => {
-      // インデックスに対応するラベルがあるか確認、なければ従来通り
       const label = sizeLabels[idx] || `#${idx+1}`;
       return `
       <tr>
@@ -376,7 +376,6 @@ async function openDetail(name) {
       `;
     }).join("");
     
-    // ★修正：「所持」→「所持数」に変更
     statsHtml = `
       <div style="margin-bottom:12px; overflow-x:auto;">
         <table style="width:100%; font-size:11px; border-collapse:collapse; text-align:center;" class="poke-vars-table">
