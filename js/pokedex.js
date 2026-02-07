@@ -55,12 +55,10 @@ async function loadPokemonMaster() {
   const list = [];
   const map = new Map();
 
-  // 1行目はヘッダーなので i=1 から開始
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(/\t+/);
     if (cols.length < 3) continue;
 
-    // 基本データ生成
     const p = {
       id: cols[0],
       name: cols[1],
@@ -76,18 +74,14 @@ async function loadPokemonMaster() {
       ing3: cols[11] || "-",
       carry: Number(cols[12]) || 0,
       file: `${cols[0]}.webp`,
-      // 複数データ用（初期状態は自分自身のみ）
       variations: [] 
     };
 
-    // 既に同じ名前のポケモンがいる場合（バケッチャ等）
     if (map.has(p.name)) {
       const parent = map.get(p.name);
-      // 親のvariationsに自分を追加
       parent.variations.push(p);
     } else {
-      // 新規登録
-      p.variations.push(p); // 自分もvariationの1つとして入れておく
+      p.variations.push(p);
       list.push(p);
       map.set(p.name, p);
     }
@@ -105,7 +99,6 @@ function calcAverages() {
   const sums = {}; 
 
   POKE_LIST.forEach(p => {
-    // 平均計算には「代表データ（最初の1行）」を使用する
     if (!p.type || !p.evo) return;
     const key = `${p.type}_${p.evo}`;
     if (!sums[key]) sums[key] = { iSum:0, sSum:0, count:0 };
@@ -328,7 +321,7 @@ async function openDetail(name) {
   if (p.type === "食材") typeClass = "type-ing";
   if (p.type === "スキル") typeClass = "type-skill";
 
-  // グラフ描画ヘルパー
+  // グラフ描画
   const makeBar = (label, val, avgVal, unit) => {
     const max = Math.max(val, avgVal || 0) * 1.2 || 1; 
     const w1 = Math.min(100, (val / max) * 100);
@@ -355,7 +348,6 @@ async function openDetail(name) {
     `;
   };
 
-  // 食材アイテム（Lv表記なし、画像のみ）
   const makeIngItem = (name) => {
     const icon = getIngIcon(name);
     return `
@@ -365,20 +357,26 @@ async function openDetail(name) {
     `;
   };
 
-  // ステータス表示エリア生成（複数データ対応）
+  // ★修正：バケッチャ等の表記変更（小・中・大・特大）
+  const sizeLabels = ["小", "中", "大", "特大"];
+
   let statsHtml = "";
   if (p.variations.length > 1) {
-    // データが複数の場合：テーブル表示
-    const trs = p.variations.map((v, idx) => `
+    const trs = p.variations.map((v, idx) => {
+      // インデックスに対応するラベルがあるか確認、なければ従来通り
+      const label = sizeLabels[idx] || `#${idx+1}`;
+      return `
       <tr>
-        <td style="font-weight:900;">#${idx+1}</td>
+        <td style="font-weight:900;">${label}</td>
         <td>${v.helpTime}秒</td>
         <td>${v.ingProb}%</td>
         <td>${v.skillProb}%</td>
         <td>${v.carry}個</td>
       </tr>
-    `).join("");
+      `;
+    }).join("");
     
+    // ★修正：「所持」→「所持数」に変更
     statsHtml = `
       <div style="margin-bottom:12px; overflow-x:auto;">
         <table style="width:100%; font-size:11px; border-collapse:collapse; text-align:center;" class="poke-vars-table">
@@ -388,7 +386,7 @@ async function openDetail(name) {
               <th style="padding:4px;">時間</th>
               <th style="padding:4px;">食材</th>
               <th style="padding:4px;">スキル</th>
-              <th style="padding:4px;">所持</th>
+              <th style="padding:4px;">所持数</th>
             </tr>
           </thead>
           <tbody>${trs}</tbody>
@@ -396,7 +394,6 @@ async function openDetail(name) {
       </div>
     `;
   } else {
-    // データが1つの場合：カード表示
     statsHtml = `
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
         <div style="background:#f8f9fa; padding:10px; border-radius:12px; text-align:center;">
@@ -449,7 +446,6 @@ async function openDetail(name) {
   modal.style.display = "flex";
 }
 
-// 閉じる処理
 const closeBtn = pokEl("closePokeDetail");
 if (closeBtn) closeBtn.onclick = () => pokEl("pokeDetailModal").style.display = "none";
 
@@ -499,7 +495,6 @@ function backToMenu(viaPop = false) {
 window.addEventListener("popstate", (e) => {
   const st = e.state?.pokedex;
   const modal = pokEl("pokeDetailModal");
-  // モーダルが開いていたら閉じる
   if (modal && modal.style.display !== "none") {
     modal.style.display = "none";
     return;
