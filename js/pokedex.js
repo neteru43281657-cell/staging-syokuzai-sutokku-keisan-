@@ -299,6 +299,13 @@ function getIngIcon(name) {
 }
 
 async function openDetail(name) {
+  // ★GAイベント追加：どのポケモンが見られたか計測
+  if (typeof gtag === 'function') {
+    gtag('event', 'view_pokemon_detail', {
+      'pokemon_name': name
+    });
+  }
+
   const { map } = await loadPokemonMaster();
   const skills = await loadSkillData();
   const p = map.get(name);
