@@ -1,790 +1,379 @@
-// pokedex.js
 "use strict";
 
-const pokEl = (id) => document.getElementById(id);
-function imgSrc(file) { return "images/" + encodeURIComponent(file); }
-
-// caches
-let POKE_LIST = null;     
-let POKE_MAP = null;      
-let SKILL_MAP = null;     
-let TYPE_ICON_MAP = null; 
-let ENERGY_MAP = null;
-let STATS_AVG = null;
-let FIELD_CACHE = {}; 
-
-// ブックマークデータ
-let BOOKMARKS = { "1": [], "2": [], "3": [] };
-
-const DEX_ORDER_OVERRIDES = [
-    { name: "ストリンダー（ロー）", after: "ストリンダー（ハイ）" },
-    { name: "ウパー（パルデア）", before: "ドオー" },
-    { name: "ロコン（アローラ）", after: "ロコン" },
-    { name: "キュウコン（アローラ）", after: "キュウコン" }
-];
-
-/* =========================================================
-   基本データ取得・初期化
-========================================================= */
-
-async function fetchText(path) {
-  const res = await fetch("data/" + path, { cache: "no-store" });
-  if (!res.ok) throw new Error(`Failed to fetch: ${path}`);
-  return await res.text();
+/**
+ * 数値変換ヘルパー
+ */
+function toNum(v) {
+  if (v == null) return 0;
+  const s = String(v).trim().replace(/,/g, "");
+  const n = Number(s);
+  return Number.isFinite(n) ? n : 0;
 }
 
-function initBookmarks() {
-  try {
-    const raw = localStorage.getItem("poke_bookmarks");
-    if (raw) {
-      BOOKMARKS = JSON.parse(raw);
-      if (!Array.isArray(BOOKMARKS["1"])) BOOKMARKS["1"] = [];
-      if (!Array.isArray(BOOKMARKS["2"])) BOOKMARKS["2"] = [];
-      if (!Array.isArray(BOOKMARKS["3"])) BOOKMARKS["3"] = [];
-    }
-  } catch (e) {
-    console.warn("Bookmark load failed", e);
+(function () {
+  let expTable = null;
+  let shardTable = null;
+  let needStepCache = null;
+  let boostCountTouched = false;
+
+  /**
+   * データテーブルの読み込み
+   */
+  async function loadTablesOnce() {
+    if (expTable && shardTable) return;
+    const [expTxt, shardTxt] = await Promise.all([
+      fetch("./data/exp_table.txt", { cache: "no-store" }).then((r) => r.text()),
+      fetch("./data/shard_table.txt", { cache: "no-store" }).then((r) => r.text()),
+    ]);
+    expTable = parseExpTable(expTxt);
+    shardTable = parseTwoColTable(shardTxt);
+    buildNeedStepCache();
   }
-}
 
-function saveBookmarks() {
-  localStorage.setItem("poke_bookmarks", JSON.stringify(BOOKMARKS));
-}
-
-function hasBookmark(iconId, name) {
-  return BOOKMARKS[iconId]?.includes(name);
-}
-
-function toggleBookmark(iconId, name) {
-  const list = BOOKMARKS[iconId];
-  const idx = list.indexOf(name);
-  if (idx >= 0) {
-    list.splice(idx, 1);
-  } else {
-    list.push(name);
-  }
-  saveBookmarks();
-  return idx === -1; 
-}
-
-// 指定アイコンのブックマーク全消去（メッセージ簡略化）
-function clearAllBookmarks(iconId) {
-  const iconChar = iconId === "1" ? "★" : (iconId === "2" ? "♥" : "■");
-  if (confirm(`アイコン${iconChar} のブックマークを全て消去しますか？`)) {
-    BOOKMARKS[iconId] = [];
-    saveBookmarks();
-    // alertは削除（ユーザーの手間を減らす）
-    
-    // 画面リフレッシュ
-    if (window.PokedexTab) {
-      const st = history.state?.pokedex;
-      if (st?.view === "detail") window.PokedexTab.showFieldDetail(st.fieldId);
-      else window.PokedexTab.renderFieldMenu();
-    }
-  }
-}
-
-function setupLongPress(element, callback) {
-  let timer;
-  const start = (e) => {
-    if (e.type === "mousedown" && e.button !== 0) return;
-    timer = setTimeout(() => {
-      callback();
-    }, 800); 
-  };
-  const cancel = () => {
-    if (timer) clearTimeout(timer);
-  };
-  
-  element.addEventListener("mousedown", start);
-  element.addEventListener("touchstart", start, { passive: true });
-  element.addEventListener("mouseup", cancel);
-  element.addEventListener("mouseleave", cancel);
-  element.addEventListener("touchend", cancel);
-  element.addEventListener("touchmove", cancel);
-}
-
-/* =========================================================
-   データ読み込み関連
-========================================================= */
-
-async function loadTypeIcons() {
-  if (TYPE_ICON_MAP) return TYPE_ICON_MAP;
-  try {
-    const text = await fetchText("typeicon.txt");
+  function parseTwoColTable(txt) {
     const map = new Map();
-    const lines = text.split(/\r?\n/).filter(Boolean);
-    for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split("\t").map(s => s.trim());
-      if (cols.length >= 2 && cols[0]) {
-        map.set(cols[0], { typeIcon: cols[1] });
-      }
-    }
-    TYPE_ICON_MAP = map;
-  } catch (e) {
-    TYPE_ICON_MAP = new Map();
-  }
-  return TYPE_ICON_MAP;
-}
-
-async function loadSkillData() {
-  if (SKILL_MAP) return SKILL_MAP;
-  try {
-    const text = await fetchText("skill_data.txt");
-    const map = new Map();
-    text.split(/\r?\n/).forEach(line => {
-      const cols = line.trim().split(/\t+/);
-      if (cols.length >= 2) {
-        map.set(cols[0].trim(), cols[1].trim());
-      }
+    txt.split(/\r?\n/).forEach((line) => {
+      const s = line.trim();
+      if (!s || s.startsWith("#")) return;
+      const p = s.split(/\s+/);
+      if (p.length < 2) return;
+      map.set(Number(p[0]), toNum(p[1]));
     });
-    SKILL_MAP = map;
-  } catch (e) {
-    SKILL_MAP = new Map();
+    return map;
   }
-  return SKILL_MAP;
-}
 
-async function loadPokemonMaster() {
-  if (POKE_LIST) return { list: POKE_LIST, map: POKE_MAP };
+  function parseExpTable(txt) {
+    const map = new Map();
+    txt.split(/\r?\n/).forEach((line) => {
+      const s = line.trim();
+      if (!s || s.startsWith("#")) return;
+      const p = s.split(/\s+/);
+      if (p.length < 2) return;
+      map.set(Number(p[0]), { normal: toNum(p[1]) });
+    });
+    return map;
+  }
 
-  const tsv = await fetchText("pokedex_master.txt");
-  const lines = tsv.split(/\r?\n/).filter(Boolean);
+  const TYPE_MUL = { normal: 1.0, "600": 1.5, semi: 1.8, legend: 2.2 };
 
-  const list = [];
-  const map = new Map();
+  function buildNeedStepCache() {
+    if (!expTable) return;
+    needStepCache = new Map();
+    const normalMap = new Map();
+    for (let lv = 2; lv <= 65; lv++) {
+      const row = expTable.get(lv);
+      normalMap.set(lv, row ? toNum(row.normal) : 0);
+    }
+    needStepCache.set("normal", normalMap);
+    const cumNormal = [0];
+    let sum = 0;
+    for (let lv = 2; lv <= 65; lv++) {
+      sum += normalMap.get(lv) || 0;
+      cumNormal[lv] = sum;
+    }
+    ["600", "semi", "legend"].forEach((typeKey) => {
+      const mul = TYPE_MUL[typeKey] || 1.0;
+      const map = new Map();
+      let prevScaled = 0;
+      for (let lv = 2; lv <= 65; lv++) {
+        const scaledCum = Math.round((cumNormal[lv] || 0) * mul);
+        map.set(lv, scaledCum - prevScaled);
+        prevScaled = scaledCum;
+      }
+      needStepCache.set(typeKey, map);
+    });
+  }
 
-  for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split("\t").map(s => s.trim());
-    if (cols.length < 5) continue;
+  function getNeedStep(targetLv, typeKey) {
+    if (!needStepCache) buildNeedStepCache();
+    return needStepCache.get(typeKey)?.get(targetLv) || 0;
+  }
 
-    const p = {
-      id: cols[0],
-      name: cols[1],
-      typeName: cols[2] || "-",
-      evo: Number(cols[3]) || 1, 
-      type: cols[4],
-      sleep: cols[5],
-      helpTime: Number(cols[6]) || 0,
-      ingProb: Number(cols[7]) || 0,
-      skillProb: Number(cols[8]) || 0,
-      skillName: cols[9] || "-",
-      ing1: cols[10] || "-",
-      ing2: cols[11] || "-",
-      ing3: cols[12] || "-",
-      carry: Number(cols[13]) || 0,
-      file: `${cols[0]}.webp`,
-      variations: [] 
+  const el = (id) => document.getElementById(id);
+  const getRadio = (name) => document.querySelector(`input[name="${name}"]:checked`)?.value ?? null;
+
+  function enforceDigitsAndRange(input, maxDigits, min, max) {
+    if (!input) return;
+    let v = input.value.replace(/[^\d]/g, "");
+    if (v.length > maxDigits) v = v.slice(0, maxDigits);
+    if (v !== "") {
+      let num = Math.max(min, Math.min(max, parseInt(v, 10)));
+      input.value = String(num);
+    }
+  }
+
+  function clampSubOptions() {
+    const sleep = toNum(el("lvSleepDays").value);
+    const incEl = el("lvGrowthIncense");
+    const gsdEl = el("lvGSD");
+    if (toNum(incEl.value) > sleep) incEl.value = sleep || "";
+    if (toNum(gsdEl.value) > sleep) gsdEl.value = sleep || "";
+  }
+
+  function getCandyExp(level, natureKey, boostMul) {
+    let base = level < 25 ? 35 : (level < 30 ? 30 : 25);
+    let natureMul = natureKey === "up" ? 1.18 : (natureKey === "down" ? 0.82 : 1.0);
+    return Math.round(base * natureMul) * boostMul;
+  }
+
+  function calculateFreeExp() {
+    const sleep = toNum(el("lvSleepDays").value);
+    const bonusCount = toNum(el("lvSleepBonus").value);
+    const incense = toNum(el("lvGrowthIncense").value);
+    const gsdCount = toNum(el("lvGSD").value);
+    const baseExp = 100 + (14 * bonusCount);
+    
+    let remDays = sleep;
+    let gsd3Days = Math.min(remDays, gsdCount);
+    remDays -= gsd3Days;
+    let gsd2Days = Math.min(remDays, gsdCount * 2);
+    remDays -= gsd2Days;
+    let normalDays = remDays;
+
+    let remainIncense = incense;
+    const useIncense = (days, multiplier) => {
+      const daysWithIncense = Math.min(days, remainIncense);
+      remainIncense -= daysWithIncense;
+      return (daysWithIncense * baseExp * multiplier * 2) + ((days - daysWithIncense) * baseExp * multiplier);
     };
 
-    if (map.has(p.name)) {
-      const parent = map.get(p.name);
-      parent.variations.push(p);
-    } else {
-      p.variations.push(p);
-      list.push(p);
-      map.set(p.name, p);
-    }
+    let total = 0;
+    total += useIncense(gsd3Days, 3);
+    total += useIncense(gsd2Days, 2);
+    total += useIncense(normalDays, 1);
+    return total;
   }
 
-  POKE_LIST = list;
-  POKE_MAP = map;
-  calcAverages();
-  return { list, map };
-}
+  function simulate(opts) {
+    const { lvNow, lvTarget, typeKey, natureKey, initialProgress, freeExp, boostKind, boostCount } = opts;
+    let candies = 0, shards = 0, lv = lvNow;
+    let currentExp = initialProgress + freeExp;
+    let boostRemain = Math.max(0, boostCount || 0);
+    const boostExpMul = 2;
+    const boostShardMul = boostKind === "mini" ? 4 : (boostKind === "full" ? 5 : 1);
 
-function calcAverages() {
-  const sums = {}; 
-  POKE_LIST.forEach(p => {
-    if (!p.type || !p.evo) return;
-    const key = `${p.type}_${p.evo}`;
-    if (!sums[key]) sums[key] = { iSum:0, sSum:0, count:0 };
-    sums[key].iSum += p.ingProb;
-    sums[key].sSum += p.skillProb;
-    sums[key].count++;
-  });
-  STATS_AVG = {};
-  Object.keys(sums).forEach(k => {
-    const d = sums[k];
-    if (d.count > 0) {
-      STATS_AVG[k] = { ing: d.iSum / d.count, skill: d.sSum / d.count };
-    }
-  });
-}
-
-async function loadEnergyMap() {
-  if (ENERGY_MAP) return ENERGY_MAP;
-  const text = await fetchText("energy.txt");
-  const lines = text.split(/\r?\n/);
-  const map = new Map();
-  let currentField = null;
-  let inTable = false;
-  for (const raw of lines) {
-    const line = raw.trim();
-    if (!line) continue;
-    if (!line.includes("\t") && !line.includes("ポケモン数") && line !== "...") {
-      currentField = line; inTable = false; 
-      if (!map.has(currentField)) map.set(currentField, []);
-      continue;
-    }
-    if (!currentField) continue;
-    if (line.startsWith("ポケモン数")) { inTable = true; continue; }
-    if (!inTable) continue;
-    if (line === "...") continue;
-    const cols = line.split(/\t+/);
-    if (cols.length < 2) continue;
-    const count = Number(cols[0]);
-    const energyText = (cols[1] || "").trim();
-    if (!Number.isFinite(count)) continue;
-    map.get(currentField).push({ count, energyText: energyText || "-" });
-  }
-  ENERGY_MAP = map;
-  return ENERGY_MAP;
-}
-
-async function ensureAllFieldsLoaded() {
-  if (Object.keys(FIELD_CACHE).length === FIELDS.length) return;
-  await Promise.all(FIELDS.map(async (field) => {
-    if (FIELD_CACHE[field.name]) return;
-    const data = await loadFieldPokemon(field.name);
-    FIELD_CACHE[field.name] = data; 
-  }));
-}
-
-async function loadFieldPokemon(fieldName) {
-  if (FIELD_CACHE[fieldName]) return FIELD_CACHE[fieldName];
-  const text = await fetchText(`${fieldName}.txt`);
-  const lines = text.split(/\r?\n/);
-  const result = { "うとうと": [], "すやすや": [], "ぐっすり": [] };
-  let mode = null;
-  for (const raw of lines) {
-    const line = raw.trim();
-    if (!line) continue;
-    if (line.startsWith("・")) {
-      const key = line.replace(/^・/, "").trim();
-      mode = (key in result) ? key : null;
-      continue;
-    }
-    if (!mode) continue;
-    result[mode].push(line);
-  }
-  FIELD_CACHE[fieldName] = result;
-  return result;
-}
-
-/* =========================================================
-   UIコンポーネント生成ヘルパー
-========================================================= */
-
-// 検索候補（サジェスト）用のdatalistを作成
-function getSearchDataListHTML() {
-  if (!POKE_LIST) return "";
-  // 重複を除外して名前リストを作成
-  const names = Array.from(new Set(POKE_LIST.map(p => p.name)));
-  const options = names.map(name => `<option value="${name}"></option>`).join("");
-  return `<datalist id="poke-list-suggestions">${options}</datalist>`;
-}
-
-// ツールバー（検索候補対応、アイコン変更）
-function makeToolbarHTML(placeholderText, withNote = false) {
-  const noteHtml = withNote 
-    ? `<div class="dex-note-text">※アイコン長押しで対応するブックマークを全消去できます</div>` 
-    : "";
-  
-  // 検索候補のdatalist
-  const dataListHtml = getSearchDataListHTML();
-
-  return `
-    <div class="dex-tool-bar">
-      <div class="dex-search-row">
-        <input type="text" class="dex-search-input" placeholder="${placeholderText}" list="poke-list-suggestions">
-        ${dataListHtml}
-      </div>
-      <div class="dex-icon-row">
-        <div class="dex-icon-btn" data-id="1">★</div>
-        <div class="dex-icon-btn" data-id="2">♥</div>
-        <div class="dex-icon-btn" data-id="3">■</div> </div>
-      ${noteHtml}
-    </div>
-  `;
-}
-
-function attachToolbarEvents(container, onSearch, onIconClick) {
-  const input = container.querySelector(".dex-search-input");
-  const icons = container.querySelectorAll(".dex-icon-btn");
-
-  input.addEventListener("input", (e) => {
-    const val = e.target.value.trim();
-    if (onSearch) onSearch(val);
-  });
-
-  icons.forEach(btn => {
-    const id = btn.dataset.id;
-    btn.addEventListener("click", () => {
-      const isActive = btn.classList.toggle("active-filter");
-      if (isActive) {
-        icons.forEach(other => {
-          if (other !== btn) other.classList.remove("active-filter");
-        });
+    while (lv < lvTarget) {
+      const step = getNeedStep(lv + 1, typeKey);
+      while (currentExp < step) {
+        const useB = boostKind !== "none" && boostRemain > 0;
+        candies++;
+        shards += (shardTable.get(lv + 1) || 0) * (useB ? boostShardMul : 1);
+        currentExp += getCandyExp(lv, natureKey, useB ? boostExpMul : 1);
+        if (useB) boostRemain--;
       }
-      if (onIconClick) onIconClick(id, isActive);
-    });
-    setupLongPress(btn, () => clearAllBookmarks(id));
-  });
-}
-
-/* =========================================================
-   ① 各島のページ (Menu)
-========================================================= */
-
-async function renderFieldMenu() {
-  initBookmarks();
-  await ensureAllFieldsLoaded();
-  await loadPokemonMaster(); // 検索候補（POKE_LIST）を作るためにロード必須
-
-  pokEl("fieldMenu").style.display = "block";
-  pokEl("fieldDetail").style.display = "none";
-
-  const menuContainer = pokEl("fieldMenu");
-  menuContainer.innerHTML = `
-    ${makeToolbarHTML("ポケモン名を入力", true)}
-    <div class="field-grid"></div>
-  `;
-
-  const grid = menuContainer.querySelector(".field-grid");
-  grid.innerHTML = FIELDS.map(field => `
-    <div class="field-item" data-field="${field.name}" onclick="window.PokedexTab.showFieldDetail('${field.id}')">
-      <img src="images/${field.file}" class="field-img">
-      <div class="field-name">${field.name}</div>
-    </div>
-  `).join("");
-
-  const toolbar = menuContainer.querySelector(".dex-tool-bar");
-  
-  const applyMenuHighlight = (keyword, activeIconId) => {
-    const items = grid.querySelectorAll(".field-item");
-    items.forEach(item => {
-      item.classList.remove("highlight-blue");
-      const fieldName = item.dataset.field;
-      const fieldPokemonData = FIELD_CACHE[fieldName];
-      if (!fieldPokemonData) return;
-
-      const allPokes = [
-        ...fieldPokemonData["うとうと"], 
-        ...fieldPokemonData["すやすや"], 
-        ...fieldPokemonData["ぐっすり"]
-      ];
-
-      let match = false;
-      if (keyword) {
-        if (allPokes.some(pName => pName.includes(keyword))) match = true;
-      }
-      if (activeIconId) {
-        const bookmarkedPokes = BOOKMARKS[activeIconId];
-        if (bookmarkedPokes.some(bp => allPokes.includes(bp))) match = true;
-      }
-      if (match) item.classList.add("highlight-blue");
-    });
-  };
-
-  attachToolbarEvents(
-    toolbar,
-    (keyword) => {
-      const activeBtn = toolbar.querySelector(".dex-icon-btn.active-filter");
-      applyMenuHighlight(keyword, activeBtn ? activeBtn.dataset.id : null);
-    },
-    (iconId, isActive) => {
-      const input = toolbar.querySelector(".dex-search-input");
-      applyMenuHighlight(input.value.trim(), isActive ? iconId : null);
+      currentExp -= step;
+      lv++;
     }
-  );
-
-  replaceMenuState();
-}
-
-function replaceMenuState() {
-  try {
-    const st = history.state || {};
-    history.replaceState({ ...st, pokedex: { view: "menu", fieldId: null } }, "", location.href);
-  } catch (_) {}
-}
-
-/* =========================================================
-   ② 島詳細のページ
-========================================================= */
-
-function buildPokemonGridHTML(label, badgeClass, names, pokeMap, pokeList) {
-  const sorted = sortByDexOrder(names, pokeList);
-  const items = sorted.map(name => {
-    const p = pokeMap.get(name);
-    const src = p ? imgSrc(p.file) : "";
-    const imgHtml = p
-      ? `<img src="${src}" alt="${name}">`
-      : `<div style="width:44px;height:44px;border:1px dashed #ccc;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#999;">no img</div>`;
-    
-    return `
-      <div class="poke-item" data-name="${name}" title="${name}" onclick="window.PokedexTab.openDetail('${name}')">
-        ${imgHtml}
-        <div class="poke-name">${name}</div>
-      </div>
-    `;
-  }).join("");
-
-  return `
-    <div class="sleep-section">
-      <div class="sleep-label">
-        <span class="sleep-badge ${badgeClass}">${label}</span>
-        <span style="font-size:12px; color:var(--muted); font-weight:900;">${sorted.length}種</span>
-      </div>
-      <div class="poke-grid">${items}</div>
-    </div>
-  `;
-}
-
-async function showFieldDetail(fieldId, opts = {}) {
-  initBookmarks(); 
-  const fromPop = !!opts.fromPop;
-  const field = FIELDS.find(f => f.id === fieldId);
-  pokEl("fieldMenu").style.display = "none";
-  pokEl("fieldDetail").style.display = "block";
-
-  pokEl("detailContent").innerHTML = `
-    <div class="card" style="text-align:center;">
-      <div style="font-weight:900;">読み込み中...</div>
-    </div>`;
-
-  if (!fromPop) {
-    try {
-      const st = history.state || {};
-      history.pushState({ ...st, pokedex: { view: "detail", fieldId } }, "", location.href);
-    } catch (_) {}
+    return { candies, shards };
   }
 
-  try {
-    const { list, map } = await loadPokemonMaster();
-    await loadTypeIcons(); 
-    const energyMap = await loadEnergyMap();
-    const pokeBySleep = await loadFieldPokemon(field.name);
+  async function onCalc() {
+    enforceDigitsAndRange(el("lvNow"), 2, 1, 64);
+    enforceDigitsAndRange(el("lvTarget"), 2, 2, 65);
+    enforceDigitsAndRange(el("lvProgressExp"), 4, 0, 9999);
+    enforceDigitsAndRange(el("lvOwnedCandy"), 4, 0, 9999);
+    enforceDigitsAndRange(el("lvBoostCount"), 4, 0, 9999);
+    enforceDigitsAndRange(el("lvSleepDays"), 3, 0, 999);
+    enforceDigitsAndRange(el("lvSleepBonus"), 1, 0, 5);
+    enforceDigitsAndRange(el("lvGrowthIncense"), 3, 0, 999);
+    enforceDigitsAndRange(el("lvGSD"), 2, 0, 99);
+    clampSubOptions();
 
-    const eRows = energyMap.get(field.name) || [];
-    const eTrs = eRows.filter(r => r.count >= 4 && r.count <= 8)
-      .map(r => `<tr><td style="font-weight:900;">${r.count}体</td><td style="font-weight:900;">${r.energyText}</td></tr>`).join("");
-    const energyHtml = eTrs ? `
-      <table class="energy-table">
-        <thead><tr><th>出現ポケモン数</th><th>必要エナジー</th></tr></thead>
-        <tbody>${eTrs}</tbody>
-      </table>` : "";
+    const lvNow = toNum(el("lvNow").value);
+    const lvTarget = toNum(el("lvTarget").value);
+    const nature = getRadio("lvNature");
+    const type = getRadio("lvType");
+    const container = el("lvResultIn");
 
-    const headerHtml = `
-      <div class="card">
-        <div class="field-header">
-          <img src="images/${field.file}" alt="${field.name}">
-          <div class="field-title">${field.name}</div>
-        </div>
-        ${energyHtml}
-      </div>
-    `;
-    
-    const toolBarHtml = makeToolbarHTML("ポケモン名を入力", true);
-
-    const uto = buildPokemonGridHTML("うとうと", "badge-uto", pokeBySleep["うとうと"], map, list);
-    const suya = buildPokemonGridHTML("すやすや", "badge-suya", pokeBySleep["すやすや"], map, list);
-    const gusu = buildPokemonGridHTML("ぐっすり", "badge-gusu", pokeBySleep["ぐっすり"], map, list);
-
-    pokEl("detailContent").innerHTML = `
-      ${toolBarHtml}
-      ${headerHtml}
-      ${uto}
-      ${suya}
-      ${gusu}
-    `;
-
-    const toolbar = pokEl("detailContent").querySelector(".dex-tool-bar");
-    const gridItems = pokEl("detailContent").querySelectorAll(".poke-item");
-
-    const applyDetailHighlight = (keyword, activeIconId) => {
-      gridItems.forEach(item => {
-        item.classList.remove("highlight-blue");
-        const name = item.dataset.name;
-        let match = false;
-        if (keyword && name.includes(keyword)) match = true;
-        if (activeIconId) {
-          if (hasBookmark(activeIconId, name)) match = true;
-        }
-        if (match) item.classList.add("highlight-blue");
-      });
-    };
-
-    attachToolbarEvents(
-      toolbar,
-      (keyword) => {
-        const activeBtn = toolbar.querySelector(".dex-icon-btn.active-filter");
-        applyDetailHighlight(keyword, activeBtn ? activeBtn.dataset.id : null);
-      },
-      (iconId, isActive) => {
-        const input = toolbar.querySelector(".dex-search-input");
-        applyDetailHighlight(input.value.trim(), isActive ? iconId : null);
-      }
-    );
-
-  } catch (err) {
-    pokEl("detailContent").innerHTML = `
-      <div class="card"><div style="color:red;">読み込み失敗: ${err}</div></div>`;
-  }
-}
-
-function sortByDexOrder(names, pokeList) {
-  const dexOrderMap = new Map();
-  pokeList.forEach((p, i) => dexOrderMap.set(p.name, i));
-  const base = [...names].sort((a, b) => {
-    const ai = dexOrderMap.has(a) ? dexOrderMap.get(a) : 99999;
-    const bi = dexOrderMap.has(b) ? dexOrderMap.get(b) : 99999;
-    return ai - bi;
-  });
-  DEX_ORDER_OVERRIDES.forEach(rule => {
-    const idx = base.indexOf(rule.name);
-    if (idx === -1) return;
-    base.splice(idx, 1);
-    if (rule.after) {
-      const targetIdx = base.indexOf(rule.after);
-      if (targetIdx !== -1) base.splice(targetIdx + 1, 0, rule.name);
-      else base.push(rule.name);
-    } else if (rule.before) {
-      const targetIdx = base.indexOf(rule.before);
-      if (targetIdx !== -1) base.splice(targetIdx, 0, rule.name);
-      else base.push(rule.name);
-    }
-  });
-  return base;
-}
-
-/* =========================================================
-   ③ ポケモン詳細のページ (Modal)
-========================================================= */
-
-function getIngIcon(name) {
-  if (!window.INGREDIENTS) return "";
-  const found = window.INGREDIENTS.find(i => i.name === name);
-  return found ? imgSrc(found.file) : "";
-}
-
-async function openDetail(name) {
-  initBookmarks(); 
-  const { map } = await loadPokemonMaster();
-  const skills = await loadSkillData();
-  const typeIcons = await loadTypeIcons(); 
-
-  const p = map.get(name);
-  if (!p) return;
-
-  const modal = pokEl("pokeDetailModal");
-  const body = pokEl("pokeDetailBody");
-
-  const skillUrl = skills.get(p.skillName) || null;
-  const skillHtml = skillUrl 
-    ? `<a href="${skillUrl}" target="_blank" style="color:var(--main); text-decoration:underline; font-weight:900;">${p.skillName} <span style="font-size:10px;">↗</span></a><br><span style="font-size:10px; color:var(--muted); font-weight:normal;">※外部Wikiへ遷移します</span>`
-    : p.skillName;
-
-  const avgKey = `${p.type}_${p.evo}`;
-  const avg = STATS_AVG ? STATS_AVG[avgKey] : null;
-
-  let typeClass = "type-berry";
-  if (p.type === "食材") typeClass = "type-ing";
-  if (p.type === "スキル") typeClass = "type-skill";
-
-  const tInfo = typeIcons.get(p.typeName);
-  const typeIconHtml = tInfo ? `<img src="${imgSrc(tInfo.typeIcon)}" style="width:14px; height:14px;">` : "";
-  
-  const makeBar = (label, val, avgVal, unit) => {
-    const max = Math.max(val, avgVal || 0) * 1.2 || 1; 
-    const w1 = Math.min(100, (val / max) * 100);
-    const w2 = Math.min(100, (avgVal / max) * 100);
-    const col1 = "#007bff"; 
-    const col2 = "#bdc3c7"; 
-    return `
-      <div style="margin-bottom:12px;">
-        <div style="font-size:11px; font-weight:700; margin-bottom:4px; display:flex; justify-content:space-between;">
-          <span>${label}</span>
-          <span>${val}${unit}</span>
-        </div>
-        <div style="background:#f0f0f0; height:8px; border-radius:4px; overflow:hidden; margin-bottom:4px;">
-          <div style="width:${w1}%; background:${col1}; height:100%;"></div>
-        </div>
-        ${avgVal ? `
-        <div style="background:#f0f0f0; height:6px; border-radius:3px; overflow:hidden; margin-bottom:2px;">
-           <div style="width:${w2}%; background:${col2}; height:100%;"></div>
-        </div>
-        <div style="font-size:9px; color:var(--muted); text-align:right;">同タイプ平均：${avgVal.toFixed(1)}${unit}</div>
-        ` : ""}
-      </div>
-    `;
-  };
-
-  const makeIngItem = (name) => {
-    if (!name || name === "-" || name.trim() === "") {
-      return `<div class="ing-item"><img src="images/該当なし.webp" class="ing-icon" alt="該当なし"></div>`;
-    }
-    const icon = getIngIcon(name); 
-    return `
-      <div class="ing-item">
-        ${icon ? `<img src="${icon}" class="ing-icon">` : `<span class="ing-name" style="font-size:10px; color:var(--muted);">${name}</span>`}
-      </div>
-    `;
-  };
-
-  const sizeLabels = ["小", "中", "大", "特大"];
-
-  let statsHtml = "";
-  if (p.variations.length > 1) {
-    const trs = p.variations.map((v, idx) => {
-      const label = sizeLabels[idx] || `#${idx+1}`;
-      return `<tr><td style="font-weight:900;">${label}</td><td>${v.helpTime}秒</td><td>${v.ingProb}%</td><td>${v.skillProb}%</td><td>${v.carry}個</td></tr>`;
-    }).join("");
-    statsHtml = `
-      <div style="margin-bottom:12px; overflow-x:auto;">
-        <table style="width:100%; font-size:11px; border-collapse:collapse; text-align:center;" class="poke-vars-table">
-          <thead>
-            <tr style="background:#f0f2f5; color:var(--muted);">
-              <th style="padding:4px;">個体</th><th style="padding:4px;">時間</th><th style="padding:4px;">食材</th><th style="padding:4px;">スキル</th><th style="padding:4px;">所持数</th>
-            </tr>
-          </thead>
-          <tbody>${trs}</tbody>
-        </table>
-      </div>`;
-  } else {
-    statsHtml = `
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
-        <div style="background:#f8f9fa; padding:10px; border-radius:12px; text-align:center;">
-          <div style="font-size:10px; color:var(--muted); font-weight:700;">おてつだい時間</div>
-          <div style="font-size:15px; font-weight:900;">${p.helpTime}秒</div>
-        </div>
-        <div style="background:#f8f9fa; padding:10px; border-radius:12px; text-align:center;">
-          <div style="font-size:10px; color:var(--muted); font-weight:700;">最大所持数</div>
-          <div style="font-size:15px; font-weight:900;">${p.carry}個</div>
-        </div>
-      </div>
-      <div style="border-top:1px solid var(--line); padding-top:12px; margin-bottom:12px;">
-        ${makeBar("食材確率", p.ingProb, avg?.ing, "%")}
-        ${makeBar("スキル確率", p.skillProb, avg?.skill, "%")}
-      </div>`;
-  }
-
-  const b1 = hasBookmark("1", name) ? "active" : "";
-  const b2 = hasBookmark("2", name) ? "active" : "";
-  const b3 = hasBookmark("3", name) ? "active" : "";
-  
-  const bookmarksHtml = `
-    <div class="detail-bookmark-row">
-      <div class="bm-icon ${b1}" data-id="1">★</div>
-      <div class="bm-icon ${b2}" data-id="2">♥</div>
-      <div class="bm-icon ${b3}" data-id="3">■</div> </div>
-  `;
-
-  // ポケモン画像のID設定（青枠適用用）
-  const mainImgId = "detailMainImg";
-
-  body.innerHTML = `
-    <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
-      <img id="${mainImgId}" src="${imgSrc(p.file)}" style="width:72px; height:72px; object-fit:contain; border:1px solid var(--line); border-radius:16px; background:#fff; transition:all 0.2s;">
-      <div style="flex:1;">
-        <div class="type-badge-row" style="display:flex; align-items:center;">
-          <div class="element-type">
-            ${typeIconHtml}
-            <span>${p.typeName}</span>
+    // 1. 入力不足時の初期表示
+    if (!lvNow || !lvTarget || !nature || !type) {
+      container.innerHTML = `
+        <div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">0 pt</div></div>
+        <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">0 個</div></div>
+        <div class="lvResRow" style="align-items: center;">
+          <div class="lvResKey">
+            <span>必要なゆめのかけら量✨</span>
+            <span class="info-btn-tiny" onclick="showInfo('数十程度の誤差が出る場合があります')">ⓘ</span>
           </div>
-          <span class="type-badge ${typeClass}" style="font-size:11px; padding:2px 10px; min-width:auto; margin-right:auto;">${p.type}</span>
-          ${bookmarksHtml}
-        </div>
-        <div style="font-size:20px; font-weight:900; line-height:1.2; margin-top:4px;">
-          ${p.name}
-        </div>
-      </div>
-    </div>
-    ${statsHtml}
-    <div style="border-top:1px solid var(--line); padding-top:16px;">
-      <div style="margin-bottom:16px;">
-        <div style="font-size:11px; color:var(--muted); font-weight:700; margin-bottom:4px;">食材</div>
-        <div class="ing-list">${makeIngItem(p.ing1)}${makeIngItem(p.ing2)}${makeIngItem(p.ing3)}</div>
-      </div>
-      <div>
-        <div style="font-size:11px; color:var(--muted); font-weight:700; margin-bottom:8px;">メインスキル</div>
-        <div style="font-size:14px; font-weight:900; line-height:1.4;">${skillHtml}</div>
-      </div>
-    </div>
-  `;
-
-  // 青枠更新ヘルパー：どれか1つでもブックマークがあれば青枠をつける
-  const updateImageHighlight = () => {
-    const img = document.getElementById(mainImgId);
-    if (!img) return;
-    const hasAny = ["1", "2", "3"].some(id => hasBookmark(id, p.name));
-    if (hasAny) img.classList.add("highlight-blue");
-    else img.classList.remove("highlight-blue");
-  };
-
-  // 初期状態反映
-  updateImageHighlight();
-
-  const bmIcons = body.querySelectorAll(".bm-icon");
-  bmIcons.forEach(btn => {
-    const id = btn.dataset.id;
-    btn.onclick = (e) => {
-      e.stopPropagation();
-      const added = toggleBookmark(id, p.name);
-      if (added) btn.classList.add("active");
-      else btn.classList.remove("active");
-      
-      // 青枠の更新（押した時点で即時反映）
-      updateImageHighlight();
-    };
-    setupLongPress(btn, () => {
-      clearAllBookmarks(id);
-      if (!hasBookmark(id, p.name)) btn.classList.remove("active");
-      updateImageHighlight();
-    });
-  });
-
-  modal.style.display = "flex";
-}
-
-const closeBtn = pokEl("closePokeDetail");
-if (closeBtn) closeBtn.onclick = () => pokEl("pokeDetailModal").style.display = "none";
-
-const modalEl = pokEl("pokeDetailModal");
-if (modalEl) modalEl.onclick = (e) => {
-  if (e.target === modalEl) modalEl.style.display = "none";
-};
-
-/* =========================================================
-   共通エクスポート
-========================================================= */
-function backToMenu(viaPop = false) {
-  pokEl("fieldMenu").style.display = "block";
-  pokEl("fieldDetail").style.display = "none";
-  pokEl("pokeDetailModal").style.display = "none";
-  if (!viaPop) {
-    const st = history.state?.pokedex;
-    if (st?.view === "detail") {
-      try { history.back(); return; } catch (_) {}
+          <div class="lvResVal" style="padding-top: 2px;">0</div>
+        </div>`;
+      return;
     }
-    replaceMenuState();
-  }
-  // ブックマーク変更や検索状態の維持・反映のため再描画
-  window.PokedexTab.renderFieldMenu();
-}
 
-window.addEventListener("popstate", (e) => {
-  const st = e.state?.pokedex;
-  const modal = pokEl("pokeDetailModal");
-  if (modal && modal.style.display !== "none") {
-    modal.style.display = "none";
-    return;
-  }
-  if (st?.view === "detail" && st.fieldId) {
-    showFieldDetail(st.fieldId, { fromPop: true });
-    return;
-  }
-  backToMenu(true);
-});
+    if (lvTarget <= lvNow) {
+      container.innerHTML = `<div style="color:red; font-size:12px; font-weight:bold;">目標レベルを現在のレベルより大きくしてください</div>`;
+      return;
+    }
 
-window.PokedexTab = { renderFieldMenu, showFieldDetail, backToMenu, openDetail };
+    await loadTablesOnce();
+
+    const needForNext = getNeedStep(lvNow + 1, type);
+    const progressInput = toNum(el("lvProgressExp").value);
+    const initialProgress = Math.max(0, needForNext - Math.min(progressInput || needForNext, needForNext));
+
+    let totalSteps = 0;
+    for (let i = lvNow + 1; i <= lvTarget; i++) totalSteps += getNeedStep(i, type);
+    const freeExp = calculateFreeExp();
+    const displayExpNeeded = Math.max(0, totalSteps - (needForNext - Math.min(progressInput || needForNext, needForNext)) - freeExp);
+
+    const boostKind = getRadio("lvBoostKind") || "none";
+    const bCountStr = el("lvBoostCount").value;
+    const isBoostCountEmpty = (bCountStr === "");
+    const bCount = isBoostCountEmpty ? 9999 : toNum(bCountStr);
+
+    const ownedCandy = toNum(el("lvOwnedCandy").value);
+
+    // ★修正：再描画する前に、現在の「備考」が開いているかチェックして記憶しておく
+    const currentDetails = container.querySelector("details");
+    const isDetailsOpen = currentDetails && currentDetails.open;
+
+    const resNormal = simulate({ lvNow, lvTarget, typeKey: type, natureKey: nature, initialProgress, freeExp, boostKind: "none", boostCount: 0 });
+    const missingNormal = Math.max(0, resNormal.candies - ownedCandy);
+
+    // ★ヘルパー: 所持数・不足分の行を作る関数
+    const makeSubRows = (totalNeed) => {
+      const missing = Math.max(0, totalNeed - ownedCandy);
+      return `
+        <div style="font-size:10px; color:#5d6d7e; text-align:right; margin-top:-4px; margin-bottom:4px;">
+           所持数：${ownedCandy.toLocaleString()}個 / 不足分：<span style="color:${missing > 0 ? '#e74c3c' : '#5d6d7e'}">${missing.toLocaleString()}個</span>
+        </div>
+      `;
+    };
+
+    // 2. 通常計算結果の表示
+    let html = `
+      <div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">${displayExpNeeded.toLocaleString()} pt</div></div>
+      
+      <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${resNormal.candies.toLocaleString()} 個</div></div>
+      ${makeSubRows(resNormal.candies)}
+
+      <div class="lvResRow" style="align-items: center;">
+        <div class="lvResKey">
+          <span>必要なゆめのかけら量✨</span>
+          <span class="info-btn-tiny" onclick="showInfo('数十程度の誤差が出る場合があります')">ⓘ</span>
+        </div>
+        <div class="lvResVal" style="padding-top: 2px;">${resNormal.shards.toLocaleString()}</div>
+      </div>`;
+
+    if (boostKind !== "none") {
+      const resBoost = simulate({ lvNow, lvTarget, typeKey: type, natureKey: nature, initialProgress, freeExp, boostKind, boostCount: bCount });
+      const diffShard = resBoost.shards - resNormal.shards;
+
+      let boostHeader = "";
+      const boostRateInfo = boostKind === "mini" ? "(EXP2倍/かけら4倍)" : "(EXP2倍/かけら5倍)";
+      
+      if (isBoostCountEmpty) {
+        boostHeader = `${boostKind === "mini" ? "ミニアメブースト" : "アメブースト"}最大数適用時 ${boostRateInfo}`;
+      } else {
+        boostHeader = `${boostKind === "mini" ? "ミニアメブースト" : "アメブースト"} ${bCount}個適用時 ${boostRateInfo}`;
+      }
+
+      // 3. ブースト計算結果の表示
+      html += `<div class="lvResSubTitle" style="font-size: 12.5px;">${boostHeader}</div>
+               <div class="lvResRow">
+                 <div class="lvResKey">必要なアメの数🍬</div>
+                 <div class="lvResVal">${resBoost.candies.toLocaleString()} 個</div>
+               </div>
+               ${makeSubRows(resBoost.candies)}
+               
+               <div class="lvResRow" style="align-items: center;">
+                 <div class="lvResKey">
+                   <span>必要なゆめのかけら量✨</span>
+                   <span class="info-btn-tiny" onclick="showInfo('数十程度の誤差が出る場合があります')">ⓘ</span>
+                 </div>
+                 <div class="lvResVal" style="padding-top: 2px;">
+                   ${resBoost.shards.toLocaleString()} <span style="color:#e74c3c; font-size:0.9em;">(+${diffShard.toLocaleString()})</span>
+                 </div>
+               </div>`;
+    }
+
+    // ★追加: 備考（マイルストーン計算）
+    const milestones = [25, 30, 50, 55, 60, 65];
+    
+    // ★修正：現在のレベル(lvNow)ではなく「目標レベル(lvTarget)」より大きいものだけ抽出
+    const validMilestones = milestones.filter(m => m > lvTarget);
+
+    // ★修正：ブーストが選択されている場合(boostKind !== "none")のみ表示する条件を追加
+    if (validMilestones.length > 0 && boostKind !== "none") {
+      let detailsHtml = "";
+      validMilestones.forEach(ms => {
+        const msRes = simulate({ 
+          lvNow, lvTarget: ms, typeKey: type, natureKey: nature, initialProgress, freeExp, 
+          boostKind, boostCount: bCount 
+        });
+        const msMissing = Math.max(0, msRes.candies - ownedCandy);
+
+        detailsHtml += `
+          <div style="display:flex; justify-content:space-between; align-items:baseline; border-bottom: 1px dashed #eee; padding: 6px 0;">
+            <div style="font-weight:900; font-size:11px; color:var(--text); white-space:nowrap; margin-right:4px;">Lv.${ms}まで</div>
+            <div style="font-size:10px; text-align:right; color:#5d6d7e; line-height:1.2;">
+              必要数：${msRes.candies.toLocaleString()}　所持数：${ownedCandy.toLocaleString()}　<span style="font-weight:900; color:${msMissing > 0 ? '#e74c3c' : '#5d6d7e'};">不足数：${msMissing.toLocaleString()}</span>
+            </div>
+          </div>`;
+      });
+
+      // ★修正：区切り線(border-top)を削除
+      // ★修正：detailsタグに ${isDetailsOpen ? "open" : ""} を追加して状態を復元
+      html += `
+        <div style="margin-top: 16px; padding-top: 8px;">
+          <details style="cursor:pointer;" ${isDetailsOpen ? "open" : ""}>
+            <summary style="font-size:12px; font-weight:900; color:var(--main); outline:none;">▼備考</summary>
+            <div style="margin-top:8px; padding:0 8px; background:#f8f9fa; border-radius:8px;">
+              ${detailsHtml}
+            </div>
+          </details>
+        </div>
+      `;
+    }
+
+    container.innerHTML = html;
+  }
+
+
+    
+window.LevelTab = {
+    init() {
+      if (!window.__LV_BOUND__) {
+        window.__LV_BOUND__ = true;
+        el("tab3").addEventListener("input", (e) => {
+          if (e.target.id === "lvBoostCount") boostCountTouched = true;
+          onCalc();
+        });
+        el("tab3").addEventListener("change", onCalc);
+        
+        el("tab3").addEventListener("click", (e) => {
+          const btn = e.target.closest(".lvlQuickBtn");
+          if (btn) {
+            // ★GAイベント追加：目標レベルのクイックボタンが押されたら計測
+            if (btn.dataset.target && typeof gtag === 'function') {
+              gtag('event', 'click_quick_level', {
+                'target_level': btn.dataset.target
+              });
+            }
+
+            if (btn.dataset.now) el("lvNow").value = btn.dataset.now;
+            if (btn.dataset.target) el("lvTarget").value = btn.dataset.target;
+            onCalc();
+          }
+        });
+
+        const clearBtn = el("lvResultClear");
+        if (clearBtn) {
+          clearBtn.onclick = () => {
+            this.clearAll();
+            onCalc();
+          };
+        }
+      }
+      onCalc();
+    },
+    clearAll() {
+      ["lvNow", "lvTarget", "lvProgressExp", "lvOwnedCandy", "lvBoostCount", "lvSleepDays", "lvSleepBonus", "lvGrowthIncense", "lvGSD"].forEach(id => {
+        const input = el(id);
+        if (input) input.value = "";
+      });
+      document.querySelectorAll('input[name="lvNature"], input[name="lvType"], input[name="lvBoostKind"]').forEach(r => r.checked = false);
+      boostCountTouched = false;
+    }
+  };
+})();
