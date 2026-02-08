@@ -224,9 +224,7 @@ function toNum(v) {
     
     const ownedCandy = toNum(el("lvOwnedCandy").value);
 
-    // ★修正: シミュレーション結果自体は「総必要数」として扱う（所持数を引く前の値を持っておく）
     const resNormal = simulate({ lvNow, lvTarget, typeKey: type, natureKey: nature, initialProgress, freeExp, boostKind: "none", boostCount: 0 });
-    // 必要数 - 所持数 (マイナスにならないように0で丸める)
     const missingNormal = Math.max(0, resNormal.candies - ownedCandy);
 
     // ★ヘルパー: 所持数・不足分の行を作る関数
@@ -234,7 +232,7 @@ function toNum(v) {
       const missing = Math.max(0, totalNeed - ownedCandy);
       return `
         <div style="font-size:10px; color:#5d6d7e; text-align:right; margin-top:-4px; margin-bottom:4px;">
-           所持数: ${ownedCandy.toLocaleString()}個 / 不足分: <span style="color:${missing > 0 ? '#e74c3c' : '#5d6d7e'}">${missing.toLocaleString()}個</span>
+           所持数：${ownedCandy.toLocaleString()}個 / 不足分：<span style="color:${missing > 0 ? '#e74c3c' : '#5d6d7e'}">${missing.toLocaleString()}個</span>
         </div>
       `;
     };
@@ -262,7 +260,7 @@ function toNum(v) {
       const boostRateInfo = boostKind === "mini" ? "(EXP2倍/かけら4倍)" : "(EXP2倍/かけら5倍)";
       
       if (isBoostCountEmpty) {
-        boostHeader = `${boostKind === "mini" ? "ミニアメブースト" : "アメブースト"}最大適用時 ${boostRateInfo}`;
+        boostHeader = `${boostKind === "mini" ? "ミニアメブースト" : "アメブースト"}最大数適用時 ${boostRateInfo}`;
       } else {
         boostHeader = `${boostKind === "mini" ? "ミニアメブースト" : "アメブースト"} ${bCount}個適用時 ${boostRateInfo}`;
       }
@@ -288,26 +286,23 @@ function toNum(v) {
 
     // ★追加: 備考（マイルストーン計算）
     const milestones = [25, 30, 50, 55, 60, 65];
-    // 現在のレベルより高いマイルストーンのみ抽出
     const validMilestones = milestones.filter(m => m > lvNow);
 
     if (validMilestones.length > 0) {
       let detailsHtml = "";
       validMilestones.forEach(ms => {
-        // 設定（ブースト有無など）を引き継いで計算
         const msRes = simulate({ 
           lvNow, lvTarget: ms, typeKey: type, natureKey: nature, initialProgress, freeExp, 
-          boostKind, boostCount: bCount // 現在のブースト設定を反映
+          boostKind, boostCount: bCount 
         });
         const msMissing = Math.max(0, msRes.candies - ownedCandy);
 
+        // ★修正：レイアウト変更（1行右寄せ）、色変更、文言変更（必要数：所持数：不足数：）
         detailsHtml += `
-          <div style="margin-bottom: 8px; border-bottom: 1px dashed #eee; padding-bottom: 4px;">
-            <div style="font-weight:900; font-size:12px; color:var(--main);">レベル${ms}まで</div>
-            <div style="font-size:11px; display:flex; justify-content:space-between;">
-              <span style="color:#5d6d7e;">必要数: ${msRes.candies.toLocaleString()}</span>
-              <span style="color:#5d6d7e;">所持: ${ownedCandy.toLocaleString()}</span>
-              <span style="font-weight:900; color:${msMissing > 0 ? '#e74c3c' : '#5d6d7e'};">不足: ${msMissing.toLocaleString()}</span>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; border-bottom: 1px dashed #eee; padding: 6px 0;">
+            <div style="font-weight:900; font-size:11px; color:var(--text); white-space:nowrap; margin-right:4px;">Lv.${ms}まで</div>
+            <div style="font-size:10px; text-align:right; color:#5d6d7e; line-height:1.2;">
+              必要数：${msRes.candies.toLocaleString()}　所持数：${ownedCandy.toLocaleString()}　<span style="font-weight:900; color:${msMissing > 0 ? '#e74c3c' : '#5d6d7e'};">不足数：${msMissing.toLocaleString()}</span>
             </div>
           </div>`;
       });
@@ -315,8 +310,8 @@ function toNum(v) {
       html += `
         <div style="margin-top: 16px; border-top: 1px solid var(--line); padding-top: 8px;">
           <details style="cursor:pointer;">
-            <summary style="font-size:12px; font-weight:900; color:var(--muted); outline:none;">備考</summary>
-            <div style="margin-top:8px; padding:8px; background:#f8f9fa; border-radius:8px;">
+            <summary style="font-size:12px; font-weight:900; color:var(--main); outline:none;">備考</summary>
+            <div style="margin-top:8px; padding:0 8px; background:#f8f9fa; border-radius:8px;">
               ${detailsHtml}
             </div>
           </details>
@@ -327,6 +322,7 @@ function toNum(v) {
     container.innerHTML = html;
   }
 
+  
 window.LevelTab = {
     init() {
       if (!window.__LV_BOUND__) {
@@ -373,6 +369,7 @@ window.LevelTab = {
     }
   };
 })();
+
 
 
 
