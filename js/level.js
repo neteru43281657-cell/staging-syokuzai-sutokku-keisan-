@@ -317,7 +317,7 @@ function toNum(v) {
       html += `
         <div style="margin-top: 16px; padding-top: 8px;">
           <details style="cursor:pointer;" ${isDetailsOpen ? "open" : ""}>
-            <summary style="font-size:12px; font-weight:900; color:var(--main); outline:none;">▼備考</summary>
+            <summary style="font-size:12px; font-weight:900; color:var(--main); outline:none;">備考</summary>
             <div style="margin-top:8px; padding:0 8px; background:#f8f9fa; border-radius:8px;">
               ${detailsHtml}
             </div>
@@ -377,3 +377,4 @@ window.LevelTab = {
     }
   };
 })();
+
