@@ -221,15 +221,31 @@ function toNum(v) {
     const isBoostCountEmpty = (bCountStr === "");
     const bCount = isBoostCountEmpty ? 9999 : toNum(bCountStr);
 
+    
     const ownedCandy = toNum(el("lvOwnedCandy").value);
 
+    // ★修正: シミュレーション結果自体は「総必要数」として扱う（所持数を引く前の値を持っておく）
     const resNormal = simulate({ lvNow, lvTarget, typeKey: type, natureKey: nature, initialProgress, freeExp, boostKind: "none", boostCount: 0 });
-    const finalNormalCandy = Math.max(0, resNormal.candies - ownedCandy);
+    // 必要数 - 所持数 (マイナスにならないように0で丸める)
+    const missingNormal = Math.max(0, resNormal.candies - ownedCandy);
+
+    // ★ヘルパー: 所持数・不足分の行を作る関数
+    const makeSubRows = (totalNeed) => {
+      const missing = Math.max(0, totalNeed - ownedCandy);
+      return `
+        <div style="font-size:10px; color:#5d6d7e; text-align:right; margin-top:-4px; margin-bottom:4px;">
+           所持数: ${ownedCandy.toLocaleString()}個 / 不足分: <span style="color:${missing > 0 ? '#e74c3c' : '#5d6d7e'}">${missing.toLocaleString()}個</span>
+        </div>
+      `;
+    };
 
     // 2. 通常計算結果の表示
     let html = `
       <div class="lvResRow"><div class="lvResKey">必要経験値</div><div class="lvResVal">${displayExpNeeded.toLocaleString()} pt</div></div>
-      <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${finalNormalCandy.toLocaleString()} 個</div></div>
+      
+      <div class="lvResRow"><div class="lvResKey">必要なアメの数🍬</div><div class="lvResVal">${resNormal.candies.toLocaleString()} 個</div></div>
+      ${makeSubRows(resNormal.candies)}
+
       <div class="lvResRow" style="align-items: center;">
         <div class="lvResKey">
           <span>必要なゆめのかけら量✨</span>
@@ -240,7 +256,6 @@ function toNum(v) {
 
     if (boostKind !== "none") {
       const resBoost = simulate({ lvNow, lvTarget, typeKey: type, natureKey: nature, initialProgress, freeExp, boostKind, boostCount: bCount });
-      const finalBoostCandy = Math.max(0, resBoost.candies - ownedCandy);
       const diffShard = resBoost.shards - resNormal.shards;
 
       let boostHeader = "";
@@ -256,8 +271,10 @@ function toNum(v) {
       html += `<div class="lvResSubTitle" style="font-size: 12.5px;">${boostHeader}</div>
                <div class="lvResRow">
                  <div class="lvResKey">必要なアメの数🍬</div>
-                 <div class="lvResVal">${finalBoostCandy.toLocaleString()} 個</div>
+                 <div class="lvResVal">${resBoost.candies.toLocaleString()} 個</div>
                </div>
+               ${makeSubRows(resBoost.candies)}
+               
                <div class="lvResRow" style="align-items: center;">
                  <div class="lvResKey">
                    <span>必要なゆめのかけら量✨</span>
@@ -268,6 +285,45 @@ function toNum(v) {
                  </div>
                </div>`;
     }
+
+    // ★追加: 備考（マイルストーン計算）
+    const milestones = [25, 30, 50, 55, 60, 65];
+    // 現在のレベルより高いマイルストーンのみ抽出
+    const validMilestones = milestones.filter(m => m > lvNow);
+
+    if (validMilestones.length > 0) {
+      let detailsHtml = "";
+      validMilestones.forEach(ms => {
+        // 設定（ブースト有無など）を引き継いで計算
+        const msRes = simulate({ 
+          lvNow, lvTarget: ms, typeKey: type, natureKey: nature, initialProgress, freeExp, 
+          boostKind, boostCount: bCount // 現在のブースト設定を反映
+        });
+        const msMissing = Math.max(0, msRes.candies - ownedCandy);
+
+        detailsHtml += `
+          <div style="margin-bottom: 8px; border-bottom: 1px dashed #eee; padding-bottom: 4px;">
+            <div style="font-weight:900; font-size:12px; color:var(--main);">レベル${ms}まで</div>
+            <div style="font-size:11px; display:flex; justify-content:space-between;">
+              <span style="color:#5d6d7e;">必要数: ${msRes.candies.toLocaleString()}</span>
+              <span style="color:#5d6d7e;">所持: ${ownedCandy.toLocaleString()}</span>
+              <span style="font-weight:900; color:${msMissing > 0 ? '#e74c3c' : '#5d6d7e'};">不足: ${msMissing.toLocaleString()}</span>
+            </div>
+          </div>`;
+      });
+
+      html += `
+        <div style="margin-top: 16px; border-top: 1px solid var(--line); padding-top: 8px;">
+          <details style="cursor:pointer;">
+            <summary style="font-size:12px; font-weight:900; color:var(--muted); outline:none;">備考</summary>
+            <div style="margin-top:8px; padding:8px; background:#f8f9fa; border-radius:8px;">
+              ${detailsHtml}
+            </div>
+          </details>
+        </div>
+      `;
+    }
+
     container.innerHTML = html;
   }
 
@@ -317,5 +373,6 @@ window.LevelTab = {
     }
   };
 })();
+
 
 
