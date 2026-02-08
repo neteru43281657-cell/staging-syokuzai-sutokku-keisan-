@@ -69,7 +69,7 @@ function toggleBookmark(iconId, name) {
   }
   saveBookmarks();
 
-  // ★GA: ブックマークイベント
+  // GA: ブックマークイベント
   if (typeof gtag === 'function') {
     gtag('event', added ? 'bookmark_add' : 'bookmark_remove', {
       'pokemon': name,
@@ -77,7 +77,7 @@ function toggleBookmark(iconId, name) {
     });
   }
 
-  // ★重要：裏側の一覧画面（MenuやDetail）にある該当ポケモンの青枠を即時更新する
+  // 裏側の一覧画面（MenuやDetail）にある該当ポケモンの青枠を即時更新する
   updateGridHighlight(name);
 
   return added; 
@@ -85,33 +85,11 @@ function toggleBookmark(iconId, name) {
 
 // 青枠の即時更新ロジック
 function updateGridHighlight(name) {
-  // 名前が一致するすべての poke-item を探す（島詳細画面用）
   const items = document.querySelectorAll(`.poke-item[data-name="${name}"]`);
+  const activeBtn = document.querySelector(".dex-icon-btn.active-filter");
+  const activeFilterId = activeBtn ? activeBtn.dataset.id : null;
+
   items.forEach(item => {
-    // 検索バーの状態を取得してハイライトすべきか再判定してもいいが、
-    // ここでは「ブックマークがついているか」を基準に青枠を制御する
-    // (検索キーワードとの兼ね合いもあるが、ブックマーク操作時はブックマーク優先で青枠を更新)
-    const hasAny = ["1", "2", "3"].some(id => hasBookmark(id, name));
-    
-    // 現在の表示モードでフィルタ中かどうかを確認
-    // ツールバーのアクティブなアイコンを取得
-    const activeBtn = document.querySelector(".dex-icon-btn.active-filter");
-    const activeFilterId = activeBtn ? activeBtn.dataset.id : null;
-
-    let shouldHighlight = false;
-
-    // 1. アイコンフィルタが有効な場合、そのアイコンが付いているなら青枠
-    if (activeFilterId) {
-      if (hasBookmark(activeFilterId, name)) shouldHighlight = true;
-    } 
-    // 2. 検索キーワード入力中なら（ここは複雑になるので、簡易的に「どれかブックマークあれば青枠」にはしないでおく）
-    // 要望の文脈では「アイコンその1を押したとき...強調表示」なので、
-    // フィルタアイコンが押されていない状態での青枠表示は定義されていない。
-    // 「詳細ページでアイコンを付けた → 戻ったら青枠」は、
-    // 「一覧ページでそのアイコンフィルタがONになっている前提」か？
-    // もしフィルタOFFなら青枠は出なくて正解。
-    
-    // しかし、ユーザー体験的には「フィルタON状態で詳細を開き、BMを消したら、一覧でも青枠が消える」のが正解。
     if (activeFilterId) {
       if (hasBookmark(activeFilterId, name)) {
         item.classList.add("highlight-blue");
@@ -120,26 +98,6 @@ function updateGridHighlight(name) {
       }
     }
   });
-
-  // 島メニュー（各島のページ）のハイライト更新も必要ならここで行う
-  // （ただし島メニューは「島」が青枠になる仕様。ポケモンのBM変更が島単位の青枠に影響するか？
-  //  → Yes. その島にBM済みポケモンがいなくなれば青枠は消えるべき）
-  const menuGrid = document.querySelector(".field-grid");
-  if (menuGrid && menuGrid.offsetParent !== null) {
-    // 表示中なら再計算（少し重いが正確性を優先）
-    const toolbar = document.querySelector(".dex-tool-bar");
-    const input = toolbar?.querySelector(".dex-search-input");
-    const activeBtn = toolbar?.querySelector(".dex-icon-btn.active-filter");
-    
-    // 既存の applyMenuHighlight ロジックを再利用したいが、スコープ外なので簡易再実装
-    // または renderFieldMenu 内の関数を外に出すべきだが、今回はその場で処理
-    if (window.PokedexTab && window.PokedexTab.renderFieldMenu) {
-      // 簡易リロード（ちらつき許容）あるいは、ロジック再実行
-      // ここではポケモン詳細から戻ったときの renderFieldMenu 呼び出しに任せる手もあるが、
-      // 即時反映のためにここでもDOM操作する
-      // ...実装簡略化のため、backToMenu での再描画に任せる（ユーザー要望①の前半「戻ったとき」はこれで満たせる）
-    }
-  }
 }
 
 // 指定アイコンのブックマーク全消去
@@ -355,7 +313,14 @@ async function loadFieldPokemon(fieldName) {
    UIコンポーネント生成ヘルパー
 ========================================================= */
 
-// ツールバー（自作サジェスト対応、アイコン変更）
+// ひらがな -> カタカナ 変換ヘルパー
+function hiraToKata(str) {
+  return str.replace(/[\u3041-\u3096]/g, function(match) {
+    var chr = match.charCodeAt(0) + 0x60;
+    return String.fromCharCode(chr);
+  });
+}
+
 function makeToolbarHTML(placeholderText, withNote = false) {
   const noteHtml = withNote 
     ? `<div class="dex-note-text">※アイコン長押しで対応するブックマークを全消去できます</div>` 
@@ -394,8 +359,12 @@ function attachToolbarEvents(container, onSearch, onIconClick) {
     
     // 重複除外して名前リスト作成
     const uniqueNames = Array.from(new Set(POKE_LIST.map(p => p.name)));
-    // 部分一致でフィルタ (先頭一致など好みに応じて調整)
-    const matches = uniqueNames.filter(name => name.includes(val));
+    
+    // ひらがなをカタカナに変換して検索（前方一致）
+    const searchVal = hiraToKata(val);
+    
+    // ★修正: includes(部分一致) ではなく startsWith(前方一致) を使用
+    const matches = uniqueNames.filter(name => name.startsWith(searchVal));
     
     if (matches.length === 0) {
       suggestList.style.display = "none";
@@ -424,9 +393,12 @@ function attachToolbarEvents(container, onSearch, onIconClick) {
     });
   };
 
+  // ★ input イベントで入力中の文字（ひらがな未確定状態など）も取得してサジェスト
   input.addEventListener("input", (e) => {
     const val = e.target.value.trim();
     showSuggest(val);
+    // 入力中の文字でも一応検索実行（ヒットングすれば光らせるなど）したければ呼ぶ
+    // 完全一致しかハイライトしないロジックなら、途中段階ではハイライトされないだけ
     if (onSearch) onSearch(val);
   });
   
@@ -501,8 +473,15 @@ async function renderFieldMenu() {
       ];
 
       let match = false;
+      // キーワード検索（部分一致など必要に応じてロジック調整）
+      // ※要望では「候補が出る」ことが主眼だが、確定後のハイライトロジックも
+      // 前方一致やひらがな対応させるならここも修正が必要。
+      // ただしメニュー画面での島ハイライトは「その名前のポケモンがいる島」なので、
+      // 候補選択後（カタカナ）が入る前提であれば、includesで問題ない。
+      // 入力途中でも反応させたいならここもhiraToKataを通す。
       if (keyword) {
-        if (allPokes.some(pName => pName.includes(keyword))) match = true;
+        const searchVal = hiraToKata(keyword);
+        if (allPokes.some(pName => pName.includes(searchVal))) match = true;
       }
       if (activeIconId) {
         const bookmarkedPokes = BOOKMARKS[activeIconId];
@@ -547,7 +526,6 @@ function buildPokemonGridHTML(label, badgeClass, names, pokeMap, pokeList) {
       ? `<img src="${src}" alt="${name}">`
       : `<div style="width:44px;height:44px;border:1px dashed #ccc;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#999;">no img</div>`;
     
-    // 青枠ロジックは JS で後付けするが、初期描画用にはクラスを付けない
     return `
       <div class="poke-item" data-name="${name}" title="${name}" onclick="window.PokedexTab.openDetail('${name}')">
         ${imgHtml}
@@ -633,7 +611,10 @@ async function showFieldDetail(fieldId, opts = {}) {
         item.classList.remove("highlight-blue");
         const name = item.dataset.name;
         let match = false;
-        if (keyword && name.includes(keyword)) match = true;
+        if (keyword) {
+          const searchVal = hiraToKata(keyword);
+          if (name.includes(searchVal)) match = true;
+        }
         if (activeIconId) {
           if (hasBookmark(activeIconId, name)) match = true;
         }
@@ -886,7 +867,7 @@ function backToMenu(viaPop = false) {
     }
     replaceMenuState();
   }
-  // 戻った際、青枠状態を念のため再同期（詳細操作で既にupdateGridHighlightしているが念のため）
+  // 戻った際、青枠状態を念のため再同期
   window.PokedexTab.renderFieldMenu();
 }
 
