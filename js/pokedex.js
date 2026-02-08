@@ -11,6 +11,11 @@ let SKILL_MAP = null;
 let TYPE_ICON_MAP = null; 
 let ENERGY_MAP = null;
 let STATS_AVG = null;
+let FIELD_CACHE = {}; // { fieldId: { "うとうと": [name...], ... } }
+
+// ブックマークデータ (localStorage)
+// 形式: { "1": ["ピカチュウ", ...], "2": [], "3": [] }
+let BOOKMARKS = { "1": [], "2": [], "3": [] };
 
 const DEX_ORDER_OVERRIDES = [
     { name: "ストリンダー（ロー）", after: "ストリンダー（ハイ）" },
@@ -19,10 +24,91 @@ const DEX_ORDER_OVERRIDES = [
     { name: "キュウコン（アローラ）", after: "キュウコン" }
 ];
 
+/* =========================================================
+   基本データ取得・初期化
+========================================================= */
+
 async function fetchText(path) {
   const res = await fetch("data/" + path, { cache: "no-store" });
   if (!res.ok) throw new Error(`Failed to fetch: ${path}`);
   return await res.text();
+}
+
+// ブックマーク初期化
+function initBookmarks() {
+  try {
+    const raw = localStorage.getItem("poke_bookmarks");
+    if (raw) {
+      BOOKMARKS = JSON.parse(raw);
+      // データ構造の整合性チェック
+      if (!Array.isArray(BOOKMARKS["1"])) BOOKMARKS["1"] = [];
+      if (!Array.isArray(BOOKMARKS["2"])) BOOKMARKS["2"] = [];
+      if (!Array.isArray(BOOKMARKS["3"])) BOOKMARKS["3"] = [];
+    }
+  } catch (e) {
+    console.warn("Bookmark load failed", e);
+  }
+}
+
+// ブックマーク保存
+function saveBookmarks() {
+  localStorage.setItem("poke_bookmarks", JSON.stringify(BOOKMARKS));
+}
+
+// 指定アイコンにポケモンが含まれているか
+function hasBookmark(iconId, name) {
+  return BOOKMARKS[iconId]?.includes(name);
+}
+
+// ブックマーク切り替え
+function toggleBookmark(iconId, name) {
+  const list = BOOKMARKS[iconId];
+  const idx = list.indexOf(name);
+  if (idx >= 0) {
+    list.splice(idx, 1);
+  } else {
+    list.push(name);
+  }
+  saveBookmarks();
+  return idx === -1; // true if added
+}
+
+// 指定アイコンのブックマーク全消去
+function clearAllBookmarks(iconId) {
+  if (confirm(`アイコン${iconId === "1" ? "★" : (iconId === "2" ? "♥" : "●")} のブックマークを全て消去しますか？`)) {
+    BOOKMARKS[iconId] = [];
+    saveBookmarks();
+    alert("消去しました");
+    // 現在の表示をリフレッシュ
+    if (window.PokedexTab) {
+      // 簡易リロード
+      const st = history.state?.pokedex;
+      if (st?.view === "detail") window.PokedexTab.showFieldDetail(st.fieldId);
+      else window.PokedexTab.renderFieldMenu();
+    }
+  }
+}
+
+// 長押し検知用ヘルパー
+function setupLongPress(element, callback) {
+  let timer;
+  const start = (e) => {
+    // 右クリックなどの場合は無視
+    if (e.type === "mousedown" && e.button !== 0) return;
+    timer = setTimeout(() => {
+      callback();
+    }, 800); // 0.8秒長押し
+  };
+  const cancel = () => {
+    if (timer) clearTimeout(timer);
+  };
+  
+  element.addEventListener("mousedown", start);
+  element.addEventListener("touchstart", start, { passive: true });
+  element.addEventListener("mouseup", cancel);
+  element.addEventListener("mouseleave", cancel);
+  element.addEventListener("touchend", cancel);
+  element.addEventListener("touchmove", cancel);
 }
 
 /* =========================================================
@@ -78,9 +164,7 @@ async function loadPokemonMaster() {
   const map = new Map();
 
   for (let i = 1; i < lines.length; i++) {
-    // 空欄があっても列がズレないように単純分割
     const cols = lines[i].split("\t").map(s => s.trim());
-    
     if (cols.length < 5) continue;
 
     const p = {
@@ -167,7 +251,20 @@ async function loadEnergyMap() {
   return ENERGY_MAP;
 }
 
+// 全フィールドデータの事前読み込み（検索用）
+async function ensureAllFieldsLoaded() {
+  if (Object.keys(FIELD_CACHE).length === FIELDS.length) return; // 既にロード済みならスキップ
+  
+  await Promise.all(FIELDS.map(async (field) => {
+    if (FIELD_CACHE[field.name]) return;
+    const data = await loadFieldPokemon(field.name);
+    FIELD_CACHE[field.name] = data; // { "うとうと": [...], ... }
+  }));
+}
+
 async function loadFieldPokemon(fieldName) {
+  if (FIELD_CACHE[fieldName]) return FIELD_CACHE[fieldName];
+
   const text = await fetchText(`${fieldName}.txt`);
   const lines = text.split(/\r?\n/);
   const result = { "うとうと": [], "すやすや": [], "ぐっすり": [] };
@@ -183,39 +280,175 @@ async function loadFieldPokemon(fieldName) {
     if (!mode) continue;
     result[mode].push(line);
   }
+  FIELD_CACHE[fieldName] = result;
   return result;
 }
 
 /* =========================================================
-   表示ロジック
+   UIコンポーネント生成ヘルパー
 ========================================================= */
 
-function sortByDexOrder(names, pokeList) {
-  const dexOrderMap = new Map();
-  pokeList.forEach((p, i) => dexOrderMap.set(p.name, i));
-  const base = [...names].sort((a, b) => {
-    const ai = dexOrderMap.has(a) ? dexOrderMap.get(a) : 99999;
-    const bi = dexOrderMap.has(b) ? dexOrderMap.get(b) : 99999;
-    return ai - bi;
-  });
-  DEX_ORDER_OVERRIDES.forEach(rule => {
-    const idx = base.indexOf(rule.name);
-    if (idx === -1) return;
-    base.splice(idx, 1);
-    if (rule.after) {
-      const targetIdx = base.indexOf(rule.after);
-      if (targetIdx !== -1) base.splice(targetIdx + 1, 0, rule.name);
-      else base.push(rule.name);
-    } else if (rule.before) {
-      const targetIdx = base.indexOf(rule.before);
-      if (targetIdx !== -1) base.splice(targetIdx, 0, rule.name);
-      else base.push(rule.name);
-    }
-  });
-  return base;
+// 検索バーとアイコン3種を生成するHTML
+function makeToolbarHTML(placeholderText, withNote = false) {
+  const noteHtml = withNote 
+    ? `<div class="dex-note-text">※アイコン長押しで対応するブックマークを全消去できます</div>` 
+    : "";
+
+  return `
+    <div class="dex-tool-bar">
+      <div class="dex-search-row">
+        <input type="text" class="dex-search-input" placeholder="${placeholderText}">
+      </div>
+      <div class="dex-icon-row">
+        <div class="dex-icon-btn" data-id="1">★</div>
+        <div class="dex-icon-btn" data-id="2">♥</div>
+        <div class="dex-icon-btn" data-id="3">●</div>
+      </div>
+      ${noteHtml}
+    </div>
+  `;
 }
 
-// ★修正：以前のシンプルなHTML生成に戻す
+// ツールバーのイベントリスナー設定 (Search & Highlight Logic)
+// onSearch: (keyword) => void
+// onIconClick: (iconId, isActive) => void
+function attachToolbarEvents(container, onSearch, onIconClick) {
+  const input = container.querySelector(".dex-search-input");
+  const icons = container.querySelectorAll(".dex-icon-btn");
+
+  // 検索入力イベント
+  input.addEventListener("input", (e) => {
+    const val = e.target.value.trim();
+    // 検索入力中はアイコンフィルタを解除する仕様にするか、併用するか。
+    // 今回は「入力されたら即検索実行」のみ行う
+    if (onSearch) onSearch(val);
+  });
+
+  // アイコンクリック＆長押しイベント
+  icons.forEach(btn => {
+    const id = btn.dataset.id;
+    
+    // クリック（トグル）
+    btn.addEventListener("click", () => {
+      // 既にアクティブなら解除、そうでなければアクティブ（他は解除しない仕様＝ORフィルタ的、あるいは単独？）
+      // ここでは「クリックされたらそのアイコンの強調を実行（トグル）」とする
+      const isActive = btn.classList.toggle("active-filter");
+      // 他のアイコンのactiveを外す（排他選択）か、複数選択か。
+      // 「アイコンその1を押したときは〜」の文脈から排他選択っぽいが、
+      // 複数同時指定も便利。しかし「青枠」の意味が混ざるため、今回は「最後に押した1つだけ有効」にする（排他）
+      if (isActive) {
+        icons.forEach(other => {
+          if (other !== btn) other.classList.remove("active-filter");
+        });
+      }
+      if (onIconClick) onIconClick(id, isActive);
+    });
+
+    // 長押し（全消去）
+    setupLongPress(btn, () => clearAllBookmarks(id));
+  });
+}
+
+/* =========================================================
+   ① 各島のページ (Menu)
+========================================================= */
+
+async function renderFieldMenu() {
+  initBookmarks(); // 最新のブックマークをロード
+  await ensureAllFieldsLoaded(); // 全島のポケモンデータを準備
+
+  pokEl("fieldMenu").style.display = "block";
+  pokEl("fieldDetail").style.display = "none";
+
+  // ツールバーの注入
+  const menuContainer = pokEl("fieldMenu");
+  // 既存のコンテンツをクリアして再構築
+  menuContainer.innerHTML = `
+    ${makeToolbarHTML("ポケモン名を入力", true)}
+    <div class="field-grid"></div>
+  `;
+
+  const grid = menuContainer.querySelector(".field-grid");
+  
+  // 島リスト描画
+  grid.innerHTML = FIELDS.map(field => `
+    <div class="field-item" data-field="${field.name}" onclick="window.PokedexTab.showFieldDetail('${field.id}')">
+      <img src="images/${field.file}" class="field-img">
+      <div class="field-name">${field.name}</div>
+    </div>
+  `).join("");
+
+  // イベント設定
+  const toolbar = menuContainer.querySelector(".dex-tool-bar");
+  
+  const applyMenuHighlight = (keyword, activeIconId) => {
+    const items = grid.querySelectorAll(".field-item");
+    items.forEach(item => {
+      item.classList.remove("highlight-blue");
+      const fieldName = item.dataset.field;
+      const fieldPokemonData = FIELD_CACHE[fieldName];
+      if (!fieldPokemonData) return;
+
+      // 全出現ポケモンリスト（フラット化）
+      const allPokes = [
+        ...fieldPokemonData["うとうと"], 
+        ...fieldPokemonData["すやすや"], 
+        ...fieldPokemonData["ぐっすり"]
+      ];
+
+      let match = false;
+
+      // 1. キーワード検索
+      if (keyword) {
+        // 部分一致で検索
+        if (allPokes.some(pName => pName.includes(keyword))) {
+          match = true;
+        }
+      }
+
+      // 2. アイコンフィルタ
+      if (activeIconId) {
+        // そのアイコンがついているポケモンが、この島にいるか？
+        const bookmarkedPokes = BOOKMARKS[activeIconId];
+        // 積集合があるか
+        if (bookmarkedPokes.some(bp => allPokes.includes(bp))) {
+          match = true;
+        }
+      }
+
+      if (match) item.classList.add("highlight-blue");
+    });
+  };
+
+  attachToolbarEvents(
+    toolbar,
+    (keyword) => {
+      // 検索入力時：アイコン選択を解除して検索優先にする、あるいは併用。
+      // ここでは併用ロジック（OR）ではなく、「入力があるときは入力優先」等はせず、単純に状態を渡す
+      const activeBtn = toolbar.querySelector(".dex-icon-btn.active-filter");
+      applyMenuHighlight(keyword, activeBtn ? activeBtn.dataset.id : null);
+    },
+    (iconId, isActive) => {
+      const input = toolbar.querySelector(".dex-search-input");
+      // アイコンクリック時
+      applyMenuHighlight(input.value.trim(), isActive ? iconId : null);
+    }
+  );
+
+  replaceMenuState();
+}
+
+function replaceMenuState() {
+  try {
+    const st = history.state || {};
+    history.replaceState({ ...st, pokedex: { view: "menu", fieldId: null } }, "", location.href);
+  } catch (_) {}
+}
+
+/* =========================================================
+   ② 島詳細のページ
+========================================================= */
+
 function buildPokemonGridHTML(label, badgeClass, names, pokeMap, pokeList) {
   const sorted = sortByDexOrder(names, pokeList);
 
@@ -223,13 +456,14 @@ function buildPokemonGridHTML(label, badgeClass, names, pokeMap, pokeList) {
     const p = pokeMap.get(name);
     const src = p ? imgSrc(p.file) : "";
     
-    // 画像がない場合のダミーも以前のスタイルに近いものへ
+    // 画像がない場合のダミー
     const imgHtml = p
       ? `<img src="${src}" alt="${name}">`
       : `<div style="width:44px;height:44px;border:1px dashed #ccc;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#999;">no img</div>`;
     
+    // data-name属性を追加（検索・ハイライト用）
     return `
-      <div class="poke-item" title="${name}" onclick="window.PokedexTab.openDetail('${name}')">
+      <div class="poke-item" data-name="${name}" title="${name}" onclick="window.PokedexTab.openDetail('${name}')">
         ${imgHtml}
         <div class="poke-name">${name}</div>
       </div>
@@ -248,6 +482,7 @@ function buildPokemonGridHTML(label, badgeClass, names, pokeMap, pokeList) {
 }
 
 async function showFieldDetail(fieldId, opts = {}) {
+  initBookmarks(); // ロード
   const fromPop = !!opts.fromPop;
   const field = FIELDS.find(f => f.id === fieldId);
   pokEl("fieldMenu").style.display = "none";
@@ -280,6 +515,8 @@ async function showFieldDetail(fieldId, opts = {}) {
         <tbody>${eTrs}</tbody>
       </table>` : "";
 
+    // ヘッダー部分（検索窓を追加するために構成変更）
+    // 戻るボタン等はHTML側にあるので、detailContent内に注入するのはコンテンツのみ
     const headerHtml = `
       <div class="card">
         <div class="field-header">
@@ -289,25 +526,94 @@ async function showFieldDetail(fieldId, opts = {}) {
         ${energyHtml}
       </div>
     `;
+    
+    // 検索バーの注入（ページ上部、「戻る」ラインの下、カードの上）
+    // ここではdetailContentの先頭に入れます
+    const toolBarHtml = makeToolbarHTML("ポケモン名を入力", true);
 
     const uto = buildPokemonGridHTML("うとうと", "badge-uto", pokeBySleep["うとうと"], map, list);
     const suya = buildPokemonGridHTML("すやすや", "badge-suya", pokeBySleep["すやすや"], map, list);
     const gusu = buildPokemonGridHTML("ぐっすり", "badge-gusu", pokeBySleep["ぐっすり"], map, list);
 
     pokEl("detailContent").innerHTML = `
+      ${toolBarHtml}
       ${headerHtml}
       ${uto}
       ${suya}
       ${gusu}
     `;
+
+    // イベント設定
+    const toolbar = pokEl("detailContent").querySelector(".dex-tool-bar");
+    const gridItems = pokEl("detailContent").querySelectorAll(".poke-item");
+
+    const applyDetailHighlight = (keyword, activeIconId) => {
+      gridItems.forEach(item => {
+        item.classList.remove("highlight-blue");
+        const name = item.dataset.name;
+        let match = false;
+
+        // 1. キーワード検索
+        if (keyword && name.includes(keyword)) {
+          match = true;
+        }
+
+        // 2. アイコンフィルタ
+        if (activeIconId) {
+          if (hasBookmark(activeIconId, name)) {
+            match = true;
+          }
+        }
+
+        if (match) item.classList.add("highlight-blue");
+      });
+    };
+
+    attachToolbarEvents(
+      toolbar,
+      (keyword) => {
+        const activeBtn = toolbar.querySelector(".dex-icon-btn.active-filter");
+        applyDetailHighlight(keyword, activeBtn ? activeBtn.dataset.id : null);
+      },
+      (iconId, isActive) => {
+        const input = toolbar.querySelector(".dex-search-input");
+        applyDetailHighlight(input.value.trim(), isActive ? iconId : null);
+      }
+    );
+
   } catch (err) {
     pokEl("detailContent").innerHTML = `
       <div class="card"><div style="color:red;">読み込み失敗: ${err}</div></div>`;
   }
 }
 
+function sortByDexOrder(names, pokeList) {
+  const dexOrderMap = new Map();
+  pokeList.forEach((p, i) => dexOrderMap.set(p.name, i));
+  const base = [...names].sort((a, b) => {
+    const ai = dexOrderMap.has(a) ? dexOrderMap.get(a) : 99999;
+    const bi = dexOrderMap.has(b) ? dexOrderMap.get(b) : 99999;
+    return ai - bi;
+  });
+  DEX_ORDER_OVERRIDES.forEach(rule => {
+    const idx = base.indexOf(rule.name);
+    if (idx === -1) return;
+    base.splice(idx, 1);
+    if (rule.after) {
+      const targetIdx = base.indexOf(rule.after);
+      if (targetIdx !== -1) base.splice(targetIdx + 1, 0, rule.name);
+      else base.push(rule.name);
+    } else if (rule.before) {
+      const targetIdx = base.indexOf(rule.before);
+      if (targetIdx !== -1) base.splice(targetIdx, 0, rule.name);
+      else base.push(rule.name);
+    }
+  });
+  return base;
+}
+
 /* =========================================================
-   ポケモン詳細モーダル関連
+   ③ ポケモン詳細のページ (Modal)
 ========================================================= */
 
 function getIngIcon(name) {
@@ -317,13 +623,7 @@ function getIngIcon(name) {
 }
 
 async function openDetail(name) {
-  // ★ここにGAイベントを復活させます
-  if (typeof gtag === 'function') {
-    gtag('event', 'view_pokemon_detail', {
-      'pokemon_name': name
-    });
-  }
-
+  initBookmarks(); // ロード
   const { map } = await loadPokemonMaster();
   const skills = await loadSkillData();
   const typeIcons = await loadTypeIcons(); 
@@ -376,7 +676,6 @@ async function openDetail(name) {
   };
 
   const makeIngItem = (name) => {
-    // データがない、または「-」の場合は「該当なし」画像を表示して終了
     if (!name || name === "-" || name.trim() === "") {
       return `
         <div class="ing-item">
@@ -450,19 +749,32 @@ async function openDetail(name) {
     `;
   }
 
+  // ブックマークボタンのHTML生成
+  const b1 = hasBookmark("1", name) ? "active" : "";
+  const b2 = hasBookmark("2", name) ? "active" : "";
+  const b3 = hasBookmark("3", name) ? "active" : "";
+  
+  const bookmarksHtml = `
+    <div class="detail-bookmark-row">
+      <div class="bm-icon ${b1}" data-id="1">★</div>
+      <div class="bm-icon ${b2}" data-id="2">♥</div>
+      <div class="bm-icon ${b3}" data-id="3">●</div>
+    </div>
+  `;
+
   body.innerHTML = `
     <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
       <img src="${imgSrc(p.file)}" style="width:72px; height:72px; object-fit:contain; border:1px solid var(--line); border-radius:16px; background:#fff;">
-      <div>
-        <div class="type-badge-row">
+      <div style="flex:1;">
+        <div class="type-badge-row" style="display:flex; align-items:center;">
           <div class="element-type">
             ${typeIconHtml}
             <span>${p.typeName}</span>
           </div>
-          <span class="type-badge ${typeClass}" style="font-size:11px; padding:2px 10px; min-width:auto;">${p.type}</span>
-        </div>
+          <span class="type-badge ${typeClass}" style="font-size:11px; padding:2px 10px; min-width:auto; margin-right:auto;">${p.type}</span>
+          ${bookmarksHtml} </div>
 
-        <div style="font-size:20px; font-weight:900; line-height:1.2;">
+        <div style="font-size:20px; font-weight:900; line-height:1.2; margin-top:4px;">
           ${p.name}
         </div>
       </div>
@@ -487,9 +799,27 @@ async function openDetail(name) {
     </div>
   `;
 
+  // イベント設定（ブックマーククリック & 長押し）
+  const bmIcons = body.querySelectorAll(".bm-icon");
+  bmIcons.forEach(btn => {
+    const id = btn.dataset.id;
+    // クリック（トグル）
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const added = toggleBookmark(id, p.name);
+      if (added) btn.classList.add("active");
+      else btn.classList.remove("active");
+    };
+    // 長押し（全消去）
+    setupLongPress(btn, () => {
+      clearAllBookmarks(id);
+      // 詳細画面の場合は、状態を再反映する
+      if (!hasBookmark(id, p.name)) btn.classList.remove("active");
+    });
+  });
+
   modal.style.display = "flex";
 }
-
 
 const closeBtn = pokEl("closePokeDetail");
 if (closeBtn) closeBtn.onclick = () => pokEl("pokeDetailModal").style.display = "none";
@@ -502,28 +832,6 @@ if (modalEl) modalEl.onclick = (e) => {
 /* =========================================================
    共通エクスポート
 ========================================================= */
-function renderFieldMenu() {
-  pokEl("fieldMenu").style.display = "block";
-  pokEl("fieldDetail").style.display = "none";
-  const grid = document.querySelector(".field-grid");
-  if (grid) {
-    grid.innerHTML = FIELDS.map(field => `
-      <div class="field-item" onclick="window.PokedexTab.showFieldDetail('${field.id}')">
-        <img src="images/${field.file}" class="field-img">
-        <div class="field-name">${field.name}</div>
-      </div>
-    `).join("");
-  }
-  replaceMenuState();
-}
-
-function replaceMenuState() {
-  try {
-    const st = history.state || {};
-    history.replaceState({ ...st, pokedex: { view: "menu", fieldId: null } }, "", location.href);
-  } catch (_) {}
-}
-
 function backToMenu(viaPop = false) {
   pokEl("fieldMenu").style.display = "block";
   pokEl("fieldDetail").style.display = "none";
@@ -535,6 +843,10 @@ function backToMenu(viaPop = false) {
     }
     replaceMenuState();
   }
+  // メニューに戻った際、検索やハイライトを維持または再適用したければここでrenderFieldMenuを呼ぶ手もあるが、
+  // ちらつき防止のため、現状維持とする。
+  // ただし、詳細画面でブックマーク変更があった場合反映されないため、一度再描画する
+  window.PokedexTab.renderFieldMenu();
 }
 
 window.addEventListener("popstate", (e) => {
