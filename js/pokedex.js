@@ -90,6 +90,8 @@ function updateGridHighlight(name) {
   const activeFilterId = activeBtn ? activeBtn.dataset.id : null;
 
   items.forEach(item => {
+    // ブックマーク操作時の青枠制御
+    // 検索語句による青枠とは独立して、アイコンフィルタが有効なら青枠をつけ外しする
     if (activeFilterId) {
       if (hasBookmark(activeFilterId, name)) {
         item.classList.add("highlight-blue");
@@ -363,8 +365,13 @@ function attachToolbarEvents(container, onSearch, onIconClick) {
     // ひらがなをカタカナに変換して検索（前方一致）
     const searchVal = hiraToKata(val);
     
-    // ★修正: includes(部分一致) ではなく startsWith(前方一致) を使用
-    const matches = uniqueNames.filter(name => name.startsWith(searchVal));
+    // ★修正: 除外リスト（ハロウィン、ホリデー、ダークライ）を除外しつつ、前方一致
+    const matches = uniqueNames.filter(name => {
+      if (name.includes("ハロウィン")) return false;
+      if (name.includes("ホリデー")) return false;
+      if (name === "ダークライ") return false;
+      return name.startsWith(searchVal);
+    });
     
     if (matches.length === 0) {
       suggestList.style.display = "none";
@@ -382,7 +389,8 @@ function attachToolbarEvents(container, onSearch, onIconClick) {
       item.addEventListener("click", () => {
         input.value = item.dataset.val;
         suggestList.style.display = "none";
-        // 検索実行
+        
+        // ★修正: クリック（確定）したタイミングでのみ検索実行
         if (onSearch) onSearch(input.value.trim());
         
         // GA: サジェスト選択
@@ -393,16 +401,23 @@ function attachToolbarEvents(container, onSearch, onIconClick) {
     });
   };
 
-  // ★ input イベントで入力中の文字（ひらがな未確定状態など）も取得してサジェスト
+  // input イベント：サジェストの表示だけ行う（青枠は更新しない）
   input.addEventListener("input", (e) => {
     const val = e.target.value.trim();
     showSuggest(val);
-    // 入力中の文字でも一応検索実行（ヒットングすれば光らせるなど）したければ呼ぶ
-    // 完全一致しかハイライトしないロジックなら、途中段階ではハイライトされないだけ
-    if (onSearch) onSearch(val);
+    // ★修正: 入力中は青枠を出さないため、onSearch は呼ばない
+  });
+
+  // ★追加: Enterキーでの確定時のみ検索実行
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      suggestList.style.display = "none";
+      if (onSearch) onSearch(input.value.trim());
+      input.blur(); // キーボードを閉じる
+    }
   });
   
-  // フォーカス外れで消す（クリックが効くように少し遅延）
+  // フォーカス外れで消す
   input.addEventListener("blur", () => {
     setTimeout(() => { suggestList.style.display = "none"; }, 200);
   });
@@ -473,14 +488,10 @@ async function renderFieldMenu() {
       ];
 
       let match = false;
-      // キーワード検索（部分一致など必要に応じてロジック調整）
-      // ※要望では「候補が出る」ことが主眼だが、確定後のハイライトロジックも
-      // 前方一致やひらがな対応させるならここも修正が必要。
-      // ただしメニュー画面での島ハイライトは「その名前のポケモンがいる島」なので、
-      // 候補選択後（カタカナ）が入る前提であれば、includesで問題ない。
-      // 入力途中でも反応させたいならここもhiraToKataを通す。
       if (keyword) {
         const searchVal = hiraToKata(keyword);
+        // 部分一致検索（確定後なので広めにヒットさせるか、前方一致にするかは好みですが、
+        // 従来通り「その文字が含まれるポケモンがいる島」を探すならincludes）
         if (allPokes.some(pName => pName.includes(searchVal))) match = true;
       }
       if (activeIconId) {
