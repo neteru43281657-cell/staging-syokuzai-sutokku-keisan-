@@ -1,6 +1,24 @@
 "use strict";
 
 /* =========================================================
+   テーマカラー定義
+   main: メインカラー (ボタン背景、枠線、ヘッダーなど)
+   soft: 薄い背景色 (バッジ背景、強調エリアの背景など)
+========================================================= */
+const THEMES = {
+  blue:       { name: "ブルー",       main: "#007bff", soft: "#eaf4ff" },
+  red:        { name: "レッド",       main: "#ff4757", soft: "#ffe6e7" },
+  pink:       { name: "ピンク",       main: "#ff6b81", soft: "#ffeff1" },
+  orange:     { name: "オレンジ",     main: "#ffa502", soft: "#fff5e0" },
+  yellow:     { name: "イエロー",     main: "#eccc68", soft: "#fbf6e3" }, /* 文字が見やすいよう少し濃い黄色 */
+  green:      { name: "グリーン",     main: "#2ed573", soft: "#eafaf1" },
+  lightgreen: { name: "ライトグリーン", main: "#7bed9f", soft: "#f0fbf4" },
+  lightblue:  { name: "ライトブルー",   main: "#70a1ff", soft: "#e3f2fd" }, /* ブルーより明るい空色 */
+  purple:     { name: "パープル",     main: "#5352ed", soft: "#eeedff" },
+  brown:      { name: "ブラウン",     main: "#a0522d", soft: "#f5ebe0" }
+};
+
+/* =========================================================
    診断モード：JSエラーを画面に表示
 ========================================================= */
 (function attachErrorOverlay() {
@@ -124,6 +142,55 @@ function getFirstRecipeIdByCat(cat) {
 }
 
 /* =========================================================
+   テーマカラー処理
+========================================================= */
+function applyTheme(themeKey) {
+  const t = THEMES[themeKey] || THEMES["blue"];
+  const root = document.documentElement;
+  
+  // CSS変数を書き換え
+  root.style.setProperty("--main", t.main);
+  root.style.setProperty("--main-soft", t.soft);
+  
+  // ブラウザのテーマカラー設定(metaタグ)も書き換え
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) metaTheme.content = t.main;
+
+  // 保存
+  localStorage.setItem("appTheme", themeKey);
+}
+
+function renderThemeGrid() {
+  const container = el("themeGrid");
+  if (!container) return;
+  container.innerHTML = "";
+
+  Object.keys(THEMES).forEach(key => {
+    const t = THEMES[key];
+    const btn = document.createElement("div");
+    // 色見本ボタンスタイル
+    btn.style.cssText = `
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid #eee; border-radius: 12px;
+      cursor: pointer; background: #fff;
+      transition: background 0.1s;
+    `;
+    btn.innerHTML = `
+      <div style="width:24px; height:24px; border-radius:50%; background:${t.main}; border:2px solid #fff; box-shadow:0 0 0 1px #ddd;"></div>
+      <div style="font-size:12px; font-weight:800; color:#333;">${t.name}</div>
+    `;
+    
+    btn.onclick = () => {
+      applyTheme(key);
+      el("themeModal").style.display = "none";
+    };
+    
+    container.appendChild(btn);
+  });
+}
+
+/* =========================================================
    食材設定（除外 / 1日当たり獲得量） グリッド描画
 ========================================================= */
 function renderGrids() {
@@ -153,19 +220,16 @@ function renderGrids() {
       </div>`;
   });
 
-  // ★修正② 入力イベントを分離し、数値の範囲制限(0-999)を追加
   document.querySelectorAll(".exChk").forEach((chk) => {
     chk.onchange = () => calc();
   });
 
   document.querySelectorAll(".repQty").forEach((input) => {
     input.oninput = () => {
-      // マイナス値や999超えを強制補正
       if (input.value !== "") {
         let v = parseInt(input.value, 10);
         if (v < 0) v = 0;
         if (v > 999) v = 999;
-        // 値が変わった場合のみ書き戻し（UXのため）
         if (String(v) !== input.value) input.value = v;
       }
       calc();
@@ -192,14 +256,12 @@ function refreshAllMealDropdowns() {
     const prevVal = mSel.value;
     mSel.innerHTML = "";
     
-    // ★修正: maxAllowed から 0 に向かってループ (降順)
     for (let i = maxAllowed; i >= 0; i--) {
       const opt = document.createElement("option");
       opt.value = i; opt.textContent = i;
       mSel.appendChild(opt);
     }
     
-    // 現在の値が上限を超えていれば補正
     mSel.value = prevVal > maxAllowed ? maxAllowed : prevVal;
     row.meals = Number(mSel.value);
   });
@@ -214,7 +276,6 @@ function addRecipeRow(init) {
 
   const rowId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ("rid_" + Date.now() + "_" + Math.random().toString(16).slice(2));
   
-  // 初期食数を決定（既存の合計から引く）
   const currentTotal = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
   const initialMeals = Math.min(init?.meals ?? 21, 21 - currentTotal);
 
@@ -232,10 +293,8 @@ function addRecipeRow(init) {
   wrap.className = "recipeRow";
   wrap.dataset.rowId = rowId;
 
-  // ラジオボタンのname属性をユニークにする
   const radioName = `success_${rowId}`;
 
-  // レシピレベルの選択肢生成（65 -> 1 の降順）
   let levelOptions = "";
   for (let i = 65; i >= 1; i--) {
     levelOptions += `<option value="${i}">${i}</option>`;
@@ -322,7 +381,6 @@ function addRecipeRow(init) {
 
   cSel.onchange = updateRecipeList;
   
-  // ★GAイベント追加：料理を選んだ瞬間に送信
   rSel.onchange = () => {
     const selectedText = rSel.options[rSel.selectedIndex]?.text || rSel.value;
     if (typeof gtag === 'function') {
@@ -390,13 +448,11 @@ function calc() {
   const perDay = buildReplenishPerDayMap();
   const resultGrid = el("resultGrid");
   
-  // ▼ エナジー計算用の設定読み込み
   const fbVal = Number(el("fieldBonusSel")?.value || 0);
   const fbMul = 1 + (fbVal / 100);
   const evPatKey = el("eventBonusSel")?.value || "0";
   const evPattern = EVENT_PATTERNS[evPatKey];
 
-  // 1. カテゴリー別に食材を合算 & エナジー計算
   const catSums = { "カレー・シチュー": new Map(), "サラダ": new Map(), "デザート・ドリンク": new Map() };
   const ingredientOrder = [];
   let totalEnergy = 0;
@@ -405,31 +461,22 @@ function calc() {
     const r = RECIPES.find(x => x.id === row.recipeId);
     if (!r || row.meals <= 0) return;
 
-    // --- エナジー計算 ---
-    // レシピ基本エナジー (レシピ定義の baseEnergy を使用)
     const baseEnergy = r.baseEnergy;
-    // レシピレベルボーナス分 = Round[ (レシピ基本エナジー)×(レシピレベルボーナス) ]
     const lv = Math.max(1, Math.min(65, row.level || 1));
     const bonusPct = RECIPE_LEVEL_BONUS[lv];
     const lvBonusVal = Math.round(baseEnergy * bonusPct);
     
-    // レシピ画面の表示エナジー
     const displayEnergy = baseEnergy + lvBonusVal;
 
-    // 最終エナジー = (レシピ画面の表示エナジー + 追加食材(0))×(1+FB)×(イベント)
-    // イベント補正
     let evMul = 1.0;
     if (row.successType === "great") evMul = evPattern.great;
     else if (row.successType === "sunday") evMul = evPattern.sunday;
     else evMul = evPattern.normal;
 
-    // 1食あたりの最終エナジー
     const oneMealEnergy = Math.floor(displayEnergy * fbMul * evMul);
     
-    // 合計加算
     totalEnergy += (oneMealEnergy * row.meals);
 
-    // --- ストック計算用の食材集計 ---
     const map = catSums[row.cat];
     Object.entries(r.ingredients).forEach(([iid, qty]) => {
       if (!ingredientOrder.includes(iid)) ingredientOrder.push(iid);
@@ -437,13 +484,11 @@ function calc() {
     });
   });
 
-  // エナジー結果表示
   const energyRes = el("energyResultVal");
   if (energyRes) energyRes.textContent = totalEnergy.toLocaleString();
 
   if (!resultGrid) return;
 
-  // 2. ストック計算：カテゴリー間で最大値を採用
   const gross = new Map();
   Object.values(catSums).forEach(map => {
     map.forEach((val, iid) => {
@@ -451,7 +496,6 @@ function calc() {
     });
   });
 
-  // 3. ストック描画
   resultGrid.innerHTML = "";
   let grandTotal = 0;
 
@@ -471,11 +515,9 @@ function calc() {
       </div>`;
   });
 
-  // 総合計バッジ
   const totalBadge = el("totalBadge");
   if (totalBadge) totalBadge.textContent = `総合計 ${grandTotal}個`;
 
-  // カテゴリー混在時の注釈
   const note = el("mode3Note");
   if (note) {
     const activeCats = new Set(state.recipeRows.map(r => r.cat));
@@ -489,7 +531,16 @@ function calc() {
 window.onload = () => {
   resetSWAndCacheOnce();
   registerSW();
-  renderGrids(); // 統合グリッドを描画
+  renderGrids();
+
+  // ★テーマ初期化
+  const savedTheme = localStorage.getItem("appTheme") || "blue";
+  applyTheme(savedTheme);
+  renderThemeGrid();
+
+  // テーマモーダル
+  el("openTheme").onclick = () => el("themeModal").style.display = "flex";
+  el("closeTheme").onclick = () => el("themeModal").style.display = "none";
 
   // グローバル設定のイベントリスナー追加
   el("fieldBonusSel")?.addEventListener("change", calc);
@@ -520,7 +571,6 @@ window.onload = () => {
 };
 
 window.switchTab = function (tabId, clickedEl) {
-  // ★GAイベント追加：タブを開いた回数を計測
   if (typeof gtag === 'function') {
     gtag('event', 'tab_view', {
       'tab_name': tabId
@@ -546,24 +596,17 @@ window.switchTab = function (tabId, clickedEl) {
   if (tabId === "tab4" && window.CalendarTab?.renderYearCalendar) window.CalendarTab.renderYearCalendar();
 };
 
-/* =========================================================
-   簡易メッセージモーダル表示 (alertの代用)
-========================================================= */
 window.showInfo = function(msg) {
   const modal = document.getElementById("simpleModal");
   const msgBox = document.getElementById("simpleModalMsg");
   if (modal && msgBox) {
-    msgBox.innerHTML = msg.replace(/\n/g, "<br>"); // 改行対応
+    msgBox.innerHTML = msg.replace(/\n/g, "<br>");
     modal.style.display = "flex";
   } else {
-    // 万が一HTMLがない場合は通常のalertで代用
     alert(msg);
   }
 };
 
-/* =========================================================
-   資料ビューア
-========================================================= */
 window.openDoc = function(fileName) {
   const modal = document.getElementById("docViewerModal");
   const img = document.getElementById("docViewerImg");
