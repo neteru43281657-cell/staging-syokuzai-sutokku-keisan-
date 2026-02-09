@@ -399,103 +399,151 @@
     button.primary { background: var(--main); color: #fff; border-color: var(--main); }
     button.danger { color: var(--danger); border-color: #fadbd8; background: #fff; }
 
-    /* --- Tab2: 出現ポケモン一覧用スタイル (復元) --- */
+    /* --- Tab2: 出現ポケモン一覧用スタイル (元データデザイン復元 + テーマカラー適用) --- */
+    
+    /* 島のグリッドレイアウト */
     .field-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 12px;
     }
+    
+    /* 島のカードスタイル */
     .field-item {
-      background: #fff;
       border: 1px solid var(--line);
       border-radius: 12px;
-      padding: 12px;
+      padding: 10px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      text-align: center;
       cursor: pointer;
-      transition: transform 0.2s;
+      background: #fff;
+      transition: transform 0.1s, box-shadow 0.1s;
     }
-    .field-item:active { transform: scale(0.98); }
+    .field-item:active {
+      transform: scale(0.98);
+      background: var(--main-soft); /* テーマカラーの薄い色 */
+    }
     
-    /* 島の画像サイズ制限 */
+    /* ★修正: 島の画像サイズを元データの60pxに戻す */
     .field-img {
-      width: 100%;
-      aspect-ratio: 16/9;
-      object-fit: cover;
-      border-radius: 8px;
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      margin-bottom: 8px;
     }
     .field-name {
-      font-weight: 900;
-      font-size: 13px;
+      font-size: 11px;
+      font-weight: 800;
       color: var(--text);
     }
 
-    /* 島詳細ヘッダー */
+    /* === 島詳細画面（遷移後） === */
     .field-header {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 16px;
+      gap: 12px;
+      margin-bottom: 12px;
     }
+    /* 詳細画面のアイコンサイズも元データの56pxに戻す */
     .field-header img {
-      width: 100%;
-      max-width: 300px;
-      border-radius: 12px;
-      border: 1px solid var(--line);
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
     }
     .field-title {
-      font-size: 18px;
       font-weight: 900;
-      color: var(--main);
+      font-size: 16px;
+      color: var(--text);
     }
 
-    /* エナジー表（グリッド線復元） */
+    /* エナジー表のデザイン復元 */
     .energy-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 11px;
+      font-size: 12px;
       margin-top: 8px;
     }
     .energy-table th, .energy-table td {
       border: 1px solid var(--line);
-      padding: 6px;
+      padding: 8px;
       text-align: center;
     }
+    /* ヘッダー背景色はテーマカラー（薄色）を使用 */
     .energy-table th {
-      background: var(--main-soft);
-      color: var(--main);
+      background: var(--main-soft); /* 元の #f7f9fc から変更してテーマ統一 */
       font-weight: 900;
+      color: var(--main);
     }
 
-    /* 睡眠タイプヘッダー（色復元） */
-    .sleep-section { margin-top: 20px; }
+    /* 睡眠タイプごとのセクション */
+    .sleep-section {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+    }
     .sleep-label {
+      padding: 10px 12px;
+      font-weight: 900;
+      font-size: 13px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px;
-      border-bottom: 2px solid var(--line);
-      padding-bottom: 4px;
+      gap: 8px;
+      border-bottom: 1px solid var(--line);
     }
+    
+    /* 睡眠タイプのバッジ（色は固定でOK：ゲーム内の色準拠のため） */
     .sleep-badge {
-      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 64px;
+      padding: 6px 10px;
+      border-radius: 10px;
       font-weight: 900;
-      color: #fff;
-      padding: 4px 12px;
-      border-radius: 4px;
+      font-size: 12px;
+      color: #111;
     }
-    .badge-uto { background-color: #f1c40f; } /* 黄 */
-    .badge-suya { background-color: #3498db; } /* 青 */
-    .badge-gusu { background-color: #2c3e50; } /* 紺/灰 */
+    .badge-uto { background: #ffe66a; } /* 黄色 */
+    .badge-suya { background: #aee7f2; } /* 水色 */
+    .badge-gusu { background: #8fb3ff; color: #0b1b3a; } /* 紺色 */
+
+    /* ポケモンリスト */
+    .poke-grid {
+      padding: 10px 10px 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+      gap: 8px;
+    }
+    .poke-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .poke-item img {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+    }
+    .poke-name {
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.2;
+      word-break: keep-all;
+    }
 
     /* --- Pokedex追加機能用スタイル --- */
     
     /* 1. 島（フィールド）選択時の青枠: カード全体を囲む */
     .field-item.highlight-blue {
-      border: 3px solid var(--main) !important;
+      border: 3px solid var(--main) !important; /* ここがテーマカラーになります */
       box-sizing: border-box !important;
       transition: transform 0.1s;
       transform: scale(1.02);
@@ -513,7 +561,7 @@
       border-radius: 0 !important;
     }
     .poke-item.highlight-blue img {
-      border: 2px solid var(--main) !important;
+      border: 2px solid var(--main) !important; /* ここがテーマカラーになります */
       border-radius: 50%;
       box-sizing: border-box;
       padding: 1px;
@@ -619,8 +667,6 @@
 
     @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-
-  
     /* tab3用スタイル */
     #tab3 .lvlForm { display: flex; flex-direction: column; gap: 16px; font-family: inherit; }
     #tab3 .lvlGroup { display: flex; flex-direction: column; gap: 14px; }
@@ -662,7 +708,6 @@
     #tab3 .lvResultClose { position: absolute; top: -8px; right: -8px; border: 1px solid var(--line); background: #fff; color: var(--danger); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; z-index: 10; }
     .info-btn-tiny { display: inline-block; color: var(--muted); font-size: 14px; font-weight: 400; cursor: pointer; margin-left: 2px; margin-right: 6px; vertical-align: middle; line-height: 1; opacity: 0.7; transition: opacity 0.2s; }
     .info-btn-tiny:active { opacity: 1.0; transform: scale(0.95); }
-    
     .type-badge { padding: 4px 16px; border-radius: 99px; color: #fff; font-weight: 900; font-size: 12px; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .type-berry { background-color: #00c853; }
     .type-ing { background-color: #ffab00; }
