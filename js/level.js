@@ -288,7 +288,7 @@ function toNum(v) {
     }
 
   /* ========== 備考欄（機能停止中） ==========
-  // 復活させる場合は、ここのコメントアウト（/* 〜 */）を外してください
+  // 復活させる場合は、ここのコメントアウトを外す
 
   // ★追加: 備考欄（マイルストーン計算）
   const milestones = [25, 30, 50, 55, 60, 65];
@@ -315,8 +315,6 @@ function toNum(v) {
         </div>`;
     });
 
-    // 以前の状態（isDetailsOpen）があれば復元する記述を入れていましたが、
-    // 機能停止中なのでここでは単に表示HTMLを作るだけにしています
     html += `
       <div style="margin-top: 16px; padding-top: 8px;">
         <details style="cursor:pointer;">
@@ -330,11 +328,10 @@ function toNum(v) {
   }
   ========================================== */
 
-  container.innerHTML = html;
-}
+    container.innerHTML = html;
+  }
 
-    
-window.LevelTab = {
+  window.LevelTab = {
     init() {
       if (!window.__LV_BOUND__) {
         window.__LV_BOUND__ = true;
@@ -380,5 +377,3 @@ window.LevelTab = {
     }
   };
 })();
-
-
