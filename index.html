@@ -1347,6 +1347,12 @@
       <span style="font-size:12px; font-weight:800;">資料集</span>
     </button>
 
+  <div style="display:flex; align-items:center; gap:10px;">
+    <button id="openTheme"
+      style="background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4); color:#fff; cursor:pointer; padding:6px 10px; border-radius:99px; font-size:11px; font-weight:800; display:flex; align-items:center; gap:4px;">
+      <span>🎨</span> テーマ
+    </button>
+    
     <button id="openNotice"
       style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer; padding:6px 8px;">ⓘ</button>
   </div>
@@ -1827,7 +1833,22 @@
     <button onclick="document.getElementById('simpleModal').style.display='none'" class="primary" style="width:100%;">閉じる</button>
   </div>
 </div>
-  
+
+<div id="themeModal"
+  style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+         background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; padding:20px;">
+  <div class="card" style="max-width:360px; width:100%; position:relative;">
+    
+    <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); padding-bottom:10px; margin-bottom:16px;">
+      <div style="font-weight:900; font-size:14px;">🎨 テーマカラー設定</div>
+      <button id="closeTheme" style="background:none; border:1px solid var(--line); border-radius:20px; padding:4px 12px; font-size:11px; font-weight:800; cursor:pointer;">閉じる</button>
+    </div>
+
+    <div id="themeGrid" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:10px;"></div>
+
+  </div>
+</div>
+    
 
 <!-- JS 読み込み（あなたの構成に合わせて） -->
 <script src="data/ingredients.js"></script>
@@ -1852,6 +1873,8 @@
   </div>
 </div>
 
+
+    
 <script>
   (function() {
     const banner = document.getElementById('installBanner');
