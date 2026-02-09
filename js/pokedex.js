@@ -91,7 +91,6 @@ function updateGridHighlight(name) {
 
   items.forEach(item => {
     // ブックマーク操作時の青枠制御
-    // 検索語句による青枠とは独立して、アイコンフィルタが有効なら青枠をつけ外しする
     if (activeFilterId) {
       if (hasBookmark(activeFilterId, name)) {
         item.classList.add("highlight-blue");
@@ -332,7 +331,7 @@ function makeToolbarHTML(placeholderText, withNote = false) {
     <div class="dex-tool-bar">
       <div class="dex-search-row">
         <input type="text" class="dex-search-input" placeholder="${placeholderText}" autocomplete="off">
-        <div class="dex-suggest-list"></div>
+        <div class="dex-search-clear">×</div> <div class="dex-suggest-list"></div>
       </div>
       <div class="dex-icon-row">
         <div class="dex-icon-btn" data-id="1">★</div>
@@ -346,6 +345,7 @@ function makeToolbarHTML(placeholderText, withNote = false) {
 
 function attachToolbarEvents(container, onSearch, onIconClick) {
   const input = container.querySelector(".dex-search-input");
+  const clearBtn = container.querySelector(".dex-search-clear");
   const suggestList = container.querySelector(".dex-suggest-list");
   const icons = container.querySelectorAll(".dex-icon-btn");
 
@@ -365,13 +365,15 @@ function attachToolbarEvents(container, onSearch, onIconClick) {
     // ひらがなをカタカナに変換して検索（前方一致）
     const searchVal = hiraToKata(val);
     
-    // ★修正: 除外リスト（ハロウィン、ホリデー、ダークライ）を除外しつつ、前方一致
     const matches = uniqueNames.filter(name => {
       if (name.includes("ハロウィン")) return false;
       if (name.includes("ホリデー")) return false;
       if (name === "ダークライ") return false;
       return name.startsWith(searchVal);
     });
+    
+    // ★修正: 五十音順にソート
+    matches.sort((a, b) => a.localeCompare(b, "ja"));
     
     if (matches.length === 0) {
       suggestList.style.display = "none";
@@ -389,8 +391,9 @@ function attachToolbarEvents(container, onSearch, onIconClick) {
       item.addEventListener("click", () => {
         input.value = item.dataset.val;
         suggestList.style.display = "none";
+        clearBtn.style.display = "block"; // 確定したら✕表示
         
-        // ★修正: クリック（確定）したタイミングでのみ検索実行
+        // 検索実行
         if (onSearch) onSearch(input.value.trim());
         
         // GA: サジェスト選択
@@ -401,23 +404,40 @@ function attachToolbarEvents(container, onSearch, onIconClick) {
     });
   };
 
-  // input イベント：サジェストの表示だけ行う（青枠は更新しない）
+  // input イベント：サジェスト表示 & ✕ボタン制御
   input.addEventListener("input", (e) => {
-    const val = e.target.value.trim();
-    showSuggest(val);
-    // ★修正: 入力中は青枠を出さないため、onSearch は呼ばない
+    const val = e.target.value; // trimしない(空白削除判定のため)
+    showSuggest(val.trim());
+    
+    // ✕ボタンの表示切り替え
+    clearBtn.style.display = val.length > 0 ? "block" : "none";
+
+    // ★修正: 文字が空になったら、青枠（検索結果）を消す＝検索解除
+    if (val === "") {
+      if (onSearch) onSearch("");
+    }
   });
 
-  // ★追加: Enterキーでの確定時のみ検索実行
+  // Enterキーでの確定時
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       suggestList.style.display = "none";
       if (onSearch) onSearch(input.value.trim());
-      input.blur(); // キーボードを閉じる
+      input.blur();
     }
   });
   
-  // フォーカス外れで消す
+  // ★追加: ✕ボタンクリック時
+  clearBtn.addEventListener("click", () => {
+    input.value = "";
+    clearBtn.style.display = "none";
+    suggestList.style.display = "none";
+    // 検索解除（青枠を消す）
+    if (onSearch) onSearch("");
+    input.focus();
+  });
+  
+  // フォーカス外れ
   input.addEventListener("blur", () => {
     setTimeout(() => { suggestList.style.display = "none"; }, 200);
   });
@@ -452,7 +472,7 @@ function attachToolbarEvents(container, onSearch, onIconClick) {
 async function renderFieldMenu() {
   initBookmarks();
   await ensureAllFieldsLoaded();
-  await loadPokemonMaster(); // 検索候補用に必要
+  await loadPokemonMaster(); 
 
   pokEl("fieldMenu").style.display = "block";
   pokEl("fieldDetail").style.display = "none";
@@ -490,8 +510,7 @@ async function renderFieldMenu() {
       let match = false;
       if (keyword) {
         const searchVal = hiraToKata(keyword);
-        // 部分一致検索（確定後なので広めにヒットさせるか、前方一致にするかは好みですが、
-        // 従来通り「その文字が含まれるポケモンがいる島」を探すならincludes）
+        // 部分一致
         if (allPokes.some(pName => pName.includes(searchVal))) match = true;
       }
       if (activeIconId) {
