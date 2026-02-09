@@ -1142,49 +1142,38 @@
 
   /* --- Pokedex追加機能用スタイル --- */
   
-  /* 強調表示（青枠） */
-  /* !important を多用して確実にスタイルを適用 */
-  .highlight-blue {
+  /* ★修正: 青枠のデザインを対象（島/ポケモン）によって分ける 
+  
+  /* 1. 島（フィールド）選択時の青枠: カード全体を囲む */
+  .field-item.highlight-blue {
     border: 3px solid #007bff !important;
     box-sizing: border-box !important;
-    border-radius: 12px !important; /* 角丸を強制 */
-    transition: all 0.2s;
-    transform: scale(1.05);
-    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
-    background-color: rgba(0, 123, 255, 0.05); /* ほんのり青背景を追加して視認性アップ */
-    z-index: 1; /* 重なり順を少し上げる */
+    transition: transform 0.1s;
+    transform: scale(1.02); /* 少しだけ大きく */
+    box-shadow: none !important;
+    background-color: transparent !important;
+    z-index: 1;
   }
   
-  /* 検索バーとアイコンのコンテナ */
-  .dex-tool-bar {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 12px;
-    background: #fff;
-    padding: 10px;
-    border-radius: 12px;
-    border: 1px solid var(--line);
-    position: relative; /* サジェストの基準点 */
-    z-index: 100; /* 他の要素より手前に */
+  /* 2. ポケモン一覧時の青枠: 画像にだけ丸い枠をつける */
+  .poke-item.highlight-blue {
+    border: none !important;
+    background: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    border-radius: 0 !important;
   }
-  .dex-search-row {
-    display: flex;
-    gap: 8px;
-    position: relative;
+  
+  /* 画像（img）に対してスタイルを適用 */
+  .poke-item.highlight-blue img {
+    border: 2px solid #007bff; /* シンプルな青線 */
+    border-radius: 50%;        /* 完全な丸 */
+    box-sizing: border-box;
+    padding: 1px;              /* 画像と枠の間にわずかな隙間 */
+    background: #fff;          /* 透過画像の場合、背景を白にして枠を見やすく */
   }
-  .dex-search-input {
-    flex: 1;
-    padding: 8px 12px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    font-size: 14px;
-    outline: none;
-  }
-  .dex-search-input:focus {
-    border-color: var(--main);
-  }
-
+  
+  
   /* 検索バーとアイコンのコンテナ */
   .dex-tool-bar {
     display: flex;
@@ -1202,14 +1191,13 @@
   .dex-search-row {
     display: flex;
     gap: 8px;
-    position: relative; /* ✕ボタンの配置基準 */
+    position: relative;
     align-items: center;
   }
   
   .dex-search-input {
     flex: 1;
     padding: 8px 12px;
-    /* ★修正: 右側に✕ボタンが入るため、padding-rightを広げる */
     padding-right: 32px; 
     border: 1px solid var(--line);
     border-radius: 8px;
@@ -1220,10 +1208,9 @@
     border-color: var(--main);
   }
   
-  /* ★追加: ✕ボタン（クリアボタン） */
   .dex-search-clear {
     position: absolute;
-    right: 8px; /* 入力欄の右端に配置 */
+    right: 8px;
     top: 50%;
     transform: translateY(-50%);
     width: 20px;
@@ -1235,15 +1222,14 @@
     background: #eee;
     border-radius: 50%;
     cursor: pointer;
-    display: none; /* デフォルトは非表示 */
+    display: none;
     z-index: 10;
   }
   .dex-search-clear:hover {
     background: #ccc;
     color: #fff;
   }
-
-    
+  
   /* 自作サジェストリスト */
   .dex-suggest-list {
     position: absolute;
@@ -1254,10 +1240,7 @@
     border: 1px solid var(--main);
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    
-    /* ★修正: 200px -> 400px に拡大（一覧性を高める） */
     max-height: 400px;
-    
     overflow-y: auto;
     z-index: 200;
     margin-top: 4px;
@@ -1292,7 +1275,7 @@
     justify-content: center;
     font-size: 20px;
     cursor: pointer;
-    border-radius: 8px;
+    border-radius: 50%; /* 完全な丸 */
     border: 1px solid transparent;
     background: #f0f2f5;
     user-select: none;
@@ -1313,7 +1296,7 @@
   .bm-icon {
     width: 28px;
     height: 28px;
-    border-radius: 6px;
+    border-radius: 50%; /* 完全な丸 */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1331,7 +1314,7 @@
   /* 各アイコンの色定義 */
   .bm-icon[data-id="1"].active, .dex-icon-btn[data-id="1"] { color: #f1c40f; text-shadow: 0 1px 1px rgba(0,0,0,0.2); } /* 星 */
   .bm-icon[data-id="2"].active, .dex-icon-btn[data-id="2"] { color: #e74c3c; text-shadow: 0 1px 1px rgba(0,0,0,0.2); } /* ハート */
-  .bm-icon[data-id="3"].active, .dex-icon-btn[data-id="3"] { color: #2ecc71; text-shadow: 0 1px 1px rgba(0,0,0,0.2); } /* 四角（緑） */
+  .bm-icon[data-id="3"].active, .dex-icon-btn[data-id="3"] { color: #2ecc71; text-shadow: 0 1px 1px rgba(0,0,0,0.2); } /* 四角 */
   
   /* フィルタ時の背景色調整 */
   .dex-icon-btn.active-filter[data-id="1"] { background: #fff9db; border-color: #f1c40f; }
