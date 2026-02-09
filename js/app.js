@@ -6,13 +6,13 @@
    soft: 薄い背景色 (バッジ背景、強調エリアの背景など)
 ========================================================= */
 const THEMES = {
-  blue:       { name: "ブルー",       main: "#007bff", soft: "#eaf4ff" },
   red:        { name: "レッド",       main: "#ff4757", soft: "#ffe6e7" },
   pink:       { name: "ピンク",       main: "#ff6b81", soft: "#ffeff1" },
   orange:     { name: "オレンジ",     main: "#ffa502", soft: "#fff5e0" },
   yellow:     { name: "イエロー",     main: "#eccc68", soft: "#fbf6e3" }, /* 文字が見やすいよう少し濃い黄色 */
   green:      { name: "グリーン",     main: "#2ed573", soft: "#eafaf1" },
   lightgreen: { name: "ライトグリーン", main: "#7bed9f", soft: "#f0fbf4" },
+  blue:       { name: "ブルー",       main: "#007bff", soft: "#eaf4ff" },
   lightblue:  { name: "ライトブルー",   main: "#70a1ff", soft: "#e3f2fd" }, /* ブルーより明るい空色 */
   purple:     { name: "パープル",     main: "#5352ed", soft: "#eeedff" },
   brown:      { name: "ブラウン",     main: "#a0522d", soft: "#f5ebe0" }
