@@ -1184,7 +1184,66 @@
   .dex-search-input:focus {
     border-color: var(--main);
   }
+
+  /* 検索バーとアイコンのコンテナ */
+  .dex-tool-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+    background: #fff;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    position: relative; 
+    z-index: 100;
+  }
   
+  .dex-search-row {
+    display: flex;
+    gap: 8px;
+    position: relative; /* ✕ボタンの配置基準 */
+    align-items: center;
+  }
+  
+  .dex-search-input {
+    flex: 1;
+    padding: 8px 12px;
+    /* ★修正: 右側に✕ボタンが入るため、padding-rightを広げる */
+    padding-right: 32px; 
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+  }
+  .dex-search-input:focus {
+    border-color: var(--main);
+  }
+  
+  /* ★追加: ✕ボタン（クリアボタン） */
+  .dex-search-clear {
+    position: absolute;
+    right: 8px; /* 入力欄の右端に配置 */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    font-size: 16px;
+    color: #999;
+    background: #eee;
+    border-radius: 50%;
+    cursor: pointer;
+    display: none; /* デフォルトは非表示 */
+    z-index: 10;
+  }
+  .dex-search-clear:hover {
+    background: #ccc;
+    color: #fff;
+  }
+
+    
   /* 自作サジェストリスト */
   .dex-suggest-list {
     position: absolute;
