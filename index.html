@@ -25,10 +25,8 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="料理計算">
-
   
-  </head>
-  <style>
+<style>
     :root {
       --bg: #f5f8fa;
       --card: #ffffff;
@@ -48,14 +46,12 @@
       color: var(--text);
       line-height: 1.5;
       -webkit-font-smoothing: antialiased;
-      
-      /* ★追加: ラジオボタンやチェックボックスの色をテーマカラーに合わせる */
+      /* ラジオボタンやチェックボックスの色をテーマカラーに合わせる */
       accent-color: var(--main);
     }
 
     /* ピンクモード等の定義（JSでクラス付与時に上書きされる） */
     body.theme-pink { --main: #ff6b81; --main-soft: #ffeff1; }
-    /* 他のテーマはJS側でCSS変数を直接操作するため、ここでは定義不要 */
 
     header {
       padding: 8px 16px;
@@ -128,10 +124,8 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
 
-    /* タブ③：スマホで横にはみ出すのを防ぐ */
     #levelCard{ overflow-x: hidden; }
 
-    /* PC見栄え：計算結果カード */
     .result-card {
       padding: 16px;
       border: 2px solid var(--main);
@@ -142,7 +136,6 @@
 
     .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     
-    /* 計算結果グリッド */
     .grid5 {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
@@ -179,18 +172,16 @@
     
     input.emphSelect { text-align: center; }
 
-    /* ★修正: エナジー結果エリア（テーマカラー適用） */
     .energyResultBox {
       background: var(--card);
-      border: 2px solid var(--main); /* オレンジ(#ffa502)から変更 */
+      border: 2px solid var(--main);
       border-radius: 12px;
       padding: 12px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: var(--main); /* オレンジ(#e67e22)から変更 */
-      /* 影はテーマ色に合わせるのが難しいため、薄い黒か削除で対応 */
+      color: var(--main);
       box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
     }
 
@@ -252,7 +243,6 @@
       white-space: nowrap;
     }
 
-    /* ラジオボタンボタン化グループ */
     .radioGroup {
       display: flex;
       background: #f3f6fa;
@@ -358,7 +348,6 @@
     .preview { font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; width: 100%; align-items: center; }
     .preview span { display: flex; align-items: center; background: var(--main-soft); color: var(--main); padding: 2px 6px; border-radius: 6px; font-weight: 700; border: 1px solid #d0e7ff; }
 
-    /* タイル */
     .tile {
       border: 1px solid var(--line);
       border-radius: 12px;
@@ -391,7 +380,6 @@
     }
     .exChk { margin: 0; cursor: pointer; width: 13px; height: 13px; }
 
-    /* ヘッダー・バッジ */
     .badge { font-size: 12px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); font-weight: 700; }
     #summaryBadge { background: var(--main-soft); color: var(--main); border: 1px solid #cce5ff; }
     .total-badge { background: var(--main); color: #fff; border: none; padding: 6px 16px; }
@@ -411,11 +399,101 @@
     button.primary { background: var(--main); color: #fff; border-color: var(--main); }
     button.danger { color: var(--danger); border-color: #fadbd8; background: #fff; }
 
-    /* --- Pokedex追加機能用スタイル --- */
-
-    /* ★修正: 青枠（ハイライト）をテーマカラーに連動させる */
+    /* --- Tab2: 出現ポケモン一覧用スタイル (復元) --- */
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .field-item {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .field-item:active { transform: scale(0.98); }
     
-    /* 1. 島選択時の枠 */
+    /* 島の画像サイズ制限 */
+    .field-img {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    .field-name {
+      font-weight: 900;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    /* 島詳細ヘッダー */
+    .field-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .field-header img {
+      width: 100%;
+      max-width: 300px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+    }
+    .field-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--main);
+    }
+
+    /* エナジー表（グリッド線復元） */
+    .energy-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      margin-top: 8px;
+    }
+    .energy-table th, .energy-table td {
+      border: 1px solid var(--line);
+      padding: 6px;
+      text-align: center;
+    }
+    .energy-table th {
+      background: var(--main-soft);
+      color: var(--main);
+      font-weight: 900;
+    }
+
+    /* 睡眠タイプヘッダー（色復元） */
+    .sleep-section { margin-top: 20px; }
+    .sleep-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      border-bottom: 2px solid var(--line);
+      padding-bottom: 4px;
+    }
+    .sleep-badge {
+      font-size: 12px;
+      font-weight: 900;
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 4px;
+    }
+    .badge-uto { background-color: #f1c40f; } /* 黄 */
+    .badge-suya { background-color: #3498db; } /* 青 */
+    .badge-gusu { background-color: #2c3e50; } /* 紺/灰 */
+
+    /* --- Pokedex追加機能用スタイル --- */
+    
+    /* 1. 島（フィールド）選択時の青枠: カード全体を囲む */
     .field-item.highlight-blue {
       border: 3px solid var(--main) !important;
       box-sizing: border-box !important;
@@ -425,8 +503,8 @@
       background-color: transparent !important;
       z-index: 1;
     }
-
-    /* 2. ポケモン一覧時の枠（画像リング） */
+    
+    /* 2. ポケモン一覧時の青枠: 画像にだけ丸い枠をつける */
     .poke-item.highlight-blue {
       border: none !important;
       background: none !important;
@@ -435,13 +513,13 @@
       border-radius: 0 !important;
     }
     .poke-item.highlight-blue img {
-      border: 2px solid var(--main) !important; /* 青(#007bff)ではなくテーマ色 */
+      border: 2px solid var(--main) !important;
       border-radius: 50%;
       box-sizing: border-box;
       padding: 1px;
       background: #fff;
     }
-
+    
     /* 検索バー */
     .dex-tool-bar {
       display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;
@@ -460,6 +538,9 @@
       font-size: 16px; color: #999; background: #eee; border-radius: 50%;
       cursor: pointer; display: none; z-index: 10;
     }
+    .dex-search-clear:hover { background: #ccc; color: #fff; }
+    
+    /* 自作サジェストリスト */
     .dex-suggest-list {
       position: absolute; top: 100%; left: 0; right: 0;
       background: #fff; border: 1px solid var(--main); border-radius: 8px;
@@ -469,8 +550,12 @@
     .dex-suggest-item {
       padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--text);
     }
-    .dex-suggest-item:hover, .dex-suggest-item:active { background: var(--main-soft); color: var(--main); }
-
+    .dex-suggest-item:last-child { border-bottom: none; }
+    .dex-suggest-item:hover, .dex-suggest-item:active {
+      background: var(--main-soft);
+      color: var(--main);
+    }
+    
     /* アイコン */
     .dex-icon-row { display: flex; gap: 16px; justify-content: center; align-items: center; }
     .dex-icon-btn {
@@ -478,7 +563,7 @@
       font-size: 20px; cursor: pointer; border-radius: 50%;
       border: 1px solid transparent; background: #f0f2f5; transition: background 0.2s;
     }
-    .dex-icon-btn.active-filter { background: #007bff; color: #fff; border-color: #0056b3; } /* ここはアイコンごとの色で上書きされるので固定でOK、あるいはテーマ連動させても良い */
+    .dex-icon-btn.active-filter { background: #007bff; color: #fff; border-color: #0056b3; } 
     
     .detail-bookmark-row { display: flex; gap: 12px; margin-left: auto; }
     .bm-icon {
@@ -486,16 +571,17 @@
       font-size: 16px; color: #ccc; background: #f8f9fa; border: 1px solid #ddd; cursor: pointer;
     }
     .bm-icon.active { border-color: transparent; color: #fff; }
-
-    /* 各アイコン色（固定） */
+    
+    /* 各アイコン色 */
     .bm-icon[data-id="1"].active, .dex-icon-btn[data-id="1"] { color: #f1c40f; text-shadow: 0 1px 1px rgba(0,0,0,0.2); }
     .bm-icon[data-id="2"].active, .dex-icon-btn[data-id="2"] { color: #e74c3c; text-shadow: 0 1px 1px rgba(0,0,0,0.2); }
     .bm-icon[data-id="3"].active, .dex-icon-btn[data-id="3"] { color: #2ecc71; text-shadow: 0 1px 1px rgba(0,0,0,0.2); }
-    /* フィルタ時の背景色は固定でOK */
+    
+    /* フィルタ時の背景色 */
     .dex-icon-btn.active-filter[data-id="1"] { background: #fff9db; border-color: #f1c40f; }
     .dex-icon-btn.active-filter[data-id="2"] { background: #fadbd8; border-color: #e74c3c; }
     .dex-icon-btn.active-filter[data-id="3"] { background: #d5f5e3; border-color: #2ecc71; }
-
+    
     .dex-note-text { font-size: 9px; color: var(--muted); text-align: center; margin-top: 4px; }
 
     /* カレンダーなど */
@@ -535,12 +621,12 @@
 
 
   
-    /* tab3用スタイル (level.js側で生成される要素用) */
+    /* tab3用スタイル */
     #tab3 .lvlForm { display: flex; flex-direction: column; gap: 16px; font-family: inherit; }
     #tab3 .lvlGroup { display: flex; flex-direction: column; gap: 14px; }
     #tab3 .lvlDivider { height: 1px; background: var(--line); margin: 4px 0; opacity: 0.6; }
     #tab3 .lvlLabel { font-weight: 900; font-size: 14px; color: var(--text); flex: 1; }
-    #tab3 .lvlReq { color: var(--danger); margin-right: 4px; font-weight: 900; font-size: 1.2em; vertical-align: middle; }
+    #tab3 .lvlReq { color: #ff0000; margin-right: 4px; font-weight: 900; font-size: 1.2em; vertical-align: middle; }
     #tab3 .lvlRow { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
     #tab3 .lvlRowTop { align-items: flex-start !important; padding-top: 4px; }
     #tab3 .lvlRight { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
@@ -576,6 +662,7 @@
     #tab3 .lvResultClose { position: absolute; top: -8px; right: -8px; border: 1px solid var(--line); background: #fff; color: var(--danger); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; z-index: 10; }
     .info-btn-tiny { display: inline-block; color: var(--muted); font-size: 14px; font-weight: 400; cursor: pointer; margin-left: 2px; margin-right: 6px; vertical-align: middle; line-height: 1; opacity: 0.7; transition: opacity 0.2s; }
     .info-btn-tiny:active { opacity: 1.0; transform: scale(0.95); }
+    
     .type-badge { padding: 4px 16px; border-radius: 99px; color: #fff; font-weight: 900; font-size: 12px; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .type-berry { background-color: #00c853; }
     .type-ing { background-color: #ffab00; }
@@ -593,718 +680,6 @@
     .element-type { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: bold; color: #555; }
     .poke-vars-table th, .poke-vars-table td { border-bottom: 1px solid var(--line); }
     .poke-vars-table tr:last-child td { border-bottom: none; }
-
-  
-  /* =========================================================
-       レイアウト修正版 v2：余白・整列・スマホ対応の強化
-    ========================================================= */
-
-    /* セクション見出し：下の余白（margin-bottom）を復活 */
-    .sectionTitle{
-      font-weight: 900;
-      font-size: 14px;
-      border-left: 5px solid var(--main);
-      padding-left: 10px;
-      color: var(--text);
-      margin-bottom: 10px; /* ← これで「計算から除外」とアイコンの間が空きます */
-    }
-
-    /* ★追加：NCピカチュウの行（1日当たりの獲得量）だけは余白を消して、右のチェックボックスと高さを揃える */
-    .replenishHeaderRow .sectionTitle {
-      margin-bottom: 0;
-    }
-
-    /* ---------------------------------------------------
-       PC/スマホ共通：ヘッダーのベース設定
-    --------------------------------------------------- */
-    .settingsHeaderRow,
-    .replenishHeaderRow {
-      display: flex;
-      flex-wrap: wrap; 
-      align-items: center;
-      justify-content: space-between;
-      gap: 15px;
-      width: 100%;
-      margin-bottom: 10px;
-      position: relative;
-    }
-
-    /* --- 条件設定ブロック --- */
-    #condBlock,
-    .replenishHeaderRow > div:first-child {
-      flex: 0 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      /* バッジを横一杯に伸ばさず、中身のサイズに合わせる */
-      align-items: flex-start; 
-    }
-
-    /* --- 中央の説明文 / NCピカ --- */
-    #infoMessageBlock,
-    .replenishHeaderRow > div:nth-child(2) {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      min-width: 150px;
-    }
-
-    /* NCピカ（PC版）：中央寄せ */
-    .replenishHeaderRow > div:nth-child(2) {
-      justify-content: center; 
-    }
-
-    /* --- 右側のボタン群 --- */
-    #actionBlock,
-    .replenishHeaderRow > div:last-child {
-      flex: 0 0 auto;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    
-    /* レイアウト調整用の空divは消す */
-    .replenishHeaderRow > div:last-child:empty {
-      display: none;
-    }
-
-    #actionBlock > button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      padding: 0 16px;
-      height: 36px;
-      line-height: 1;
-      border-radius: 999px;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    /* NCピカチュウオプション：基本スタイル */
-    .ncPikaOpt {
-      min-height: 30px;
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-    }
-    .ncPikaOpt input[type="checkbox"] {
-      margin: 0; 
-      transform: scale(1.1);
-    }
-
-    /* ---------------------------------------------------
-       スマホ最適化 (520px以下)
-    --------------------------------------------------- */
-    @media (max-width: 520px) {
-      
-      /* --- 上部：条件設定まわり（グリッドで配置整理） --- */
-      /* 文字被りを防ぐため、明確に「タイトル・ボタン」の行と「説明文」の行に分けます */
-      .settingsHeaderRow {
-        display: grid;
-        grid-template-areas: 
-          "title actions"
-          "info  info";
-        grid-template-columns: 1fr auto; /* 左は可変、右はボタン幅 */
-        gap: 8px 0;
-        align-items: center;
-      }
-
-      #condBlock { 
-        grid-area: title; 
-        align-items: flex-start; /* バッジ幅をコンテンツに合わせる */
-      }
-      
-      #actionBlock { 
-        grid-area: actions; 
-        justify-content: flex-end; 
-      }
-      
-      #infoMessageBlock { 
-        grid-area: info; 
-        margin-top: 2px;
-      }
-
-      /* ボタンサイズ微調整 */
-      #actionBlock > button {
-        height: 32px;
-        min-width: 60px;
-        font-size: 12px;
-        padding: 0 12px;
-      }
-
-      /* --- 下部：1日当たりの獲得量 & NCピカ --- */
-      /* 横並び（Flex）を維持し、両端揃えにする */
-      .replenishHeaderRow {
-        display: flex;
-        flex-direction: row;       /* 横並び */
-        flex-wrap: nowrap;         /* 折り返しなし（タイトルとチェックボックスを横に並べる） */
-        justify-content: space-between; /* 両端に配置 */
-        align-items: center;       /* 上下中央揃え */
-        gap: 10px;
-      }
-      
-      /* タイトル（左側） */
-      .replenishHeaderRow > div:first-child {
-        flex: 0 0 auto; /* 幅を固定せず中身に合わせる */
-      }
-
-      /* NCピカ（右側）：背景色などを消してシンプルに */
-      .replenishHeaderRow > div:nth-child(2) {
-        justify-content: flex-end; /* 右寄せ */
-        width: auto !important;
-        background: transparent !important; /* 背景削除 */
-        padding: 0 !important;              /* パディング削除 */
-        border: none !important;
-        flex: 1; /* 残りの幅を使って右に押す */
-      }
-      
-      /* チェックボックスのラベル調整 */
-      .ncPikaOpt {
-        justify-content: flex-end; /* ラベル内も右寄せ */
-        width: 100%;
-        margin: 0;
-        font-size: 11px; /* 少し小さくして1行に収まりやすくする */
-      }
-    }
-    
-
-    /* =========================================================
-       PC見栄え：計算結果カードをまとめて整える（他には影響しない）
-    ========================================================= */
-    
-    .result-card {
-      padding: 16px;
-      border: 2px solid var(--main);
-      background: #ffffff;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,123,255,0.1);
-    }
-
-    /* ヘッダー：タイトルを左、バッジを右に配置 */
-    .result-card .resultHeader {
-      display: flex;
-      align-items: center;
-      justify-content: space-between; /* 両端に分ける */
-      margin-bottom: 12px;
-    }
-
-    /* タイトルの色とフォントウェイトを以前の状態へ */
-    .result-card .resultTitle {
-      font-size: 16px;
-      font-weight: 900;
-      color: var(--main);
-      margin: 0;
-    }
-
-    /* 総合計バッジ：右寄せ＆スタイル調整 */
-    .result-card .total-badge {
-      font-size: 13px;
-      font-weight: 900;
-      padding: 6px 16px;
-      background: var(--main);
-      color: #fff;
-      border-radius: 999px;
-      border: none;
-      white-space: nowrap;
-    }
-
-    /* 区切り線 */
-    .result-card .resultDivider {
-      height: 1px;
-      background: var(--line);
-      margin: 12px 0;
-      opacity: 0.6;
-    }
-    
-  /* =========================================================
-     計算結果：PCでも他タブと「完全に同じカード寸法」に固定
-     （= .grid5 / .tile のベース定義へ戻す）
-  ========================================================= */
-  .result-card .grid5{
-    grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
-    gap: 8px;
-  }
-  
-  .result-card .tile{
-    padding: 6px 3px;
-    min-height: 95px;
-    border-radius: 12px;
-  }
-  
-  .result-card .icon{
-    width: 30px;
-    height: 30px;
-  }
-  
-  .result-card .tileName{
-    font-size: 8px;
-    font-weight: 700;
-    width: 100%;
-    overflow: hidden;
-    text-overflow: clip;
-    white-space: nowrap;
-  }
-  
-  /* 注意書き：消えたように見えないよう、中央寄せ＆余白 */
-  .result-card .mode3Note{
-    margin-top: 10px;
-  }
-
-  /* =========================
-     経験値シミュレータ―（tab3）
-  ========================= */
-
-  /* タブ3専用のクリーンなスタイル定義 */
-  /* --- タブ3 最終調整版 (常時表示対応) --- */
-  #tab3 .lvlForm { display: flex; flex-direction: column; gap: 16px; font-family: inherit; }
-  #tab3 .lvlGroup { display: flex; flex-direction: column; gap: 14px; }
-  #tab3 .lvlDivider { height: 1px; background: var(--line); margin: 4px 0; opacity: 0.6; }
-
-  #tab3 .lvlLabel { font-weight: 900; font-size: 14px; color: var(--text); flex: 1; }
-  #tab3 .lvlReq { color: #ff0000; margin-right: 4px; font-weight: 900; font-size: 1.2em; vertical-align: middle; }
-
-  /* 入力欄とクイックボタンの配置 */
-  /* 入力欄とクイックボタンの配置 */
-  #tab3 .lvlRow { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-  #tab3 .lvlRowTop { align-items: flex-start !important; padding-top: 4px; }
-  #tab3 .lvlRight { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-
-/* クイックボタン：横1列（6列）表示設定 */
-  #tab3 .lvlGrid6 {
-    display: grid !important;
-    grid-template-columns: repeat(6, 1fr) !important;
-    gap: 4px !important;
-    justify-content: flex-end !important;
-    width: 100% !important;
-    max-width: 250px;
-    margin-top: 4px;
-  }
-
-  #tab3 .lvlQuickBtn {
-    width: auto !important;
-    height: 28px;
-    border-radius: 8px;
-    border: 1px solid var(--line) !important;
-    background: #fff !important;
-    font-size: 10px; /* 6個並ぶので少し小さめに設定 */
-    font-weight: 900;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--muted) !important;
-    cursor: pointer;
-    padding: 0;
-  }
-
-  /* 入力欄：中央揃え、太字、プレースホルダー調整 */
-  #tab3 input[type="number"] {
-    -moz-appearance: textfield;
-    line-height: normal !important;
-    vertical-align: middle;
-    text-align: center;
-    font-weight: 900;
-  }
-  #tab3 input[type="number"]::-webkit-outer-spin-button,
-  #tab3 input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  #tab3 input::placeholder { color: #d1d5db; opacity: 1; font-size: 11px; text-align: center; font-weight: 900; }
-
-  /* ラジオボタンの間隔と1pxの調整 */
-  #tab3 .lvlRadio input[type="radio"] {
-    margin: 0;
-    vertical-align: middle;
-    position: relative;
-    top: -1px;
-  }
-  #tab3 .lvlRadio span { vertical-align: middle; margin-left: 8px; font-weight: 900; }
-
-  /* 性格・タイプ用の縦並び */
-  #tab3 .lvlRowStack { display: flex; flex-direction: column; gap: 10px; padding: 4px 0; }
-  #tab3 .lvlRadios { display: flex; gap: 12px; justify-content: flex-end; }
-  #tab3 .lvlRowStack .lvlRadios { justify-content: flex-start; padding-left: 4px; }
-  #tab3 .lvlRadio { font-size: 12px; cursor: pointer; color: var(--text); }
-
-  /* ブースト行 */
-  #tab3 .lvlBoostRow { display: grid; grid-template-columns: 1fr auto; align-items: center; row-gap: 8px; }
-  #tab3 .lvlBoostRow .lvlBoostRadios { grid-column: 1 / -1; display: flex; gap: 16px; justify-content: flex-start; padding-left: 4px; }
-
-  /* 入力欄サイズ */
-  #tab3 .lvlInputWrapper { display: flex; align-items: center; gap: 4px; justify-content: flex-end; }
-  #tab3 .lvlInMain { width: 50px; }
-  #tab3 .lvlInSub { width: 65px; }
-  #tab3 .lvlInMini { width: 50px; }
-  #tab3 .lvlUnit { font-size: 11px; font-weight: 900; white-space: nowrap; }
-
-  /* オプションラベルと睡眠の高さ合わせ */
-  #tab3 .lvlOptGroup .lvlRow { align-items: flex-start; }
-  #tab3 .lvlOptGroup .lvlLabel { margin-top: 8px; }
-  #tab3 .lvlOptItems { display: flex; flex-direction: column; gap: 10px; flex: 1.5; }
-  #tab3 .lvlOptLine { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
-  #tab3 .lvlOptName { font-size: 12px; font-weight: 900; color: var(--muted); }
-
-  /* 計算結果と×ボタン (display: blockで常時表示) */
-  #tab3 .lvlResult { margin-top: 12px; border: 2px solid var(--main); background: #ffffff; border-radius: 16px; padding: 16px; display: block; position: relative; min-height: 60px; }
-  #tab3 .lvResTitle { font-weight: 900; font-size: 16px; color: var(--main); margin-bottom: 12px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
-  #tab3 .lvResRow { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
-  #tab3 .lvResKey { font-weight: 900; font-size: 13px; color: var(--muted); }
-  #tab3 .lvResVal { font-weight: 900; font-size: 14px; }
-  #tab3 .lvResSubTitle {
-    margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--line);
-    width: 100%; display: block; font-weight: 900; font-size: 13px; color: var(--main);
-  }
-  #tab3 .lvResultClose {
-    position: absolute; top: -8px; right: -8px; border: 1px solid var(--line); background: #fff;
-    color: var(--danger); width: 26px; height: 26px; border-radius: 50%; display: flex;
-    align-items: center; justify-content: center; font-weight: bold;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; z-index: 10;
-  }
-
-    /* 小さなインフォメーションボタン（記号版） */
-    .info-btn-tiny {
-      display: inline-block;
-      color: var(--muted);
-      font-size: 14px;
-      font-weight: 400;
-      cursor: pointer;
-      margin-left: 2px;
-      margin-right: 6px;
-      vertical-align: middle;
-      line-height: 1;
-      opacity: 0.7;
-      transition: opacity 0.2s;
-    }
-    
-    /* 押したとき */
-    .info-btn-tiny:active {
-      opacity: 1.0;
-      transform: scale(0.95);
-    }
-
-
-    
-  /* --- ポケモン詳細モーダル用スタイル --- */
-    
-    /* タイプアイコン（カプセル型） */
-    .type-badge {
-      padding: 4px 16px;
-      border-radius: 99px;
-      color: #fff;
-      font-weight: 900;
-      font-size: 12px;
-      display: inline-block;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .type-berry { background-color: #00c853; } /* きのみ：鮮やかな緑 */
-    .type-ing   { background-color: #ffab00; } /* 食材：オレンジ */
-    .type-skill { background-color: #2979ff; } /* スキル：青 */
-
-    /* 食材リスト（横並び） */
-    .ing-list {
-      display: flex;
-      gap: 12px;
-      margin-top: 8px;
-      overflow-x: auto; /* 画面幅が狭いときにスクロール */
-    }
-    .ing-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      min-width: 60px;
-    }
-    .ing-lv {
-      font-size: 10px;
-      font-weight: 900;
-      color: var(--muted);
-      background: #f0f2f5;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-    .ing-icon {
-      width: 32px;
-      height: 32px;
-      object-fit: contain;
-    }
-    .ing-name {
-      font-size: 10px;
-      font-weight: 700;
-      text-align: center;
-      line-height: 1.2;
-    }
-
-
-    
-/* --- 出現ポケモン一覧（以前のデザインに戻す） --- */
-    .poke-grid {
-      padding: 10px 10px 12px;
-      display: grid;
-      /* 以前の設定：46px以上で自動詰め込み */
-      grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
-      gap: 8px;
-    }
-
-    .poke-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-    }
-    
-    .poke-item img {
-      width: 44px;
-      height: 44px;
-      object-fit: contain;
-    }
-
-    .poke-name {
-      font-size: 9px;
-      font-weight: 800;
-      color: var(--muted); /* 文字色を薄い灰色に戻す */
-      text-align: center;
-      line-height: 1.2;
-      word-break: keep-all; /* 勝手な改行をしない */
-      /* 幅制限や変形（transform）は削除 */
-    }
-
-    /* --- 詳細モーダル用スタイル（ここは最新の見やすいレイアウトを維持） --- */
-    .type-badge-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
-    }
-    
-    .element-type {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 11px;
-      font-weight: bold;
-      color: #555;
-    }
-
-    
-    /* --- 詳細モーダル追加スタイル --- */
-    /* バケッチャ等の個体差テーブル */
-    .poke-vars-table th, .poke-vars-table td {
-      border-bottom: 1px solid var(--line);
-    }
-    .poke-vars-table tr:last-child td {
-      border-bottom: none;
-    }
-
-    
-  @media (max-width: 520px) {
-    #tab3 .lvlLabel { font-size: 13px; }
-    #tab3 .lvlRight { gap: 6px; }
-    #tab3 .lvlQuickBtn { width: 34px; font-size: 10px; }
-    #tab3 .lvlRadio { font-size: 11px; }
-  }
-
-  @keyframes popIn {
-    from { transform: scale(0.9); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }  
-
-
-  /* --- Pokedex追加機能用スタイル --- */
-  
-  /* ★修正: 青枠のデザインを対象（島/ポケモン）によって分ける 
-  
-  /* 1. 島（フィールド）選択時の青枠: カード全体を囲む */
-  .field-item.highlight-blue {
-    border: 3px solid #007bff !important;
-    box-sizing: border-box !important;
-    transition: transform 0.1s;
-    transform: scale(1.02); /* 少しだけ大きく */
-    box-shadow: none !important;
-    background-color: transparent !important;
-    z-index: 1;
-  }
-  
-  /* 2. ポケモン一覧時の青枠: 画像にだけ丸い枠をつける */
-  .poke-item.highlight-blue {
-    border: none !important;
-    background: none !important;
-    box-shadow: none !important;
-    transform: none !important;
-    border-radius: 0 !important;
-  }
-  
-  /* 画像（img）に対してスタイルを適用 */
-  .poke-item.highlight-blue img {
-    border: 2px solid #007bff; /* シンプルな青線 */
-    border-radius: 50%;        /* 完全な丸 */
-    box-sizing: border-box;
-    padding: 1px;              /* 画像と枠の間にわずかな隙間 */
-    background: #fff;          /* 透過画像の場合、背景を白にして枠を見やすく */
-  }
-  
-  
-  /* 検索バーとアイコンのコンテナ */
-  .dex-tool-bar {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 12px;
-    background: #fff;
-    padding: 10px;
-    border-radius: 12px;
-    border: 1px solid var(--line);
-    position: relative; 
-    z-index: 100;
-  }
-  
-  .dex-search-row {
-    display: flex;
-    gap: 8px;
-    position: relative;
-    align-items: center;
-  }
-  
-  .dex-search-input {
-    flex: 1;
-    padding: 8px 12px;
-    padding-right: 32px; 
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    font-size: 14px;
-    outline: none;
-  }
-  .dex-search-input:focus {
-    border-color: var(--main);
-  }
-  
-  .dex-search-clear {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 20px;
-    height: 20px;
-    line-height: 20px;
-    text-align: center;
-    font-size: 16px;
-    color: #999;
-    background: #eee;
-    border-radius: 50%;
-    cursor: pointer;
-    display: none;
-    z-index: 10;
-  }
-  .dex-search-clear:hover {
-    background: #ccc;
-    color: #fff;
-  }
-  
-  /* 自作サジェストリスト */
-  .dex-suggest-list {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: #fff;
-    border: 1px solid var(--main);
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    max-height: 400px;
-    overflow-y: auto;
-    z-index: 200;
-    margin-top: 4px;
-    display: none; 
-  }
-  .dex-suggest-item {
-    padding: 10px 12px;
-    border-bottom: 1px solid #eee;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    color: var(--text);
-  }
-  .dex-suggest-item:last-child { border-bottom: none; }
-  .dex-suggest-item:hover, .dex-suggest-item:active {
-    background: var(--main-soft);
-    color: var(--main);
-  }
-  
-  /* ブックマークアイコン群 */
-  .dex-icon-row {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    align-items: center;
-  }
-  .dex-icon-btn {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    cursor: pointer;
-    border-radius: 50%; /* 完全な丸 */
-    border: 1px solid transparent;
-    background: #f0f2f5;
-    user-select: none;
-    transition: background 0.2s;
-  }
-  .dex-icon-btn.active-filter {
-    background: #007bff;
-    color: #fff;
-    border-color: #0056b3;
-  }
-  
-  /* ポケモン詳細画面内のブックマークアイコン */
-  .detail-bookmark-row {
-    display: flex;
-    gap: 12px;
-    margin-left: auto;
-  }
-  .bm-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%; /* 完全な丸 */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    color: #ccc;
-    background: #f8f9fa;
-    border: 1px solid #ddd;
-    cursor: pointer;
-  }
-  .bm-icon.active {
-    border-color: transparent;
-    color: #fff;
-  }
-  
-  /* 各アイコンの色定義 */
-  .bm-icon[data-id="1"].active, .dex-icon-btn[data-id="1"] { color: #f1c40f; text-shadow: 0 1px 1px rgba(0,0,0,0.2); } /* 星 */
-  .bm-icon[data-id="2"].active, .dex-icon-btn[data-id="2"] { color: #e74c3c; text-shadow: 0 1px 1px rgba(0,0,0,0.2); } /* ハート */
-  .bm-icon[data-id="3"].active, .dex-icon-btn[data-id="3"] { color: #2ecc71; text-shadow: 0 1px 1px rgba(0,0,0,0.2); } /* 四角 */
-  
-  /* フィルタ時の背景色調整 */
-  .dex-icon-btn.active-filter[data-id="1"] { background: #fff9db; border-color: #f1c40f; }
-  .dex-icon-btn.active-filter[data-id="2"] { background: #fadbd8; border-color: #e74c3c; }
-  .dex-icon-btn.active-filter[data-id="3"] { background: #d5f5e3; border-color: #2ecc71; }
-  
-  .dex-note-text {
-    font-size: 9px;
-    color: var(--muted);
-    text-align: center;
-    margin-top: 4px;
-  }
-    
-    
 </style>
 </head>
 
@@ -1317,16 +692,15 @@
   </div>
 
   <div style="display:flex; align-items:center; gap:10px;">
+    <button id="openTheme"
+      style="background:none; border:none; color:#fff; cursor:pointer; padding:6px 8px; font-size:11px; font-weight:800; display:flex; align-items:center; gap:4px;">
+      <span style="font-size:14px;">🎨</span> テーマ
+    </button>
+
     <button id="openDocs"
       style="background:none; border:none; color:#fff; cursor:pointer; display:flex; align-items:center; gap:6px; padding:6px 8px;">
       <span style="font-size:18px; line-height:1;">📖</span>
       <span style="font-size:12px; font-weight:800;">資料集</span>
-    </button>
-
-  <div style="display:flex; align-items:center; gap:10px;">
-    <button id="openTheme"
-      style="background:none; border:none; color:#fff; cursor:pointer; padding:6px 8px; font-size:11px; font-weight:800; display:flex; align-items:center; gap:4px;">
-      <span style="font-size:14px;">🎨</span> テーマカラー
     </button>
     
     <button id="openNotice"
@@ -1674,7 +1048,6 @@
 
 
     
-<!-- お役立ち資料集モーダル -->
 <div id="docsModal"
   style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
          background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; padding:20px;">
@@ -1688,7 +1061,6 @@
       </button>
     </div>
 
-    <!-- 資料一覧 -->
     <div style="display:flex; flex-direction:column; gap:12px;">
 
       <div style="border:1px solid var(--line); border-radius:14px; padding:12px;">
@@ -1721,11 +1093,9 @@
         </div>
       </div>
 
-    </div><!-- /資料一覧 -->
-  </div>
+    </div></div>
 </div>
 
-<!-- お役立ち資料：画像ビューア（アプリ内） -->
 <div id="docViewerModal"
   style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
          background:rgba(0,0,0,0.7); z-index:3000; align-items:center; justify-content:center; padding:14px;">
@@ -1743,7 +1113,6 @@
   </div>
 </div>
 
-<!-- ご利用上の注意 -->
 <div id="noticeModal"
   style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
          background:rgba(0,0,0,0.6); z-index:2000; align-items:center; justify-content:center; padding:20px;">
@@ -1826,7 +1195,6 @@
 </div>
     
 
-<!-- JS 読み込み（あなたの構成に合わせて） -->
 <script src="data/ingredients.js"></script>
 <script src="data/recipes.js"></script>
 <script src="data/fields.js"></script>
