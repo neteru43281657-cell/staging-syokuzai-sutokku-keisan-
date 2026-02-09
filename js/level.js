@@ -287,48 +287,51 @@ function toNum(v) {
                </div>`;
     }
 
-    // ★追加: 備考（マイルストーン計算）
-    const milestones = [25, 30, 50, 55, 60, 65];
-    
-    // ★修正：現在のレベル(lvNow)ではなく「目標レベル(lvTarget)」より大きいものだけ抽出
-    const validMilestones = milestones.filter(m => m > lvTarget);
+  /* ========== 備考欄（機能停止中） ==========
+  // 復活させる場合は、ここのコメントアウト（/* 〜 */）を外してください
 
-    // ★修正：ブーストが選択されている場合(boostKind !== "none")のみ表示する条件を追加
-    if (validMilestones.length > 0 && boostKind !== "none") {
-      let detailsHtml = "";
-      validMilestones.forEach(ms => {
-        const msRes = simulate({ 
-          lvNow, lvTarget: ms, typeKey: type, natureKey: nature, initialProgress, freeExp, 
-          boostKind, boostCount: bCount 
-        });
-        const msMissing = Math.max(0, msRes.candies - ownedCandy);
+  // ★追加: 備考欄（マイルストーン計算）
+  const milestones = [25, 30, 50, 55, 60, 65];
+  
+  // 現在のレベル(lvNow)ではなく「目標レベル(lvTarget)」より大きいものだけ抽出
+  const validMilestones = milestones.filter(m => m > lvTarget);
 
-        detailsHtml += `
-          <div style="display:flex; justify-content:space-between; align-items:baseline; border-bottom: 1px dashed #eee; padding: 6px 0;">
-            <div style="font-weight:900; font-size:11px; color:var(--text); white-space:nowrap; margin-right:4px;">Lv.${ms}まで</div>
-            <div style="font-size:10px; text-align:right; color:#5d6d7e; line-height:1.2;">
-              必要数：${msRes.candies.toLocaleString()}　所持数：${ownedCandy.toLocaleString()}　<span style="font-weight:900; color:${msMissing > 0 ? '#e74c3c' : '#5d6d7e'};">不足数：${msMissing.toLocaleString()}</span>
-            </div>
-          </div>`;
+  // ブーストが選択されている場合(boostKind !== "none")のみ表示
+  if (validMilestones.length > 0 && boostKind !== "none") {
+    let detailsHtml = "";
+    validMilestones.forEach(ms => {
+      const msRes = simulate({ 
+        lvNow, lvTarget: ms, typeKey: type, natureKey: nature, initialProgress, freeExp, 
+        boostKind, boostCount: bCount 
       });
+      const msMissing = Math.max(0, msRes.candies - ownedCandy);
 
-      // ★修正：区切り線(border-top)を削除
-      // ★修正：detailsタグに ${isDetailsOpen ? "open" : ""} を追加して状態を復元
-      html += `
-        <div style="margin-top: 16px; padding-top: 8px;">
-          <details style="cursor:pointer;" ${isDetailsOpen ? "open" : ""}>
-            <summary style="font-size:12px; font-weight:900; color:var(--main); outline:none;">備考</summary>
-            <div style="margin-top:8px; padding:0 8px; background:#f8f9fa; border-radius:8px;">
-              ${detailsHtml}
-            </div>
-          </details>
-        </div>
-      `;
-    }
+      detailsHtml += `
+        <div style="display:flex; justify-content:space-between; align-items:baseline; border-bottom: 1px dashed #eee; padding: 6px 0;">
+          <div style="font-weight:900; font-size:11px; color:var(--text); white-space:nowrap; margin-right:4px;">Lv.${ms}まで</div>
+          <div style="font-size:10px; text-align:right; color:#5d6d7e; line-height:1.2;">
+            必要数：${msRes.candies.toLocaleString()}　所持数：${ownedCandy.toLocaleString()}　<span style="font-weight:900; color:${msMissing > 0 ? '#e74c3c' : '#5d6d7e'};">不足数：${msMissing.toLocaleString()}</span>
+          </div>
+        </div>`;
+    });
 
-    container.innerHTML = html;
+    // 以前の状態（isDetailsOpen）があれば復元する記述を入れていましたが、
+    // 機能停止中なのでここでは単に表示HTMLを作るだけにしています
+    html += `
+      <div style="margin-top: 16px; padding-top: 8px;">
+        <details style="cursor:pointer;">
+          <summary style="font-size:12px; font-weight:900; color:var(--main); outline:none;">▼備考</summary>
+          <div style="margin-top:8px; padding:0 8px; background:#f8f9fa; border-radius:8px;">
+            ${detailsHtml}
+          </div>
+        </details>
+      </div>
+    `;
   }
+  ========================================== */
 
+  container.innerHTML = html;
+}
 
     
 window.LevelTab = {
@@ -377,4 +380,5 @@ window.LevelTab = {
     }
   };
 })();
+
 
