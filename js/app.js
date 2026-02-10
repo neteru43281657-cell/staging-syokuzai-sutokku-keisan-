@@ -2,24 +2,22 @@
 
 /* =========================================================
    テーマカラー定義
-   main: メインカラー (ボタン背景、枠線、ヘッダーなど)
-   soft: 薄い背景色 (バッジ背景、強調エリアの背景など)
 ========================================================= */
 const THEMES = {
   red:        { name: "レッド",       main: "#ff4757", soft: "#ffe6e7" },
   pink:       { name: "ピンク",       main: "#ff6b81", soft: "#ffeff1" },
   orange:     { name: "オレンジ",     main: "#ffa502", soft: "#fff5e0" },
   yellow:     { name: "イエロー",     main: "#eccc68", soft: "#fbf6e3" },
-  green:      { name: "グリーン",     main: "#558b2f", soft: "#f1f8e9" }, /* 濃い抹茶色 */
-  lightgreen: { name: "ライトグリーン", main: "#2ed573", soft: "#eafaf1" }, /* 旧グリーン(鮮やかな緑) */
-  blue:       { name: "ブルー",       main: "#007bff", soft: "#eaf4ff" }, /* メインカラー */
-  lightblue:  { name: "ライトブルー",   main: "#87cefa", soft: "#e1f5fe" }, /* パステルな水色 */
+  green:      { name: "グリーン",     main: "#558b2f", soft: "#f1f8e9" },
+  lightgreen: { name: "ライトグリーン", main: "#2ed573", soft: "#eafaf1" },
+  blue:       { name: "ブルー",       main: "#007bff", soft: "#eaf4ff" },
+  lightblue:  { name: "ライトブルー",   main: "#87cefa", soft: "#e1f5fe" },
   purple:     { name: "パープル",     main: "#5352ed", soft: "#eeedff" },
   brown:      { name: "ブラウン",     main: "#a0522d", soft: "#f5ebe0" }
 };
 
 /* =========================================================
-   診断モード：JSエラーを画面に表示
+   診断モード
 ========================================================= */
 (function attachErrorOverlay() {
   function ensureBox() {
@@ -57,10 +55,10 @@ const THEMES = {
 })();
 
 /* =========================================================
-   SW / Cache reset (一回だけ)
+   SW / Cache reset
 ========================================================= */
 async function resetSWAndCacheOnce() {
-  const KEY = "sw_cache_reset_done_v107";
+  const KEY = "sw_cache_reset_done_v110"; // verUPに合わせて変更
   if (localStorage.getItem(KEY)) return;
   try {
     if ("serviceWorker" in navigator) {
@@ -101,28 +99,27 @@ const NC_APPLE = 12;
 const NC_CACAO = 5;
 const NC_HONEY = 3;
 
-// レシピレベルボーナス (index=レベル)
+// レシピレベルボーナス
 const RECIPE_LEVEL_BONUS = [
-  0, // Lv0 (placeholder)
-  0.00, 0.02, 0.04, 0.06, 0.08, 0.09, 0.11, 0.13, 0.16, 0.18, // Lv1-10
-  0.19, 0.21, 0.23, 0.24, 0.26, 0.28, 0.30, 0.31, 0.33, 0.35, // Lv11-20
-  0.37, 0.40, 0.42, 0.45, 0.47, 0.50, 0.52, 0.55, 0.58, 0.61, // Lv21-30
-  0.64, 0.67, 0.70, 0.74, 0.77, 0.81, 0.84, 0.88, 0.92, 0.96, // Lv31-40
-  1.00, 1.04, 1.08, 1.13, 1.17, 1.22, 1.27, 1.32, 1.37, 1.42, // Lv41-50
-  1.48, 1.53, 1.59, 1.65, 1.71, 1.77, 1.83, 1.90, 1.97, 2.03, // Lv51-60
-  2.09, 2.15, 2.21, 2.27, 2.34                                // Lv61-65
+  0, 0.00, 0.02, 0.04, 0.06, 0.08, 0.09, 0.11, 0.13, 0.16, 0.18,
+  0.19, 0.21, 0.23, 0.24, 0.26, 0.28, 0.30, 0.31, 0.33, 0.35,
+  0.37, 0.40, 0.42, 0.45, 0.47, 0.50, 0.52, 0.55, 0.58, 0.61,
+  0.64, 0.67, 0.70, 0.74, 0.77, 0.81, 0.84, 0.88, 0.92, 0.96,
+  1.00, 1.04, 1.08, 1.13, 1.17, 1.22, 1.27, 1.32, 1.37, 1.42,
+  1.48, 1.53, 1.59, 1.65, 1.71, 1.77, 1.83, 1.90, 1.97, 2.03,
+  2.09, 2.15, 2.21, 2.27, 2.34
 ];
 
 // イベントボーナスパターン
 const EVENT_PATTERNS = {
-  "0": { normal: 1.0, great: 2.0, sunday: 3.0 },  // なし (日曜日3倍)
-  "1": { normal: 1.1, great: 2.2, sunday: 3.3 },   // パターン1
-  "2": { normal: 1.25, great: 2.5, sunday: 3.75 }, // パターン2
-  "3": { normal: 1.5, great: 3.0, sunday: 4.5 }    // パターン3
+  "0": { normal: 1.0, great: 2.0, sunday: 3.0 },
+  "1": { normal: 1.1, great: 2.2, sunday: 3.3 },
+  "2": { normal: 1.25, great: 2.5, sunday: 3.75 },
+  "3": { normal: 1.5, great: 3.0, sunday: 4.5 }
 };
 
 let state = {
-  recipeRows: [], // { rowId, cat, recipeId, meals, level, successType }
+  recipeRows: [], 
 };
 
 /* =========================================================
@@ -148,15 +145,12 @@ function applyTheme(themeKey) {
   const t = THEMES[themeKey] || THEMES["blue"];
   const root = document.documentElement;
   
-  // CSS変数を書き換え
   root.style.setProperty("--main", t.main);
   root.style.setProperty("--main-soft", t.soft);
   
-  // ブラウザのテーマカラー設定(metaタグ)も書き換え
   const metaTheme = document.querySelector('meta[name="theme-color"]');
   if (metaTheme) metaTheme.content = t.main;
 
-  // 保存
   localStorage.setItem("appTheme", themeKey);
 }
 
@@ -168,7 +162,6 @@ function renderThemeGrid() {
   Object.keys(THEMES).forEach(key => {
     const t = THEMES[key];
     const btn = document.createElement("div");
-    // 色見本ボタンスタイル
     btn.style.cssText = `
       display: flex; align-items: center; gap: 8px;
       padding: 10px 12px;
@@ -237,9 +230,6 @@ function renderGrids() {
   });
 }
 
-/* =========================================================
-   食数ドロップダウンの同期
-========================================================= */
 function refreshAllMealDropdowns() {
   state.recipeRows.forEach(row => {
     const wrap = document.querySelector(`.recipeRow[data-row-id="${row.rowId}"]`);
@@ -268,9 +258,6 @@ function refreshAllMealDropdowns() {
   updateSummary();
 }
 
-/* =========================================================
-   料理行UI
-========================================================= */
 function addRecipeRow(init) {
   if (state.recipeRows.length >= MAX_ROWS) return;
 
@@ -380,29 +367,22 @@ function addRecipeRow(init) {
   };
 
   cSel.onchange = updateRecipeList;
-  
   rSel.onchange = () => {
     const selectedText = rSel.options[rSel.selectedIndex]?.text || rSel.value;
     if (typeof gtag === 'function') {
-      gtag('event', 'select_recipe', {
-        'recipe_name': selectedText,
-        'category': cSel.value
-      });
+      gtag('event', 'select_recipe', { 'recipe_name': selectedText, 'category': cSel.value });
     }
     updatePreview();
   };
-
   mSel.onchange = () => {
     rowData.meals = Number(mSel.value);
     refreshAllMealDropdowns(); 
     updatePreview();
   };
-  
   lSel.onchange = () => {
     rowData.level = Number(lSel.value);
     calc();
   };
-
   radios.forEach(ra => ra.onchange = updatePreview);
 
   wrap.querySelector(".removeBtn").onclick = () => {
@@ -426,9 +406,6 @@ function updateSummary() {
   if (addBtn) addBtn.disabled = state.recipeRows.length >= MAX_ROWS;
 }
 
-/* =========================================================
-   計算ロジック（エナジー計算 ＆ ストック計算）
-========================================================= */
 function buildReplenishPerDayMap() {
   const map = new Map([...document.querySelectorAll(".repQty")].map(c => [c.dataset.iid, Number(c.value) || 0]));
   if (el("optNcPika")?.checked) {
@@ -474,7 +451,6 @@ function calc() {
     else evMul = evPattern.normal;
 
     const oneMealEnergy = Math.floor(displayEnergy * fbMul * evMul);
-    
     totalEnergy += (oneMealEnergy * row.meals);
 
     const map = catSums[row.cat];
@@ -526,6 +502,165 @@ function calc() {
 }
 
 /* =========================================================
+   スナップショット機能
+========================================================= */
+const SS_KEYS = ["stockcalc_ss_1", "stockcalc_ss_2", "stockcalc_ss_3"];
+const SS_POINTER_KEY = "stockcalc_ss_pointer";
+
+// 長押し検知ユーティリティ
+function setupLongPress(element, callback, clickCallback) {
+  let timer;
+  let isLong = false;
+  
+  const start = (e) => {
+    if (e.type === "mousedown" && e.button !== 0) return;
+    isLong = false;
+    timer = setTimeout(() => {
+      isLong = true;
+      if(navigator.vibrate) navigator.vibrate(50);
+      callback();
+    }, 800); 
+  };
+  
+  const cancel = () => {
+    if (timer) clearTimeout(timer);
+  };
+  
+  const end = (e) => {
+    if (timer) clearTimeout(timer);
+    if (!isLong && clickCallback) {
+      clickCallback(e);
+    }
+  };
+  
+  element.addEventListener("mousedown", start);
+  element.addEventListener("touchstart", start, { passive: true });
+  
+  element.addEventListener("mouseup", end);
+  element.addEventListener("mouseleave", cancel);
+  element.addEventListener("touchend", end);
+  element.addEventListener("touchmove", cancel);
+}
+
+function getCurrentState() {
+  const recipes = JSON.parse(JSON.stringify(state.recipeRows));
+  const fieldBonus = el("fieldBonusSel")?.value || "85";
+  const eventBonus = el("eventBonusSel")?.value || "0";
+  const ncPika = el("optNcPika")?.checked || false;
+  
+  const ingredients = [];
+  document.querySelectorAll(".repQty").forEach(input => {
+    const iid = input.dataset.iid;
+    const qty = input.value;
+    const isExcluded = document.querySelector(`.exChk[data-iid="${iid}"]`)?.checked || false;
+    ingredients.push({ iid, qty, isExcluded });
+  });
+
+  return { recipes, fieldBonus, eventBonus, ncPika, ingredients };
+}
+
+function restoreState(data) {
+  if (!data) return;
+
+  el("recipeList").innerHTML = "";
+  state.recipeRows = [];
+  
+  if (data.recipes && data.recipes.length > 0) {
+    data.recipes.forEach(row => {
+      addRecipeRow(row); 
+    });
+  } else {
+    addRecipeRow({ meals: 21 });
+  }
+
+  if (el("fieldBonusSel")) el("fieldBonusSel").value = data.fieldBonus || "85";
+  if (el("eventBonusSel")) el("eventBonusSel").value = data.eventBonus || "0";
+  if (el("optNcPika")) el("optNcPika").checked = !!data.ncPika;
+
+  if (data.ingredients) {
+    data.ingredients.forEach(item => {
+      const qtyInput = document.querySelector(`.repQty[data-iid="${item.iid}"]`);
+      const exCheck = document.querySelector(`.exChk[data-iid="${item.iid}"]`);
+      if (qtyInput) qtyInput.value = item.qty;
+      if (exCheck) exCheck.checked = item.isExcluded;
+    });
+  }
+
+  refreshAllMealDropdowns();
+  calc();
+}
+
+function updateSSButtons() {
+  const btns = document.querySelectorAll(".ss-btn");
+  btns.forEach(btn => {
+    const ssid = parseInt(btn.dataset.ssid);
+    const key = SS_KEYS[ssid - 1];
+    const hasData = !!localStorage.getItem(key);
+    
+    if (hasData) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
+}
+
+function createSnapshot() {
+  const pointerStr = localStorage.getItem(SS_POINTER_KEY);
+  let pointer = pointerStr ? parseInt(pointerStr) : 0; 
+  
+  const current = getCurrentState();
+  const targetKey = SS_KEYS[pointer];
+  localStorage.setItem(targetKey, JSON.stringify(current));
+  
+  showInfo(`SS${pointer + 1} に保存しました`);
+  
+  pointer = (pointer + 1) % 3;
+  localStorage.setItem(SS_POINTER_KEY, pointer);
+  
+  updateSSButtons();
+}
+
+function loadSnapshot(ssid) {
+  const key = SS_KEYS[ssid - 1];
+  const raw = localStorage.getItem(key);
+  if (!raw) return;
+  
+  try {
+    const data = JSON.parse(raw);
+    restoreState(data);
+    showInfo(`SS${ssid} を読み込みました`);
+  } catch(e) {
+    console.error(e);
+    showInfo("データの読み込みに失敗しました");
+  }
+}
+
+function clearSnapshot(ssid) {
+  if (confirm(`スナップショット${ssid} を削除しますか？`)) {
+    const key = SS_KEYS[ssid - 1];
+    localStorage.removeItem(key);
+    updateSSButtons();
+  }
+}
+
+function initSnapshotFeature() {
+  const createBtn = el("createSnapshotBtn");
+  if (createBtn) createBtn.onclick = createSnapshot;
+
+  const ssBtns = document.querySelectorAll(".ss-btn");
+  ssBtns.forEach(btn => {
+    const ssid = parseInt(btn.dataset.ssid);
+    setupLongPress(
+      btn, 
+      () => clearSnapshot(ssid),
+      () => loadSnapshot(ssid)
+    );
+  });
+  updateSSButtons();
+}
+
+/* =========================================================
    onload / タブ切替
 ========================================================= */
 window.onload = () => {
@@ -533,27 +668,40 @@ window.onload = () => {
   registerSW();
   renderGrids();
 
-  // ★テーマ初期化
+  // ★修正点⑤：念のためここでもテーマ適用（変更時の即時反映などのため）
   const savedTheme = localStorage.getItem("appTheme") || "blue";
   applyTheme(savedTheme);
   renderThemeGrid();
 
-  // テーマモーダル
   el("openTheme").onclick = () => el("themeModal").style.display = "flex";
   el("closeTheme").onclick = () => el("themeModal").style.display = "none";
 
-  // グローバル設定のイベントリスナー追加
   el("fieldBonusSel")?.addEventListener("change", calc);
   el("eventBonusSel")?.addEventListener("change", calc);
 
   el("optNcPika")?.addEventListener("change", () => calc());
   el("addRecipe").onclick = () => addRecipeRow();
+  
+  // ★修正点④：クリアボタンですべてリセットする
   el("clearAll").onclick = () => {
+    if(!confirm("現在の入力をクリアしますか？\n(SSは削除されません)")) return;
+    
+    // レシピ削除
     el("recipeList").innerHTML = "";
     state.recipeRows = [];
+    
+    // 設定値リセット
+    el("fieldBonusSel").value = "85"; // デフォルト値
+    el("eventBonusSel").value = "0";
+    el("optNcPika").checked = false;
+
+    // 食材設定リセット
     document.querySelectorAll(".exChk").forEach(c => c.checked = false);
     document.querySelectorAll(".repQty").forEach(i => i.value = "");
+    
+    // 行を追加して再計算
     addRecipeRow({ meals: 21 });
+    calc();
   };
 
   if (state.recipeRows.length === 0) addRecipeRow({ meals: 21 });
@@ -561,214 +709,20 @@ window.onload = () => {
   const savedTab = localStorage.getItem("activeTab") || "tab1";
   switchTab(savedTab);
 
-  // モーダル
   const dM = el("docsModal"), nM = el("noticeModal"), vM = el("docViewerModal");
   el("openDocs").onclick = () => dM.style.display = "flex";
   el("closeDocs").onclick = () => dM.style.display = "none";
   el("openNotice").onclick = () => nM.style.display = "flex";
   el("closeNotice").onclick = () => nM.style.display = "none";
   el("closeDocViewer").onclick = () => vM.style.display = "none";
+  
+  // ★修正点①：ここでスナップショット機能を確実に初期化する
+  initSnapshotFeature();
 };
-
-   /* =========================================================
-      スナップショット機能 (Tab1)
-   ========================================================= */
-   
-   // 保存先のキー定義
-   const SS_KEYS = ["stockcalc_ss_1", "stockcalc_ss_2", "stockcalc_ss_3"];
-   const SS_POINTER_KEY = "stockcalc_ss_pointer"; // 次に保存する場所(0, 1, 2)
-   
-   // 長押し検知ユーティリティ (pokedex.jsと同等のもの)
-   function setupLongPress(element, callback, clickCallback) {
-     let timer;
-     let isLong = false;
-     
-     const start = (e) => {
-       if (e.type === "mousedown" && e.button !== 0) return;
-       isLong = false;
-       timer = setTimeout(() => {
-         isLong = true;
-         if(navigator.vibrate) navigator.vibrate(50); // バイブレーションフィードバック
-         callback();
-       }, 800); 
-     };
-     
-     const cancel = () => {
-       if (timer) clearTimeout(timer);
-     };
-     
-     const end = (e) => {
-       if (timer) clearTimeout(timer);
-       if (!isLong && clickCallback) {
-         clickCallback(e);
-       }
-     };
-     
-     element.addEventListener("mousedown", start);
-     element.addEventListener("touchstart", start, { passive: true });
-     
-     element.addEventListener("mouseup", end);
-     element.addEventListener("mouseleave", cancel);
-     element.addEventListener("touchend", end);
-     element.addEventListener("touchmove", cancel);
-   }
-   
-   // 画面の状態をオブジェクトとして取得
-   function getCurrentState() {
-     // レシピ行データ
-     const recipes = JSON.parse(JSON.stringify(state.recipeRows));
-     
-     // 設定値系
-     const fieldBonus = el("fieldBonusSel")?.value || "0";
-     const eventBonus = el("eventBonusSel")?.value || "0";
-     const ncPika = el("optNcPika")?.checked || false;
-     
-     // 食材設定（保有数・除外設定）
-     const ingredients = [];
-     document.querySelectorAll(".repQty").forEach(input => {
-       const iid = input.dataset.iid;
-       const qty = input.value;
-       const isExcluded = document.querySelector(`.exChk[data-iid="${iid}"]`)?.checked || false;
-       ingredients.push({ iid, qty, isExcluded });
-     });
-   
-     return { recipes, fieldBonus, eventBonus, ncPika, ingredients };
-   }
-   
-   // 状態を画面に復元
-   function restoreState(data) {
-     if (!data) return;
-   
-     // 1. レシピ行の復元
-     el("recipeList").innerHTML = "";
-     state.recipeRows = [];
-     
-     if (data.recipes && data.recipes.length > 0) {
-       data.recipes.forEach(row => {
-         // addRecipeRowを流用して行を作り、値をセットして回る
-         addRecipeRow(row); 
-       });
-     } else {
-       // 空の場合はデフォルト行を1つ追加
-       addRecipeRow({ meals: 21 });
-     }
-   
-     // 2. 設定値の復元
-     if (el("fieldBonusSel")) el("fieldBonusSel").value = data.fieldBonus;
-     if (el("eventBonusSel")) el("eventBonusSel").value = data.eventBonus;
-     if (el("optNcPika")) el("optNcPika").checked = data.ncPika;
-   
-     // 3. 食材設定の復元
-     if (data.ingredients) {
-       data.ingredients.forEach(item => {
-         const qtyInput = document.querySelector(`.repQty[data-iid="${item.iid}"]`);
-         const exCheck = document.querySelector(`.exChk[data-iid="${item.iid}"]`);
-         if (qtyInput) qtyInput.value = item.qty;
-         if (exCheck) exCheck.checked = item.isExcluded;
-       });
-     }
-   
-     // 再計算 & ドロップダウン更新
-     refreshAllMealDropdowns();
-     calc();
-   }
-   
-   // ボタンの見た目更新（点灯/消灯）
-   function updateSSButtons() {
-     const btns = document.querySelectorAll(".ss-btn");
-     btns.forEach(btn => {
-       const ssid = parseInt(btn.dataset.ssid);
-       const key = SS_KEYS[ssid - 1];
-       const hasData = !!localStorage.getItem(key);
-       
-       if (hasData) {
-         btn.classList.add("active");
-       } else {
-         btn.classList.remove("active");
-       }
-     });
-   }
-   
-   // メイン処理：スナップショット作成
-   function createSnapshot() {
-     const pointerStr = localStorage.getItem(SS_POINTER_KEY);
-     let pointer = pointerStr ? parseInt(pointerStr) : 0; // 0, 1, 2
-     
-     // 現在の状態を取得して保存
-     const current = getCurrentState();
-     const targetKey = SS_KEYS[pointer];
-     localStorage.setItem(targetKey, JSON.stringify(current));
-     
-     // 完了メッセージ（簡易）
-     showInfo(`SS${pointer + 1} に保存しました`);
-     
-     // 次の保存先へ進める
-     pointer = (pointer + 1) % 3;
-     localStorage.setItem(SS_POINTER_KEY, pointer);
-     
-     updateSSButtons();
-   }
-   
-   // メイン処理：スナップショット読み込み
-   function loadSnapshot(ssid) {
-     const key = SS_KEYS[ssid - 1];
-     const raw = localStorage.getItem(key);
-     if (!raw) {
-       // showInfo("データがありません"); // 空のときは何もしないか、メッセージ出すか
-       return;
-     }
-     
-     try {
-       const data = JSON.parse(raw);
-       restoreState(data);
-       showInfo(`SS${ssid} を読み込みました`);
-     } catch(e) {
-       console.error(e);
-       showInfo("データの読み込みに失敗しました");
-     }
-   }
-   
-   // メイン処理：スナップショット削除
-   function clearSnapshot(ssid) {
-     if (confirm(`スナップショット${ssid} を削除しますか？`)) {
-       const key = SS_KEYS[ssid - 1];
-       localStorage.removeItem(key);
-       updateSSButtons();
-       // showInfo(`SS${ssid} を削除しました`);
-     }
-   }
-   
-   // 初期化（window.onload 内に追加してください）
-   function initSnapshotFeature() {
-     // 作成ボタン
-     const createBtn = el("createSnapshotBtn");
-     if (createBtn) {
-       createBtn.onclick = createSnapshot;
-     }
-   
-     // SSボタン群 (1, 2, 3)
-     const ssBtns = document.querySelectorAll(".ss-btn");
-     ssBtns.forEach(btn => {
-       const ssid = parseInt(btn.dataset.ssid);
-       
-       // 長押しとクリックの制御
-       setupLongPress(
-         btn, 
-         () => clearSnapshot(ssid), // 長押し時
-         () => loadSnapshot(ssid)   // クリック時
-       );
-     });
-   
-     // 初回描画
-     updateSSButtons();
-   }
-
 
 window.switchTab = function (tabId, clickedEl) {
   if (typeof gtag === 'function') {
-    gtag('event', 'tab_view', {
-      'tab_name': tabId
-    });
+    gtag('event', 'tab_view', { 'tab_name': tabId });
   }
 
   document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
