@@ -1,6 +1,6 @@
 // service-worker.js
 
-const CACHE_NAME = "stockcalc-v2.3.9"; // ★更新のたびに必ず上げること
+const CACHE_NAME = "stockcalc-v2.4.0"; // ★更新のたびに必ず上げること
 
 // 事前キャッシュ（最低限）
 const ASSETS = [
