@@ -58,7 +58,7 @@ const THEMES = {
    SW / Cache reset
 ========================================================= */
 async function resetSWAndCacheOnce() {
-  const KEY = "sw_cache_reset_done_v110"; // verUPに合わせて変更
+  const KEY = "sw_cache_reset_done_v110";
   if (localStorage.getItem(KEY)) return;
   try {
     if ("serviceWorker" in navigator) {
@@ -252,7 +252,12 @@ function refreshAllMealDropdowns() {
       mSel.appendChild(opt);
     }
     
-    mSel.value = prevVal > maxAllowed ? maxAllowed : prevVal;
+    // 値を再設定（現在の値が範囲外なら最大値に）
+    if (prevVal === "") {
+        mSel.value = currentVal;
+    } else {
+        mSel.value = prevVal > maxAllowed ? maxAllowed : prevVal;
+    }
     row.meals = Number(mSel.value);
   });
   updateSummary();
@@ -342,6 +347,7 @@ function addRecipeRow(init) {
   const updateRecipeList = () => {
     const filtered = RECIPES.filter((r) => r.cat === cSel.value);
     rSel.innerHTML = filtered.map((r) => `<option value="${r.id}">${r.name}</option>`).join("");
+    // 初期値があればそれを選択、なければ先頭
     rSel.value = filtered.some(r => r.id === rowData.recipeId) ? rowData.recipeId : (filtered[0]?.id || "");
     updatePreview();
   };
@@ -383,7 +389,12 @@ function addRecipeRow(init) {
     rowData.level = Number(lSel.value);
     calc();
   };
-  radios.forEach(ra => ra.onchange = updatePreview);
+  
+  // ★修正点①：ラジオボタンの状態を反映する
+  radios.forEach(ra => {
+    if (ra.value === rowData.successType) ra.checked = true;
+    ra.onchange = updatePreview;
+  });
 
   wrap.querySelector(".removeBtn").onclick = () => {
     state.recipeRows = state.recipeRows.filter((r) => r.rowId !== rowId);
@@ -668,7 +679,6 @@ window.onload = () => {
   registerSW();
   renderGrids();
 
-  // ★修正点⑤：念のためここでもテーマ適用（変更時の即時反映などのため）
   const savedTheme = localStorage.getItem("appTheme") || "blue";
   applyTheme(savedTheme);
   renderThemeGrid();
@@ -682,24 +692,19 @@ window.onload = () => {
   el("optNcPika")?.addEventListener("change", () => calc());
   el("addRecipe").onclick = () => addRecipeRow();
   
-  // ★修正点④：クリアボタンですべてリセットする
   el("clearAll").onclick = () => {
     if(!confirm("現在の入力をクリアしますか？\n(SSは削除されません)")) return;
     
-    // レシピ削除
     el("recipeList").innerHTML = "";
     state.recipeRows = [];
     
-    // 設定値リセット
-    el("fieldBonusSel").value = "85"; // デフォルト値
+    el("fieldBonusSel").value = "85";
     el("eventBonusSel").value = "0";
     el("optNcPika").checked = false;
 
-    // 食材設定リセット
     document.querySelectorAll(".exChk").forEach(c => c.checked = false);
     document.querySelectorAll(".repQty").forEach(i => i.value = "");
     
-    // 行を追加して再計算
     addRecipeRow({ meals: 21 });
     calc();
   };
@@ -716,7 +721,6 @@ window.onload = () => {
   el("closeNotice").onclick = () => nM.style.display = "none";
   el("closeDocViewer").onclick = () => vM.style.display = "none";
   
-  // ★修正点①：ここでスナップショット機能を確実に初期化する
   initSnapshotFeature();
 };
 
