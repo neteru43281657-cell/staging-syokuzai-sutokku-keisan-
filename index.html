@@ -390,19 +390,19 @@
       white-space: nowrap;
     }
 
-    /* スナップショット作成ボタン（カプセル型） */
+  /* スナップショット作成ボタン（カプセル型） */
     .capsule-btn {
-      padding: 6px 16px;
+      padding: 6px 14px;      /* 上下同じ値（6px）にする */
       font-size: 12px;
       font-weight: 900;
-      
+      line-height: 1;         /* 行間を詰めて、文字の上下余白を排除する */
       border-radius: 999px;
       background: #fff;
       color: var(--main);
       border: 1.5px solid var(--main);
       cursor: pointer;
-      display: flex;
-      align-items: center;
+      display: flex;          /* Flexboxで */
+      align-items: center;    /* 垂直方向の中央揃えをブラウザに任せる */
       justify-content: center;
       transition: background 0.2s;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
