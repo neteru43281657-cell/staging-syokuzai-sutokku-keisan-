@@ -209,71 +209,113 @@
     }
 
   
-    /* --- 【修正】条件設定エリアのレイアウト --- */
-    /* 上段：タイトルとSSボタン */
-    .settingsTopRow {
+  /* --- 【修正】条件設定ヘッダー（3カラム構成） --- */
+    .settingsHeaderRow {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start; /* 上揃え */
-      margin-bottom: 8px;
-    }
-    
-    /* SSボタンと注釈をまとめる右側のコンテナ */
-    .ss-container {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end; /* 右寄せ */
-      gap: 2px;
+      align-items: center; /* 垂直方向中央揃え */
+      gap: 4px;
+      margin-bottom: 12px;
+      width: 100%;
     }
 
-    /* 下段：バッジと操作ボタン */
-    .settingsBottomRow {
+    /* 左カラム：タイトルとバッジ */
+    .header-col-left {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 4px;
+      flex-shrink: 0; /* 縮小させない */
+    }
+
+    /* 中央カラム：SSボタンと注釈 */
+    .header-col-center {
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      margin-bottom: 12px;
-      padding-top: 4px; /* 少し間隔をあける */
+      justify-content: center;
+      gap: 2px;
+      flex-shrink: 1; /* 画面が狭いときはここを少し詰めるかも */
+    }
+
+    /* 右カラム：追加・クリアボタン */
+    .header-col-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0; /* 縮小させない */
+    }
+
+    /* タイトル微調整 */
+    .settingsHeaderRow .sectionTitle {
+      margin: 0;
+      border-left: 4px solid var(--main);
+      padding-left: 8px;
+      font-size: 13px;
+      line-height: 1;
+    }
+
+    /* バッジ微調整 */
+    #summaryBadge {
+      font-size: 10px;
+      padding: 2px 8px;
     }
 
     /* SSボタン群 */
     #ssBtnGroup {
       display: flex;
-      gap: 6px;
+      gap: 4px;
     }
-
-    /* SSボタンのデザイン（Add/Clearに近づける＋点灯対応） */
+    
+    /* SSボタン（サイズ調整） */
     .ss-btn {
-      width: 48px;        /* 少し幅広に */
-      height: 32px;       /* 高さを確保 */
-      padding: 0;         /* 文字中央揃えのためpadding調整 */
+      width: 40px;        /* 幅を抑える */
+      height: 24px;       /* 高さを抑える */
+      padding: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 800;
       border-radius: 999px;
       border: 1px solid var(--line);
-      background: #f0f2f5; /* デフォルト（消灯） */
-      color: #bbb;         /* デフォルト（消灯） */
+      background: #f0f2f5;
+      color: #bbb;
       cursor: pointer;
       transition: all 0.2s;
       box-shadow: none;
     }
-    
-    /* SSボタン：データあり（点灯） */
     .ss-btn.active {
       background: var(--main);
       color: #fff;
       border-color: var(--main);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
-    
-    /* タッチ時の動き */
     .ss-btn:active { transform: scale(0.95); }
 
-    /* 操作ボタン（追加・クリア）の影を追加 */
+    /* 注釈テキスト */
+    .ss-note {
+      font-size: 8px;
+      color: var(--muted);
+      white-space: nowrap;
+      transform: scale(0.9); /* さらに小さく */
+    }
+
+    /* 操作ボタン（追加・クリア） */
     #actionBlock > button {
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15); /* ★影を追加 */
+      padding: 0 10px;
+      height: 32px;
+      font-size: 11px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+      white-space: nowrap;
+    }
+    
+    /* 極小画面（iPhone SE等）向けの調整 */
+    @media (max-width: 360px) {
+      .ss-btn { width: 34px; font-size: 9px; }
+      #actionBlock > button { padding: 0 8px; font-size: 10px; }
+      .settingsHeaderRow { gap: 2px; }
     }
   
 
@@ -560,30 +602,28 @@
   <div id="tab1" class="tab-content active">  
 
 
-    /* --- 条件設定タブのレイアウト--- */
     <section class="card">
-      <div class="settingsTopRow">
-        <div class="sectionTitle" style="margin:0; border-left:5px solid var(--main); padding-left:10px;">条件設定</div>
-        
-        <div class="ss-container">
+      <div class="settingsHeaderRow">
+        <div class="header-col-left">
+          <div class="sectionTitle">条件設定</div>
+          <span class="badge" id="summaryBadge">0食 / 21食</span>
+        </div>
+
+        <div class="header-col-center">
           <div id="ssBtnGroup">
              <button class="ss-btn" data-ssid="1">SS1</button>
              <button class="ss-btn" data-ssid="2">SS2</button>
              <button class="ss-btn" data-ssid="3">SS3</button>
           </div>
-          <div class="dex-note-text" style="margin:0; font-size:9px;">※長押しでSSを消去</div>
+          <div class="ss-note">※長押しでSSを消去</div>
+        </div>
+
+        <div class="header-col-right" id="actionBlock">
+          <button id="addRecipe" class="primary">+ 追加</button>
+          <button id="clearAll" class="danger">クリア</button>
         </div>
       </div>
-
-      <div class="settingsBottomRow">
-        <span class="badge" id="summaryBadge">0食 / 21食</span>
-        
-        <div id="actionBlock" style="display:flex; gap:8px;">
-          <button id="addRecipe" class="primary" style="white-space: nowrap;">+ 追加</button>
-          <button id="clearAll" class="danger" style="white-space: nowrap;">クリア</button>
-        </div>
-      </div>
-
+      
       <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; padding:8px; background:#f8f9fa; border-radius:12px; border:1px solid var(--line);">
         <div style="flex:1; min-width:140px;">
           <label class="emphLabel" style="margin-bottom:4px;">フィールドボーナス</label>
