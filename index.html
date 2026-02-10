@@ -186,6 +186,18 @@
     }
     input.emphSelect { text-align: center; }
 
+    /* ★標準スタイルのプルダウン */
+    .stdSelect {
+      padding: 4px 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 12px;
+      background: #fff;
+      color: var(--text);
+      font-weight: 700;
+      width: 100%;
+    }
+
     .energyResultBox {
       background: var(--card);
       border: 2px solid var(--main);
@@ -207,10 +219,8 @@
       color: var(--text);
       line-height: 1.2;
     }
-
-  
-  
-    /* --- 【修正】条件設定ヘッダー（左：タイトル/バッジ、右：操作ボタン） --- */
+    
+    /* --- 条件設定ヘッダー --- */
     .settingsHeaderRow {
       display: flex;
       justify-content: space-between;
@@ -220,7 +230,7 @@
       width: 100%;
     }
 
-    /* 左側カラム：タイトルとバッジを縦積み */
+    /* 左側カラム：タイトルとバッジ */
     .header-left-col {
       display: flex;
       flex-direction: column;
@@ -228,7 +238,6 @@
       align-items: flex-start;
     }
 
-    /* タイトル */
     .header-left-col .sectionTitle {
       margin: 0;
       border-left: 5px solid var(--main);
@@ -237,7 +246,6 @@
       line-height: 1.2;
     }
 
-    /* バッジ */
     #summaryBadge {
       font-size: 12px;
       padding: 4px 12px;
@@ -249,62 +257,54 @@
       display: flex;
       gap: 8px;
       align-items: center;
-      /* padding-bottom は削除して中央揃えを優先 */
     }
 
-    /* 操作ボタン（追加・クリア）のデザイン */
+    /* 操作ボタン */
     #actionBlock > button {
       padding: 0 10px;
       height: 32px;
       font-size: 11px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.15);
       white-space: nowrap;
-      
-      /* ★以下3行で、端末差を吸収し「ど真ん中」に固定 */
       display: inline-flex;
       align-items: center;
       justify-content: center;
     }
 
-  
-  
-    /* --- 【新設】設定用グレーボックス内のレイアウト --- */
+    /* --- 設定用グレーボックス --- */
     .settings-grey-box {
       display: flex;
       gap: 10px;
       margin-bottom: 12px;
-      flex-wrap: wrap; /* スマホで幅が足りない時は折り返す */
+      flex-wrap: wrap;
       padding: 8px;
       background: #f8f9fa;
       border-radius: 12px;
       border: 1px solid var(--line);
-      align-items: center; /* 垂直方向中央揃え */
+      align-items: center;
     }
 
-    /* ボックス内の各アイテム（ボーナス設定など） */
     .settings-item {
-      flex: 1; /* 幅を均等に分け合う */
+      flex: 1;
       min-width: 120px;
     }
 
-    /* SSボタンエリア（右端に配置） */
+    /* SSボタンエリア */
     .ss-area-in-box {
       display: flex;
-      flex-direction: column; /* ボタン行と注釈を縦に積む */
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 2px;
       min-width: auto;
-      margin-left: auto; /* 右寄せ */
+      margin-left: auto;
     }
 
-    /* SSボタン群（横並び） */
     #ssBtnGroup {
       display: flex;
       gap: 4px;
     }
 
-    /* SSボタン（サイズ微調整） */
     .ss-btn {
       width: 44px;
       height: 28px;
@@ -330,68 +330,30 @@
     }
     .ss-btn:active { transform: scale(0.95); }
 
-    /* 注釈テキスト（SSボタンの下） */
     .ss-note-tiny {
       font-size: 10px;
       color: var(--muted);
       white-space: nowrap;
     }
 
-    /* スマホ表示時の調整 */
+    /* スマホ表示時のSSエリア調整 */
     @media (max-width: 450px) {
-      /* 画面が狭い時はSSエリアを下の行に落として中央寄せにする */
       .ss-area-in-box {
         width: 100%;
         margin-left: 0;
         margin-top: 4px;
         padding-top: 4px;
         border-top: 1px dashed #e0e0e0;
-        flex-direction: row; /* 横並びに戻して */
-        justify-content: space-between; /* 両端配置 */
+        flex-direction: row;
+        justify-content: space-between;
         align-items: center;
       }
-      /* 注釈をボタンの横に置く */
       .ss-note-tiny {
-        transform: none;
-        order: -1; /* 左側に注釈 */
+        order: -1;
       }
     }
 
-  
-
-    /* --- 【修正】食材プレビューのカプセルデザイン復元 --- */
-    .preview { 
-      font-size: 11px; 
-      display: flex; 
-      flex-wrap: wrap; 
-      gap: 6px; 
-      margin-top: 10px; 
-      border-top: 1px solid var(--line); 
-      padding-top: 10px; 
-      width: 100%; 
-      align-items: center; 
-    }
-    
-    /* 以前のデザインを強制適用 */
-    .preview span { 
-      display: inline-flex; 
-      align-items: center; 
-      background: var(--main-soft); 
-      color: var(--main); 
-      padding: 3px 8px; 
-      border-radius: 99px; /* 丸みを強く */
-      font-weight: 800; 
-      border: 1px solid rgba(0, 123, 255, 0.2); 
-    }
-    
-    .preview img {
-      width: 14px; 
-      height: 14px; 
-      margin-right: 4px; 
-      vertical-align: middle;
-    }
-
-    /* --- ★修正点③：計算結果ヘッダー レイアウト --- */
+    /* --- 計算結果ヘッダー --- */
     .resultHeader {
       display: flex;
       align-items: center;
@@ -407,19 +369,19 @@
       white-space: nowrap;
     }
 
-  /* スナップショット作成ボタン（カプセル型） */
+    /* スナップショット作成ボタン */
     .capsule-btn {
-      padding: 6px 14px;      /* 上下同じ値（6px）にする */
+      padding: 6px 14px;
       font-size: 12px;
       font-weight: 900;
-      line-height: 1;         /* 行間を詰めて、文字の上下余白を排除する */
+      line-height: 1;
       border-radius: 999px;
       background: #fff;
       color: var(--main);
       border: 1.5px solid var(--main);
       cursor: pointer;
-      display: flex;          /* Flexboxで */
-      align-items: center;    /* 垂直方向の中央揃えをブラウザに任せる */
+      display: flex;
+      align-items: center;
       justify-content: center;
       transition: background 0.2s;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
@@ -475,6 +437,24 @@
       display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer;
     }
     .preview { font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; width: 100%; align-items: center; }
+    
+    .preview span { 
+      display: inline-flex; 
+      align-items: center; 
+      background: var(--main-soft); 
+      color: var(--main); 
+      padding: 3px 8px; 
+      border-radius: 99px;
+      font-weight: 800; 
+      border: 1px solid rgba(0, 123, 255, 0.2); 
+    }
+    .preview img {
+      width: 14px; 
+      height: 14px; 
+      margin-right: 4px; 
+      vertical-align: middle;
+    }
+
     .tile {
       border: 1px solid var(--line); border-radius: 12px; padding: 6px 3px;
       display: flex; flex-direction: column; gap: 4px; background: #fff; align-items: center;
@@ -501,9 +481,9 @@
     button.primary { background: var(--main); color: #fff; border-color: var(--main); }
     button.danger { color: var(--danger); border-color: #fadbd8; background: #fff; }
 
-    .dex-note-text { font-size: 10px; color: var(--muted); text-align: center; margin-top: 4px; }
+    .dex-note-text { font-size: 9px; color: var(--muted); text-align: center; margin-top: 4px; }
     
-    /* 他タブのスタイル（要約して維持） */
+    /* 他タブのスタイル */
     .field-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
     .field-item { border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; align-items: center; background: #fff; }
     .field-img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 8px; }
@@ -531,15 +511,39 @@
     .dex-suggest-list { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--main); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-height: 400px; overflow-y: auto; z-index: 200; margin-top: 4px; display: none; }
     .dex-suggest-item { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--text); }
     .dex-icon-row { display: flex; gap: 16px; justify-content: center; align-items: center; }
-    .dex-icon-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; border-radius: 50%; border: 1px solid transparent; background: #f0f2f5; transition: background 0.2s; }
-    .dex-icon-btn.active-filter { background: #007bff; color: #fff; border-color: #0056b3; }
+    
+    /* --- ★ブックマーク・フィルターボタンの強化 --- */
+    .dex-icon-btn, .bm-icon {
+      transition: transform 0.1s, background 0.2s, border-color 0.2s;
+    }
+    
+    /* 押し込んだ時のアニメーション */
+    .dex-icon-btn:active, .bm-icon:active {
+      transform: scale(0.90);
+    }
+    
+    .dex-icon-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; border-radius: 50%; border: 1px solid transparent; background: #f0f2f5; }
+    .dex-icon-btn.active-filter { background: #007bff; color: #fff; border-color: #0056b3; border-width: 3px !important; font-weight: 900; }
+    
     .detail-bookmark-row { display: flex; gap: 12px; margin-left: auto; }
+    
+    /* 詳細モーダルのBMボタン */
     .bm-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #ccc; background: #f8f9fa; border: 1px solid #ddd; cursor: pointer; }
-    .bm-icon.active { border-color: transparent; color: #fff; }
+    
+    .bm-icon.active { 
+      border: 2.5px solid transparent !important; /* ★太さを確保 */
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.1); 
+    }
+    
     .bm-icon[data-id="1"].active, .dex-icon-btn[data-id="1"] { color: #f1c40f; } .bm-icon[data-id="2"].active, .dex-icon-btn[data-id="2"] { color: #e74c3c; } .bm-icon[data-id="3"].active, .dex-icon-btn[data-id="3"] { color: #2ecc71; }
-    .dex-icon-btn.active-filter[data-id="1"] { background: #fff9db; border-color: #f1c40f; }
-    .dex-icon-btn.active-filter[data-id="2"] { background: #fadbd8; border-color: #e74c3c; }
-    .dex-icon-btn.active-filter[data-id="3"] { background: #d5f5e3; border-color: #2ecc71; }
+    
+    .bm-icon[data-id="1"].active { border-color: #f1c40f; background: #f1c40f; color: #fff; }
+    .bm-icon[data-id="2"].active { border-color: #e74c3c; background: #e74c3c; color: #fff; }
+    .bm-icon[data-id="3"].active { border-color: #2ecc71; background: #2ecc71; color: #fff; }
+
+    .dex-icon-btn.active-filter[data-id="1"] { background: #fff9db; border-color: #f1c40f; color: #f1c40f; }
+    .dex-icon-btn.active-filter[data-id="2"] { background: #fadbd8; border-color: #e74c3c; color: #e74c3c; }
+    .dex-icon-btn.active-filter[data-id="3"] { background: #d5f5e3; border-color: #2ecc71; color: #2ecc71; }
     
     .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
     .month-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 10px; }
@@ -623,7 +627,7 @@
 <header>
   <div>
     <div id="headerTitle" class="title-text">料理計算</div>
-    <div id="headerVer" class="ver-text">ver1.1.0</div>
+    <div id="headerVer" class="ver-text">ver1.1.1</div>
   </div>
 
   <div style="display:flex; align-items:center; gap:10px;">
@@ -641,8 +645,7 @@
 
 <main>
   <div id="tab1" class="tab-content active">  
-
-
+    
     <section class="card">
       <div class="settingsHeaderRow">
         <div class="header-left-col">
@@ -659,7 +662,7 @@
       <div class="settings-grey-box">
         <div class="settings-item">
           <label class="emphLabel" style="margin-bottom:4px;">フィールドボーナス</label>
-          <select id="fieldBonusSel" class="emphSelect" style="padding:4px;">
+          <select id="fieldBonusSel" class="stdSelect">
              <option value="100">100%</option>
              <option value="95">95%</option>
              <option value="90">90%</option>
@@ -686,7 +689,7 @@
 
         <div class="settings-item">
            <label class="emphLabel" style="margin-bottom:4px;">イベントボーナス</label>
-           <select id="eventBonusSel" class="emphSelect" style="padding:4px;">
+           <select id="eventBonusSel" class="stdSelect">
              <option value="0">なし</option>
              <option value="1">料理 1.1倍</option>
              <option value="2">料理 1.25倍</option>
@@ -707,7 +710,6 @@
       <div id="recipeList"></div>
     </section>
 
-    
     <section class="card">
       <div class="replenishHeaderRow">
         <div>
@@ -1027,6 +1029,7 @@
       </div>
       <div style="font-weight:900; margin-bottom:6px; margin-top:14px; border-top:1px solid var(--line); padding-top:10px;">更新情報</div>
       <div style="font-size:11px; color:var(--muted); line-height:1.8; max-height:100px; overflow-y:auto;">
+        <div><span style="display:inline-block; width:55px;">ver1.1.1</span>料理のブックマーク機能を追加、UIを微修正</div>    
         <div><span style="display:inline-block; width:55px;">ver1.1.0</span>テーマカラー変更機能を追加、新ポケモンに対応</div>        
         <div><span style="display:inline-block; width:55px;">ver1.0.9</span>ポケモンのブックマーク機能を追加、UIを微修正</div>  
         <div><span style="display:inline-block; width:55px;">ver1.0.8</span>出現ポケモン一覧に新機能を追加、新レシピに対応</div>     
