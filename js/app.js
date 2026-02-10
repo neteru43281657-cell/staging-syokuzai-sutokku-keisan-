@@ -58,7 +58,7 @@ const THEMES = {
    SW / Cache reset
 ========================================================= */
 async function resetSWAndCacheOnce() {
-  const KEY = "sw_cache_reset_done_v110";
+  const KEY = "sw_cache_reset_done_v111"; // バージョンアップに伴い変更
   if (localStorage.getItem(KEY)) return;
   try {
     if ("serviceWorker" in navigator) {
@@ -90,11 +90,7 @@ async function registerSW() {
 ========================================================= */
 const el = (id) => document.getElementById(id);
 
-const MEALS_PER_DAY = 3;
-const WEEK_DAYS = 7;
-const WEEK_MEALS = 21;
 const MAX_ROWS = 12;
-
 const NC_APPLE = 12;
 const NC_CACAO = 5;
 const NC_HONEY = 3;
@@ -230,6 +226,9 @@ function renderGrids() {
   });
 }
 
+/* =========================================================
+   食数ドロップダウンの更新ロジック (重要修正)
+========================================================= */
 function refreshAllMealDropdowns() {
   state.recipeRows.forEach(row => {
     const wrap = document.querySelector(`.recipeRow[data-row-id="${row.rowId}"]`);
@@ -237,39 +236,64 @@ function refreshAllMealDropdowns() {
     const mSel = wrap.querySelector(".mealsSel");
     if (!mSel) return;
 
-    const currentVal = row.meals;
+    // 現在のstateの値を優先する（復元時用）
+    const intendedVal = row.meals;
+    
+    // 他の行の合計を計算
     const otherTotal = state.recipeRows
       .filter(r => r.rowId !== row.rowId)
       .reduce((sum, r) => sum + r.meals, 0);
     const maxAllowed = Math.max(0, 21 - otherTotal);
 
-    const prevVal = mSel.value;
     mSel.innerHTML = "";
     
-    for (let i = maxAllowed; i >= 0; i--) {
+    // 選択肢生成 (0 〜 maxAllowed)
+    // ただし、もし復元された値(intendedVal)がmaxAllowedを超えている場合でも
+    // 一時的に選択肢に含めるか、あるいはmaxAllowedに丸める処理が必要。
+    // ここではmaxAllowedに丸める処理とする。
+    const effectiveMax = Math.max(maxAllowed, intendedVal); 
+    
+    for (let i = effectiveMax; i >= 0; i--) {
+      // 本来のMaxを超えている値は選択肢に出さない、または特別扱いする手もあるが、
+      // ここでは整合性を保つため 0~Limit で作り直す
+      if (i > maxAllowed && i !== intendedVal) continue; 
+      
       const opt = document.createElement("option");
-      opt.value = i; opt.textContent = i;
+      opt.value = i; 
+      opt.textContent = i;
       mSel.appendChild(opt);
     }
     
-    // 値を再設定（現在の値が範囲外なら最大値に）
-    if (prevVal === "") {
-        mSel.value = currentVal;
+    // 値を適用
+    if (intendedVal <= maxAllowed) {
+      mSel.value = intendedVal;
     } else {
-        mSel.value = prevVal > maxAllowed ? maxAllowed : prevVal;
+      // 万が一オーバーしている場合は最大値に合わせる
+      mSel.value = maxAllowed;
+      row.meals = maxAllowed;
     }
-    row.meals = Number(mSel.value);
   });
   updateSummary();
 }
 
+/* =========================================================
+   行追加ロジック (重要修正)
+========================================================= */
 function addRecipeRow(init) {
   if (state.recipeRows.length >= MAX_ROWS) return;
 
   const rowId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ("rid_" + Date.now() + "_" + Math.random().toString(16).slice(2));
   
-  const currentTotal = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
-  const initialMeals = Math.min(init?.meals ?? 21, 21 - currentTotal);
+  // initがある場合（スナップショット復元時）はその値を優先
+  // initがない場合は残り回数から計算
+  let initialMeals = 0;
+  
+  if (init && typeof init.meals === 'number') {
+    initialMeals = init.meals;
+  } else {
+    const currentTotal = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
+    initialMeals = Math.min(21, 21 - currentTotal);
+  }
 
   const rowData = {
     rowId,
@@ -347,7 +371,6 @@ function addRecipeRow(init) {
   const updateRecipeList = () => {
     const filtered = RECIPES.filter((r) => r.cat === cSel.value);
     rSel.innerHTML = filtered.map((r) => `<option value="${r.id}">${r.name}</option>`).join("");
-    // 初期値があればそれを選択、なければ先頭
     rSel.value = filtered.some(r => r.id === rowData.recipeId) ? rowData.recipeId : (filtered[0]?.id || "");
     updatePreview();
   };
@@ -355,7 +378,11 @@ function addRecipeRow(init) {
   const updatePreview = () => {
     rowData.cat = cSel.value;
     rowData.recipeId = rSel.value;
-    rowData.meals = Number(mSel.value);
+    // mealsはmSelから取るが、初期化直後はrowDataを信じる
+    if (document.activeElement === mSel) {
+       rowData.meals = Number(mSel.value);
+    }
+    
     rowData.level = Number(lSel.value) || 1;
     rowData.successType = wrap.querySelector(`input[name="${radioName}"]:checked`).value;
 
@@ -364,7 +391,7 @@ function addRecipeRow(init) {
       const totalIngredients = Object.values(r.ingredients).reduce((sum, c) => sum + c, 0);
       let html = Object.entries(r.ingredients).map(([id, q]) => {
         const ing = getIng(id);
-        return `<span><img src="${imgSrc(ing?.file)}" style="width:14px; height:14px; margin-right:4px; vertical-align:middle;">${q}</span>`;
+        return `<span><img src="${imgSrc(ing?.file)}">${q}</span>`;
       }).join("");
       html += `<span class="badge" style="margin-left: auto; background:var(--main-soft); color:var(--main); border:1px solid #cce5ff; padding: 2px 10px; font-size: 11px;">${totalIngredients}個</span>`;
       pre.innerHTML = html;
@@ -390,7 +417,6 @@ function addRecipeRow(init) {
     calc();
   };
   
-  // ★修正点①：ラジオボタンの状態を反映する
   radios.forEach(ra => {
     if (ra.value === rowData.successType) ra.checked = true;
     ra.onchange = updatePreview;
@@ -405,7 +431,12 @@ function addRecipeRow(init) {
 
   updateRecipeList();
   el("recipeList").appendChild(wrap);
-  refreshAllMealDropdowns(); 
+  
+  // ★ここが重要: 行を追加した後、全てのドロップダウンを同期させる
+  refreshAllMealDropdowns();
+  
+  // プレビュー更新（計算含む）
+  updatePreview();
 }
 
 function updateSummary() {
@@ -573,21 +604,16 @@ function getCurrentState() {
 function restoreState(data) {
   if (!data) return;
 
+  // クリア
   el("recipeList").innerHTML = "";
   state.recipeRows = [];
   
-  if (data.recipes && data.recipes.length > 0) {
-    data.recipes.forEach(row => {
-      addRecipeRow(row); 
-    });
-  } else {
-    addRecipeRow({ meals: 21 });
-  }
-
+  // 設定値の復元
   if (el("fieldBonusSel")) el("fieldBonusSel").value = data.fieldBonus || "85";
   if (el("eventBonusSel")) el("eventBonusSel").value = data.eventBonus || "0";
   if (el("optNcPika")) el("optNcPika").checked = !!data.ncPika;
 
+  // 食材設定の復元
   if (data.ingredients) {
     data.ingredients.forEach(item => {
       const qtyInput = document.querySelector(`.repQty[data-iid="${item.iid}"]`);
@@ -597,6 +623,17 @@ function restoreState(data) {
     });
   }
 
+  // レシピ行の復元
+  // ★重要：addRecipeRow内で計算が走るが、全行追加後に再度調整が必要
+  if (data.recipes && data.recipes.length > 0) {
+    data.recipes.forEach(row => {
+      addRecipeRow(row); 
+    });
+  } else {
+    addRecipeRow({ meals: 21 });
+  }
+
+  // 最後にまとめて再計算
   refreshAllMealDropdowns();
   calc();
 }
