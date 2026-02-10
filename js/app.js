@@ -720,7 +720,6 @@ window.onload = () => {
   el("addRecipe").onclick = () => addRecipeRow();
   
   el("clearAll").onclick = () => {
-    if(!confirm("現在の入力をクリアしますか？\n(SSは削除されません)")) return;
     
     el("recipeList").innerHTML = "";
     state.recipeRows = [];
@@ -732,7 +731,7 @@ window.onload = () => {
     document.querySelectorAll(".exChk").forEach(c => c.checked = false);
     document.querySelectorAll(".repQty").forEach(i => i.value = "");
     
-    addRecipeRow({ meals: 21 });
+    addRecipeRow({ meals: 0 });
     calc();
   };
 
