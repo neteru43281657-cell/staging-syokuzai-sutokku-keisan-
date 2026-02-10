@@ -209,6 +209,7 @@
     }
 
   
+  
     /* --- 【修正】条件設定ヘッダー（左：タイトル/バッジ、右：操作ボタン） --- */
     .settingsHeaderRow {
       display: flex;
@@ -251,6 +252,22 @@
       /* padding-bottom は削除して中央揃えを優先 */
     }
 
+    /* 操作ボタン（追加・クリア）のデザイン */
+    #actionBlock > button {
+      padding: 0 10px;
+      height: 32px;
+      font-size: 11px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+      white-space: nowrap;
+      
+      /* ★以下3行で、端末差を吸収し「ど真ん中」に固定 */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+  
+  
     /* --- 【新設】設定用グレーボックス内のレイアウト --- */
     .settings-grey-box {
       display: flex;
