@@ -399,6 +399,75 @@
     button.primary { background: var(--main); color: #fff; border-color: var(--main); }
     button.danger { color: var(--danger); border-color: #fadbd8; background: #fff; }
 
+  
+    /* --- スナップショット機能用スタイル --- */
+    
+    /* 設定ヘッダーのレスポンシブ調整（ボタンが増えたため） */
+    @media (max-width: 520px) {
+      .settingsHeaderRow {
+        justify-content: center; /* 狭い画面では中央寄せ */
+      }
+      #ssBtnGroup {
+        order: 3; /* モバイルでは一番下に配置して押しやすく */
+        width: 100%;
+        justify-content: center;
+        margin-top: 4px;
+      }
+    }
+
+    /* SS1, SS2, SS3 ボタン */
+    .ss-btn {
+      padding: 6px 0;
+      width: 44px; /* 押しやすい幅に */
+      font-size: 11px;
+      font-weight: 900;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #f0f2f5;
+      color: #aaa; /* 未設定時はグレー */
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    /* データがある時（点灯） */
+    .ss-btn.active {
+      background: var(--main);
+      color: #fff;
+      border-color: var(--main);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    }
+    
+    /* タッチした瞬間のフィードバック */
+    .ss-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* 「スナップショットを作成」ボタン（カプセル型） */
+    .capsule-btn {
+      padding: 4px 12px;
+      font-size: 10px;
+      font-weight: 900;
+      border-radius: 999px; /* 完全なカプセル */
+      background: #fff;
+      color: var(--main);
+      border: 1px solid var(--main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .capsule-btn:active {
+      background: var(--main-soft);
+    }
+
+
+
+
+
+
+  
+  
     /* --- Tab2: 出現ポケモン一覧用スタイル (元データデザイン復元 + テーマカラー適用) --- */
     
     /* 島のグリッドレイアウト */
@@ -632,6 +701,13 @@
     
     .dex-note-text { font-size: 9px; color: var(--muted); text-align: center; margin-top: 4px; }
 
+
+
+
+
+
+
+  
     /* カレンダーなど */
     .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
     .month-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 10px; }
@@ -667,6 +743,13 @@
 
     @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
+
+
+
+  
+
+
+  
     /* tab3用スタイル */
     #tab3 .lvlForm { display: flex; flex-direction: column; gap: 16px; font-family: inherit; }
     #tab3 .lvlGroup { display: flex; flex-direction: column; gap: 14px; }
@@ -763,11 +846,21 @@
           <div class="sectionTitle">条件設定</div>
           <span class="badge" id="summaryBadge">合計 0食 / 21食</span>
         </div>
+        
+        <div id="ssBtnGroup" style="display:flex; align-items:center; gap:8px;">
+           <button class="ss-btn" data-ssid="1">SS1</button>
+           <button class="ss-btn" data-ssid="2">SS2</button>
+           <button class="ss-btn" data-ssid="3">SS3</button>
+        </div>
+
         <div id="actionBlock">
           <button id="addRecipe" class="primary" style="white-space: nowrap;">+ 追加</button>
           <button id="clearAll" class="danger" style="white-space: nowrap;">クリア</button>
         </div>
       </div>
+      <div class="dex-note-text" style="text-align:center; margin-bottom:8px;">※ボタン長押しで対応するスナップショットを全消去できます</div>
+      
+      <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; padding:8px; background:#f8f9fa; border-radius:12px; border:1px solid var(--line);">
       
       <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; padding:8px; background:#f8f9fa; border-radius:12px; border:1px solid var(--line);">
         <div style="flex:1; min-width:140px;">
@@ -829,7 +922,12 @@
 
     <section class="result-card">
       <div class="resultHeader">
-        <div class="resultTitle">計算結果</div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="resultTitle">計算結果</div>
+          <button id="createSnapshotBtn" class="capsule-btn">
+            スナップショットを作成
+          </button>
+        </div>
         <span class="badge total-badge" id="totalBadge">総合計 0個</span>
       </div>
     
