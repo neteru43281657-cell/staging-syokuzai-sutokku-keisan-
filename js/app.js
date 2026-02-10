@@ -58,7 +58,7 @@ const THEMES = {
    SW / Cache reset
 ========================================================= */
 async function resetSWAndCacheOnce() {
-  const KEY = "sw_cache_reset_done_v112"; // バージョンアップに伴い変更
+  const KEY = "sw_cache_reset_done_v113"; // バージョンアップに伴い変更
   if (localStorage.getItem(KEY)) return;
   try {
     if ("serviceWorker" in navigator) {
@@ -267,20 +267,21 @@ function refreshAllMealDropdowns() {
 }
 
 /* =========================================================
-   行追加ロジック
+   行追加ロジック (修正：初期食数0)
 ========================================================= */
 function addRecipeRow(init) {
   if (state.recipeRows.length >= MAX_ROWS) return;
 
   const rowId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ("rid_" + Date.now() + "_" + Math.random().toString(16).slice(2));
   
+  // ★修正：スナップショットからの復元(init.meals)がない場合は「0」を初期値にする
   let initialMeals = 0;
   
   if (init && typeof init.meals === 'number') {
     initialMeals = init.meals;
   } else {
-    const currentTotal = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
-    initialMeals = Math.min(21, 21 - currentTotal);
+    // 新規追加時は常に0
+    initialMeals = 0;
   }
 
   const rowData = {
@@ -532,6 +533,7 @@ function calc() {
 const SS_KEYS = ["stockcalc_ss_1", "stockcalc_ss_2", "stockcalc_ss_3"];
 const SS_POINTER_KEY = "stockcalc_ss_pointer";
 
+// 長押し検知ユーティリティ
 function setupLongPress(element, callback, clickCallback) {
   let timer;
   let isLong = false;
@@ -630,18 +632,30 @@ function updateSSButtons() {
 }
 
 function createSnapshot() {
-  const pointerStr = localStorage.getItem(SS_POINTER_KEY);
-  let pointer = pointerStr ? parseInt(pointerStr) : 0; 
-  
   const current = getCurrentState();
-  const targetKey = SS_KEYS[pointer];
+  
+  // ★空いているスロットを探す (1 -> 2 -> 3)
+  let targetIndex = -1;
+  for (let i = 0; i < 3; i++) {
+    if (!localStorage.getItem(SS_KEYS[i])) {
+      targetIndex = i;
+      break;
+    }
+  }
+
+  // ★もし全て埋まっていたら、ローテーションポインタを使う
+  if (targetIndex === -1) {
+    const pointerStr = localStorage.getItem(SS_POINTER_KEY);
+    targetIndex = pointerStr ? parseInt(pointerStr) : 0;
+    
+    const nextPointer = (targetIndex + 1) % 3;
+    localStorage.setItem(SS_POINTER_KEY, nextPointer);
+  }
+
+  const targetKey = SS_KEYS[targetIndex];
   localStorage.setItem(targetKey, JSON.stringify(current));
   
-  showInfo(`SS${pointer + 1} に保存しました`);
-  
-  pointer = (pointer + 1) % 3;
-  localStorage.setItem(SS_POINTER_KEY, pointer);
-  
+  showInfo(`SS${targetIndex + 1} に保存しました`);
   updateSSButtons();
 }
 
@@ -706,6 +720,7 @@ window.onload = () => {
   el("addRecipe").onclick = () => addRecipeRow();
   
   el("clearAll").onclick = () => {
+    if(!confirm("現在の入力をクリアしますか？\n(SSは削除されません)")) return;
     
     el("recipeList").innerHTML = "";
     state.recipeRows = [];
