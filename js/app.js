@@ -615,3 +615,196 @@ window.openDoc = function(fileName) {
     modal.style.display = "flex";
   }
 };
+
+/* =========================================================
+   スナップショット機能 (Tab1)
+========================================================= */
+
+// 保存先のキー定義
+const SS_KEYS = ["stockcalc_ss_1", "stockcalc_ss_2", "stockcalc_ss_3"];
+const SS_POINTER_KEY = "stockcalc_ss_pointer"; // 次に保存する場所(0, 1, 2)
+
+// 長押し検知ユーティリティ (pokedex.jsと同等のもの)
+function setupLongPress(element, callback, clickCallback) {
+  let timer;
+  let isLong = false;
+  
+  const start = (e) => {
+    if (e.type === "mousedown" && e.button !== 0) return;
+    isLong = false;
+    timer = setTimeout(() => {
+      isLong = true;
+      if(navigator.vibrate) navigator.vibrate(50); // バイブレーションフィードバック
+      callback();
+    }, 800); 
+  };
+  
+  const cancel = () => {
+    if (timer) clearTimeout(timer);
+  };
+  
+  const end = (e) => {
+    if (timer) clearTimeout(timer);
+    if (!isLong && clickCallback) {
+      clickCallback(e);
+    }
+  };
+  
+  element.addEventListener("mousedown", start);
+  element.addEventListener("touchstart", start, { passive: true });
+  
+  element.addEventListener("mouseup", end);
+  element.addEventListener("mouseleave", cancel);
+  element.addEventListener("touchend", end);
+  element.addEventListener("touchmove", cancel);
+}
+
+// 画面の状態をオブジェクトとして取得
+function getCurrentState() {
+  // レシピ行データ
+  const recipes = JSON.parse(JSON.stringify(state.recipeRows));
+  
+  // 設定値系
+  const fieldBonus = el("fieldBonusSel")?.value || "0";
+  const eventBonus = el("eventBonusSel")?.value || "0";
+  const ncPika = el("optNcPika")?.checked || false;
+  
+  // 食材設定（保有数・除外設定）
+  const ingredients = [];
+  document.querySelectorAll(".repQty").forEach(input => {
+    const iid = input.dataset.iid;
+    const qty = input.value;
+    const isExcluded = document.querySelector(`.exChk[data-iid="${iid}"]`)?.checked || false;
+    ingredients.push({ iid, qty, isExcluded });
+  });
+
+  return { recipes, fieldBonus, eventBonus, ncPika, ingredients };
+}
+
+// 状態を画面に復元
+function restoreState(data) {
+  if (!data) return;
+
+  // 1. レシピ行の復元
+  el("recipeList").innerHTML = "";
+  state.recipeRows = [];
+  
+  if (data.recipes && data.recipes.length > 0) {
+    data.recipes.forEach(row => {
+      // addRecipeRowを流用して行を作り、値をセットして回る
+      addRecipeRow(row); 
+    });
+  } else {
+    // 空の場合はデフォルト行を1つ追加
+    addRecipeRow({ meals: 21 });
+  }
+
+  // 2. 設定値の復元
+  if (el("fieldBonusSel")) el("fieldBonusSel").value = data.fieldBonus;
+  if (el("eventBonusSel")) el("eventBonusSel").value = data.eventBonus;
+  if (el("optNcPika")) el("optNcPika").checked = data.ncPika;
+
+  // 3. 食材設定の復元
+  if (data.ingredients) {
+    data.ingredients.forEach(item => {
+      const qtyInput = document.querySelector(`.repQty[data-iid="${item.iid}"]`);
+      const exCheck = document.querySelector(`.exChk[data-iid="${item.iid}"]`);
+      if (qtyInput) qtyInput.value = item.qty;
+      if (exCheck) exCheck.checked = item.isExcluded;
+    });
+  }
+
+  // 再計算 & ドロップダウン更新
+  refreshAllMealDropdowns();
+  calc();
+}
+
+// ボタンの見た目更新（点灯/消灯）
+function updateSSButtons() {
+  const btns = document.querySelectorAll(".ss-btn");
+  btns.forEach(btn => {
+    const ssid = parseInt(btn.dataset.ssid);
+    const key = SS_KEYS[ssid - 1];
+    const hasData = !!localStorage.getItem(key);
+    
+    if (hasData) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
+}
+
+// メイン処理：スナップショット作成
+function createSnapshot() {
+  const pointerStr = localStorage.getItem(SS_POINTER_KEY);
+  let pointer = pointerStr ? parseInt(pointerStr) : 0; // 0, 1, 2
+  
+  // 現在の状態を取得して保存
+  const current = getCurrentState();
+  const targetKey = SS_KEYS[pointer];
+  localStorage.setItem(targetKey, JSON.stringify(current));
+  
+  // 完了メッセージ（簡易）
+  showInfo(`SS${pointer + 1} に保存しました`);
+  
+  // 次の保存先へ進める
+  pointer = (pointer + 1) % 3;
+  localStorage.setItem(SS_POINTER_KEY, pointer);
+  
+  updateSSButtons();
+}
+
+// メイン処理：スナップショット読み込み
+function loadSnapshot(ssid) {
+  const key = SS_KEYS[ssid - 1];
+  const raw = localStorage.getItem(key);
+  if (!raw) {
+    // showInfo("データがありません"); // 空のときは何もしないか、メッセージ出すか
+    return;
+  }
+  
+  try {
+    const data = JSON.parse(raw);
+    restoreState(data);
+    showInfo(`SS${ssid} を読み込みました`);
+  } catch(e) {
+    console.error(e);
+    showInfo("データの読み込みに失敗しました");
+  }
+}
+
+// メイン処理：スナップショット削除
+function clearSnapshot(ssid) {
+  if (confirm(`スナップショット${ssid} を削除しますか？`)) {
+    const key = SS_KEYS[ssid - 1];
+    localStorage.removeItem(key);
+    updateSSButtons();
+    // showInfo(`SS${ssid} を削除しました`);
+  }
+}
+
+// 初期化（window.onload 内に追加してください）
+function initSnapshotFeature() {
+  // 作成ボタン
+  const createBtn = el("createSnapshotBtn");
+  if (createBtn) {
+    createBtn.onclick = createSnapshot;
+  }
+
+  // SSボタン群 (1, 2, 3)
+  const ssBtns = document.querySelectorAll(".ss-btn");
+  ssBtns.forEach(btn => {
+    const ssid = parseInt(btn.dataset.ssid);
+    
+    // 長押しとクリックの制御
+    setupLongPress(
+      btn, 
+      () => clearSnapshot(ssid), // 長押し時
+      () => loadSnapshot(ssid)   // クリック時
+    );
+  });
+
+  // 初回描画
+  updateSSButtons();
+}
