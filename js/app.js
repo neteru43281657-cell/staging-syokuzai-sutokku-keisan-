@@ -58,7 +58,7 @@ const THEMES = {
    SW / Cache reset
 ========================================================= */
 async function resetSWAndCacheOnce() {
-  const KEY = "sw_cache_reset_done_v111"; // バージョンアップに伴い変更
+  const KEY = "sw_cache_reset_done_v112"; // バージョンアップに伴い変更
   if (localStorage.getItem(KEY)) return;
   try {
     if ("serviceWorker" in navigator) {
@@ -227,7 +227,7 @@ function renderGrids() {
 }
 
 /* =========================================================
-   食数ドロップダウンの更新ロジック (重要修正)
+   食数ドロップダウンの更新ロジック
 ========================================================= */
 function refreshAllMealDropdowns() {
   state.recipeRows.forEach(row => {
@@ -236,10 +236,8 @@ function refreshAllMealDropdowns() {
     const mSel = wrap.querySelector(".mealsSel");
     if (!mSel) return;
 
-    // 現在のstateの値を優先する（復元時用）
     const intendedVal = row.meals;
     
-    // 他の行の合計を計算
     const otherTotal = state.recipeRows
       .filter(r => r.rowId !== row.rowId)
       .reduce((sum, r) => sum + r.meals, 0);
@@ -247,15 +245,9 @@ function refreshAllMealDropdowns() {
 
     mSel.innerHTML = "";
     
-    // 選択肢生成 (0 〜 maxAllowed)
-    // ただし、もし復元された値(intendedVal)がmaxAllowedを超えている場合でも
-    // 一時的に選択肢に含めるか、あるいはmaxAllowedに丸める処理が必要。
-    // ここではmaxAllowedに丸める処理とする。
     const effectiveMax = Math.max(maxAllowed, intendedVal); 
     
     for (let i = effectiveMax; i >= 0; i--) {
-      // 本来のMaxを超えている値は選択肢に出さない、または特別扱いする手もあるが、
-      // ここでは整合性を保つため 0~Limit で作り直す
       if (i > maxAllowed && i !== intendedVal) continue; 
       
       const opt = document.createElement("option");
@@ -264,11 +256,9 @@ function refreshAllMealDropdowns() {
       mSel.appendChild(opt);
     }
     
-    // 値を適用
     if (intendedVal <= maxAllowed) {
       mSel.value = intendedVal;
     } else {
-      // 万が一オーバーしている場合は最大値に合わせる
       mSel.value = maxAllowed;
       row.meals = maxAllowed;
     }
@@ -277,15 +267,13 @@ function refreshAllMealDropdowns() {
 }
 
 /* =========================================================
-   行追加ロジック (重要修正)
+   行追加ロジック
 ========================================================= */
 function addRecipeRow(init) {
   if (state.recipeRows.length >= MAX_ROWS) return;
 
   const rowId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ("rid_" + Date.now() + "_" + Math.random().toString(16).slice(2));
   
-  // initがある場合（スナップショット復元時）はその値を優先
-  // initがない場合は残り回数から計算
   let initialMeals = 0;
   
   if (init && typeof init.meals === 'number') {
@@ -378,7 +366,6 @@ function addRecipeRow(init) {
   const updatePreview = () => {
     rowData.cat = cSel.value;
     rowData.recipeId = rSel.value;
-    // mealsはmSelから取るが、初期化直後はrowDataを信じる
     if (document.activeElement === mSel) {
        rowData.meals = Number(mSel.value);
     }
@@ -431,11 +418,7 @@ function addRecipeRow(init) {
 
   updateRecipeList();
   el("recipeList").appendChild(wrap);
-  
-  // ★ここが重要: 行を追加した後、全てのドロップダウンを同期させる
   refreshAllMealDropdowns();
-  
-  // プレビュー更新（計算含む）
   updatePreview();
 }
 
@@ -549,7 +532,6 @@ function calc() {
 const SS_KEYS = ["stockcalc_ss_1", "stockcalc_ss_2", "stockcalc_ss_3"];
 const SS_POINTER_KEY = "stockcalc_ss_pointer";
 
-// 長押し検知ユーティリティ
 function setupLongPress(element, callback, clickCallback) {
   let timer;
   let isLong = false;
@@ -604,16 +586,13 @@ function getCurrentState() {
 function restoreState(data) {
   if (!data) return;
 
-  // クリア
   el("recipeList").innerHTML = "";
   state.recipeRows = [];
   
-  // 設定値の復元
   if (el("fieldBonusSel")) el("fieldBonusSel").value = data.fieldBonus || "85";
   if (el("eventBonusSel")) el("eventBonusSel").value = data.eventBonus || "0";
   if (el("optNcPika")) el("optNcPika").checked = !!data.ncPika;
 
-  // 食材設定の復元
   if (data.ingredients) {
     data.ingredients.forEach(item => {
       const qtyInput = document.querySelector(`.repQty[data-iid="${item.iid}"]`);
@@ -623,8 +602,6 @@ function restoreState(data) {
     });
   }
 
-  // レシピ行の復元
-  // ★重要：addRecipeRow内で計算が走るが、全行追加後に再度調整が必要
   if (data.recipes && data.recipes.length > 0) {
     data.recipes.forEach(row => {
       addRecipeRow(row); 
@@ -633,7 +610,6 @@ function restoreState(data) {
     addRecipeRow({ meals: 21 });
   }
 
-  // 最後にまとめて再計算
   refreshAllMealDropdowns();
   calc();
 }
@@ -730,7 +706,6 @@ window.onload = () => {
   el("addRecipe").onclick = () => addRecipeRow();
   
   el("clearAll").onclick = () => {
-    if(!confirm("現在の入力をクリアしますか？\n(SSは削除されません)")) return;
     
     el("recipeList").innerHTML = "";
     state.recipeRows = [];
