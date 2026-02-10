@@ -324,7 +324,7 @@ function hiraToKata(str) {
 
 function makeToolbarHTML(placeholderText, withNote = false) {
   const noteHtml = withNote 
-    ? `<div class="dex-note-text">※アイコン長押しで対応するブックマークを全消去できます</div>` 
+    ? `<div class="dex-note-text">※アイコン長押しで全消去</div>` 
     : "";
   
   return `
