@@ -43,7 +43,6 @@
       const root = document.documentElement;
       root.style.setProperty("--main", t.main);
       root.style.setProperty("--main-soft", t.soft);
-      // メタタグも更新
       const meta = document.querySelector('meta[name="theme-color"]');
       if(meta) meta.content = t.main;
     })();
@@ -53,8 +52,8 @@
     :root {
       --bg: #f5f8fa;
       --card: #ffffff;
-      --main: #007bff;       /* JSで上書きされます */
-      --main-soft: #eaf4ff;  /* JSで上書きされます */
+      --main: #007bff;
+      --main-soft: #eaf4ff;
       --text: #2c3e50;
       --muted: #5d6d7e;
       --line: #d6e0ea;
@@ -206,49 +205,42 @@
       border-left: 5px solid var(--main);
       padding-left: 10px;
       color: var(--text);
-      margin-bottom: 4px;
+      line-height: 1.2;
     }
     
-    /* --- ★修正点②：レイアウト調整 --- */
-    /* ヘッダー周りをFlexからGridに変更して整列させる */
-    .settingsHeaderRow {
-      display: grid;
-      grid-template-areas: 
-        "title badge"
-        "ss ss"
-        "actions actions";
-      gap: 8px;
+    /* --- ★修正点②：条件設定ヘッダー レイアウト --- */
+    .settingsTopRow {
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
-    }
-    /* PCなど広い画面 */
-    @media (min-width: 521px) {
-      .settingsHeaderRow {
-        grid-template-areas: "title badge ss actions";
-        grid-template-columns: auto auto 1fr auto;
-      }
+      margin-bottom: 12px;
     }
     
-    #condBlockTitle { grid-area: title; }
-    #condBlockBadge { grid-area: badge; justify-self: start; }
+    .settingsMiddleRow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      position: relative;
+    }
     
+    /* バッジを左側に配置、ボタンを中央に配置するための調整 */
+    .badge-container {
+      width: 100%;
+      margin-bottom: 4px; /* バッジとSSボタンの間隔 */
+    }
+
     #ssBtnGroup { 
-      grid-area: ss; 
       display: flex; 
       justify-content: center; 
       gap: 12px; 
       width: 100%;
     }
+
     #actionBlock { 
-      grid-area: actions; 
       display: flex; 
       gap: 8px; 
-      justify-content: flex-end; 
-      width: 100%;
-    }
-    @media (min-width: 521px) {
-      #actionBlock { width: auto; }
-      #ssBtnGroup { width: auto; justify-content: center; }
     }
 
     #actionBlock > button {
@@ -261,15 +253,17 @@
       border-radius: 999px;
       cursor: pointer;
       white-space: nowrap;
+      /* ★修正点④：ボタンの影 */
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
 
     /* SSボタン：完全に丸く、幅を広めに */
     .ss-btn {
       padding: 6px 0;
-      width: 60px; /* ★修正点②：文字が崩れないよう広めに */
+      width: 60px;
       font-size: 11px;
       font-weight: 900;
-      border-radius: 999px; /* ★修正点②：完全なカプセル型 */
+      border-radius: 999px;
       border: 1px solid var(--line);
       background: #f0f2f5;
       color: #aaa;
@@ -284,10 +278,26 @@
     }
     .ss-btn:active { transform: scale(0.95); }
 
-    /* --- ★修正点③：スナップショット作成ボタン --- */
+    /* --- ★修正点③：計算結果ヘッダー レイアウト --- */
+    .resultHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      gap: 4px;
+    }
+    .resultTitle {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--main);
+      margin: 0;
+      white-space: nowrap;
+    }
+
+    /* スナップショット作成ボタン（カプセル型） */
     .capsule-btn {
-      padding: 8px 24px;
-      font-size: 12px;
+      padding: 6px 14px;
+      font-size: 11px;
       font-weight: 900;
       border-radius: 999px;
       background: #fff;
@@ -297,11 +307,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
       transition: background 0.2s;
-      margin: 12px auto 0 auto; /* 中央寄せ */
-      width: fit-content;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      white-space: nowrap;
     }
     .capsule-btn:active { background: var(--main-soft); transform: scale(0.98); }
 
@@ -368,10 +376,8 @@
     .exChk { margin: 0; cursor: pointer; width: 13px; height: 13px; }
     .badge { font-size: 12px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); font-weight: 700; }
     #summaryBadge { background: var(--main-soft); color: var(--main); border: 1px solid #cce5ff; }
-    .total-badge { background: var(--main); color: #fff; border: none; padding: 6px 16px; }
+    .total-badge { background: var(--main); color: #fff; border: none; padding: 6px 16px; white-space: nowrap; }
 
-    .result-card .resultHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-    .result-card .resultTitle { font-size: 16px; font-weight: 900; color: var(--main); margin: 0; }
     .result-card .resultDivider { height: 1px; background: var(--line); margin: 12px 0; opacity: 0.6; }
     
     button {
@@ -523,22 +529,28 @@
   <div id="tab1" class="tab-content active">  
     
     <section class="card">
-      <div class="settingsHeaderRow">
-        <div id="condBlockTitle" class="sectionTitle">条件設定</div>
-        <div id="condBlockBadge"><span class="badge" id="summaryBadge">合計 0食 / 21食</span></div>
+      
+      <div class="settingsTopRow">
+        <div class="sectionTitle" style="border:none; padding:0; border-left: 5px solid var(--main); padding-left: 10px;">条件設定</div>
+        <div id="actionBlock">
+          <button id="addRecipe" class="primary" style="white-space: nowrap;">+ 追加</button>
+          <button id="clearAll" class="danger" style="white-space: nowrap;">クリア</button>
+        </div>
+      </div>
+
+      <div class="settingsMiddleRow">
+        <div class="badge-container">
+          <span class="badge" id="summaryBadge">合計 0食 / 21食</span>
+        </div>
         
         <div id="ssBtnGroup">
            <button class="ss-btn" data-ssid="1">SS1</button>
            <button class="ss-btn" data-ssid="2">SS2</button>
            <button class="ss-btn" data-ssid="3">SS3</button>
         </div>
-
-        <div id="actionBlock">
-          <button id="addRecipe" class="primary" style="white-space: nowrap;">+ 追加</button>
-          <button id="clearAll" class="danger" style="white-space: nowrap;">クリア</button>
-        </div>
       </div>
-      <div class="dex-note-text" style="text-align:center; margin-bottom:8px;">※ボタン長押しで対応するスナップショットを全消去できます</div>
+      
+      <div class="dex-note-text" style="text-align:center; margin-bottom:8px;">※長押しでSSを消去</div>
       
       <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; padding:8px; background:#f8f9fa; border-radius:12px; border:1px solid var(--line);">
         <div style="flex:1; min-width:140px;">
@@ -584,7 +596,7 @@
     <section class="card">
       <div class="replenishHeaderRow">
         <div>
-          <div class="sectionTitle">1日当たりの獲得量</div>
+          <div class="sectionTitle" style="border:none; padding:0; border-left: 5px solid var(--main); padding-left: 10px;">1日当たりの獲得量</div>
         </div>
         <div>
           <label class="chkLabel ncPikaOpt">
@@ -600,12 +612,11 @@
     <section class="result-card">
       <div class="resultHeader">
         <div class="resultTitle">計算結果</div>
+        <button id="createSnapshotBtn" class="capsule-btn">
+          スナップショットを作成
+        </button>
         <span class="badge total-badge" id="totalBadge">総合計 0個</span>
       </div>
-      
-      <button id="createSnapshotBtn" class="capsule-btn">
-        スナップショットを作成
-      </button>
     
       <div id="mode3Note" class="mode3Note">
         💡カテゴリーを跨いで計算する場合、各レシピの中で「一番多く使う分量」に合わせて計算されます（食材の不足を防ぐため）
