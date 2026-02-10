@@ -45,7 +45,7 @@
         let color = "var(--muted)";
         if (idx === 5) color = "#007bff";
         if (idx === 6) color = "#e74c3c";
-        html += `<div style="font-size: 8px; font-weight: 900; text-align: center; color: ${color}; transform: scale(0.8);">${d}</div>`;
+        html += `<div style="font-size: 9px; font-weight: 900; text-align: center; color: ${color};">${d}</div>`;
       });
 
       const firstDayIdx = new Date(year, m, 1).getDay(); 
