@@ -58,7 +58,7 @@ const THEMES = {
    SW / Cache reset
 ========================================================= */
 async function resetSWAndCacheOnce() {
-  const KEY = "sw_cache_reset_done_v113";
+  const KEY = "sw_cache_reset_done_v114"; // 更新を確実にするためバージョンを上げています
   if (localStorage.getItem(KEY)) return;
   try {
     if ("serviceWorker" in navigator) {
@@ -447,11 +447,10 @@ function calc() {
   const exclude = buildExcludeSet();
   const perDay = buildReplenishPerDayMap();
   
-  // ★ ここで結果を描画する枠が見つかるかチェック ★
   const resultGrid = el("resultGrid");
   if (!resultGrid) {
-    console.warn("⚠️ resultGrid が見つかりません。index.html内で <div id=\"resultGrid\" class=\"ingGrid\"></div> が消えていないか確認してください！");
-    return; // 枠がなければ描画できないのでここで処理を止める（これが原因で何も表示されていませんでした）
+    console.warn("⚠️ resultGrid が見つかりません。");
+    return;
   }
 
   const fbVal = Number(el("fieldBonusSel")?.value || 0);
@@ -492,31 +491,22 @@ function calc() {
   const energyRes = el("energyResultVal");
   if (energyRes) energyRes.textContent = totalEnergy.toLocaleString();
 
-  // ラジオボタンの選択モードを取得（HTMLに存在しない場合はデフォルトとして動く）
+  // ラジオボタンの選択モードを取得
   const calcMode = document.querySelector('input[name="calcMode"]:checked')?.value || "default";
 
+  // モードごとの総数計算
   const gross = new Map();
   Object.values(catSums).forEach(map => {
     map.forEach((val, iid) => {
       if (calcMode === "simple") {
-        // 単純加算モード：すべての必要数を足し上げる
         gross.set(iid, (gross.get(iid) || 0) + val);
       } else {
-        // デフォルトモード：各カテゴリーの最大値を参照する
         gross.set(iid, Math.max(gross.get(iid) || 0, val));
       }
     });
   });
 
   resultGrid.innerHTML = "";
-  
-  // HTML側で class="ingGrid" が外れていた場合でも画面いっぱいにならないよう、
-  // JavaScript側から元のレイアウト（横幅70pxベースのグリッド）を強制します。
-  resultGrid.className = "ingGrid";
-  resultGrid.style.display = "grid";
-  resultGrid.style.gridTemplateColumns = "repeat(auto-fill, minmax(70px, 1fr))";
-  resultGrid.style.gap = "8px";
-
   let grandTotal = 0;
 
   ingredientOrder.forEach(iid => {
@@ -527,16 +517,12 @@ function calc() {
     if (finalNeed <= 0) return;
     grandTotal += finalNeed;
     const ing = getIng(iid);
-    
-    // innerHTML += を避け、要素を作って追加することで以前の綺麗な形を維持します
-    const tile = document.createElement("div");
-    tile.className = "tile";
-    tile.innerHTML = `
-      <div class="tileName" title="${ing?.name}">${ing?.name}</div>
-      <img class="icon" src="${imgSrc(ing?.file)}" alt="">
-      <div style="font-weight:900; font-size:13px; margin-top:4px;">${finalNeed}個</div>
-    `;
-    resultGrid.appendChild(tile);
+    resultGrid.innerHTML += `
+      <div class="tile">
+        <div class="tileName">${ing?.name}</div>
+        <img class="icon" src="${imgSrc(ing?.file)}">
+        <div style="font-weight:900; font-size:13px;">${finalNeed}個</div>
+      </div>`;
   });
 
   const totalBadge = el("totalBadge");
