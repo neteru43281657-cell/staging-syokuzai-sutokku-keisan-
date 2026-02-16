@@ -735,22 +735,22 @@
         <span class="badge total-badge" id="totalBadge">総合計 0個</span>
       </div>
 
-      <div id="mode3Note" class="mode3Note" style="display: none; padding: 12px; margin-bottom: 16px;">
+      <div id="mode3Note" class="mode3Note" style="display: none; padding: 10px; margin-bottom: 12px;">
         <div style="display: flex; justify-content: space-between; align-items: center; max-width: 360px; margin: 0 auto; gap: 10px;">
-          <div style="text-align: left; font-size: 13px; font-weight: bold; line-height: 1.6;">
+          <div style="text-align: left; line-height: 1.5;">
             💡カテゴリーを跨いで計算中です。<br>
             　モードを選択できます。
           </div>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <label style="display: flex; align-items: center; font-size: 13px; font-weight: bold; cursor: pointer;">
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label style="display: flex; align-items: center; cursor: pointer; margin: 0;">
               <input type="radio" name="calcMode" value="default" checked style="margin: 0 6px 0 0; display: inline-block;">
               デフォルト
-              <span class="info-btn-tiny" onclick="event.preventDefault(); showInfo('各レシピの中で「一番多く使う分量」に合わせて計算される、スマートなモードです')" style="margin-left: 6px;">ⓘ</span>
+              <span class="info-btn-tiny" onclick="event.preventDefault(); showInfo('各レシピの中で「一番多く使う分量」に合わせて計算される、スマートなモードです')" style="margin-left: 4px;">ⓘ</span>
             </label>
-            <label style="display: flex; align-items: center; font-size: 13px; font-weight: bold; cursor: pointer;">
+            <label style="display: flex; align-items: center; cursor: pointer; margin: 0;">
               <input type="radio" name="calcMode" value="simple" style="margin: 0 6px 0 0; display: inline-block;">
               単純加算
-              <span class="info-btn-tiny" onclick="event.preventDefault(); showInfo('各レシピを単純に足し算します（食材の重み付けを重視する方はこちら）')" style="margin-left: 6px;">ⓘ</span>
+              <span class="info-btn-tiny" onclick="event.preventDefault(); showInfo('各レシピを単純に足し算します（食材の重み付けを重視する方はこちら）')" style="margin-left: 4px;">ⓘ</span>
             </label>
           </div>
         </div>
