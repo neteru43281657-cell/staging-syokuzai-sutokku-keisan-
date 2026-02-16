@@ -58,7 +58,7 @@ const THEMES = {
    SW / Cache reset
 ========================================================= */
 async function resetSWAndCacheOnce() {
-  const KEY = "sw_cache_reset_done_v116"; // バージョンアップ
+  const KEY = "sw_cache_reset_done_v113"; // バージョンアップに伴い変更
   if (localStorage.getItem(KEY)) return;
   try {
     if ("serviceWorker" in navigator) {
@@ -227,7 +227,7 @@ function renderGrids() {
 }
 
 /* =========================================================
-   食数ドロップダウンの更新ロジック (★堅牢化)
+   食数ドロップダウンの更新ロジック
 ========================================================= */
 function refreshAllMealDropdowns() {
   state.recipeRows.forEach(row => {
@@ -243,39 +243,45 @@ function refreshAllMealDropdowns() {
       .reduce((sum, r) => sum + r.meals, 0);
     const maxAllowed = Math.max(0, 21 - otherTotal);
 
-    let newHtml = "";
+    mSel.innerHTML = "";
+    
     const effectiveMax = Math.max(maxAllowed, intendedVal); 
     
     for (let i = effectiveMax; i >= 0; i--) {
       if (i > maxAllowed && i !== intendedVal) continue; 
-      // HTMLの段階で selected を付与して確実に反映させる
-      const selAttr = (i === intendedVal) ? " selected" : "";
-      newHtml += `<option value="${i}"${selAttr}>${i}</option>`;
+      
+      const opt = document.createElement("option");
+      opt.value = i; 
+      opt.textContent = i;
+      mSel.appendChild(opt);
     }
     
-    mSel.innerHTML = newHtml;
-    
-    if (intendedVal > maxAllowed) {
+    if (intendedVal <= maxAllowed) {
+      mSel.value = intendedVal;
+    } else {
       mSel.value = maxAllowed;
       row.meals = maxAllowed;
-    } else {
-      mSel.value = intendedVal;
     }
   });
   updateSummary();
 }
 
 /* =========================================================
-   行追加ロジック
+   行追加ロジック (修正：初期食数0)
 ========================================================= */
 function addRecipeRow(init) {
   if (state.recipeRows.length >= MAX_ROWS) return;
 
   const rowId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ("rid_" + Date.now() + "_" + Math.random().toString(16).slice(2));
   
+  // ★修正：スナップショットからの復元(init.meals)がない場合は「0」を初期値にする
   let initialMeals = 0;
+  
   if (init && typeof init.meals === 'number') {
     initialMeals = init.meals;
+  } else {
+    // 新規追加時は常に0
+    initialMeals = 0;
   }
 
   const rowData = {
@@ -361,16 +367,12 @@ function addRecipeRow(init) {
   const updatePreview = () => {
     rowData.cat = cSel.value;
     rowData.recipeId = rSel.value;
-    
-    // ★修正：mSelに選択肢が生成されている（空っぽじゃない）時のみ値を読み取る
-    if (mSel.options && mSel.options.length > 0) {
+    if (document.activeElement === mSel) {
        rowData.meals = Number(mSel.value);
     }
     
     rowData.level = Number(lSel.value) || 1;
-    
-    const checkedRadio = wrap.querySelector(`input[name="${radioName}"]:checked`);
-    rowData.successType = checkedRadio ? checkedRadio.value : "normal";
+    rowData.successType = wrap.querySelector(`input[name="${radioName}"]:checked`).value;
 
     const r = RECIPES.find((x) => x.id === rSel.value);
     if (r) {
@@ -415,9 +417,8 @@ function addRecipeRow(init) {
     calc();
   };
 
-  // 先にDOMに追加してからリストを構築する（安全策）
-  el("recipeList").appendChild(wrap);
   updateRecipeList();
+  el("recipeList").appendChild(wrap);
   refreshAllMealDropdowns();
   updatePreview();
 }
@@ -454,9 +455,6 @@ function calc() {
   const fbMul = 1 + (fbVal / 100);
   const evPatKey = el("eventBonusSel")?.value || "0";
   const evPattern = EVENT_PATTERNS[evPatKey];
-
-  const calcModeEl = document.querySelector('input[name="calcMode"]:checked');
-  const calcMode = calcModeEl ? calcModeEl.value : "default";
 
   const catSums = { "カレー・シチュー": new Map(), "サラダ": new Map(), "デザート・ドリンク": new Map() };
   const ingredientOrder = [];
@@ -496,11 +494,7 @@ function calc() {
   const gross = new Map();
   Object.values(catSums).forEach(map => {
     map.forEach((val, iid) => {
-      if (calcMode === "simple") {
-        gross.set(iid, (gross.get(iid) || 0) + val);
-      } else {
-        gross.set(iid, Math.max(gross.get(iid) || 0, val));
-      }
+      gross.set(iid, Math.max(gross.get(iid) || 0, val));
     });
   });
 
@@ -529,8 +523,6 @@ function calc() {
   const note = el("mode3Note");
   if (note) {
     const activeCats = new Set(state.recipeRows.map(r => r.cat));
-    // モード選択UIがあるので、カテゴリが複数なくても常に表示させる運用もアリですが、
-    // ここでは元々の「2つ以上の時に表示」という仕様を踏襲します
     note.style.display = (activeCats.size > 1) ? "block" : "none";
   }
 }
@@ -541,6 +533,7 @@ function calc() {
 const SS_KEYS = ["stockcalc_ss_1", "stockcalc_ss_2", "stockcalc_ss_3"];
 const SS_POINTER_KEY = "stockcalc_ss_pointer";
 
+// 長押し検知ユーティリティ
 function setupLongPress(element, callback, clickCallback) {
   let timer;
   let isLong = false;
@@ -581,9 +574,6 @@ function getCurrentState() {
   const eventBonus = el("eventBonusSel")?.value || "0";
   const ncPika = el("optNcPika")?.checked || false;
   
-  const calcModeEl = document.querySelector('input[name="calcMode"]:checked');
-  const calcMode = calcModeEl ? calcModeEl.value : "default";
-
   const ingredients = [];
   document.querySelectorAll(".repQty").forEach(input => {
     const iid = input.dataset.iid;
@@ -592,7 +582,7 @@ function getCurrentState() {
     ingredients.push({ iid, qty, isExcluded });
   });
 
-  return { recipes, fieldBonus, eventBonus, ncPika, calcMode, ingredients };
+  return { recipes, fieldBonus, eventBonus, ncPika, ingredients };
 }
 
 function restoreState(data) {
@@ -604,14 +594,6 @@ function restoreState(data) {
   if (el("fieldBonusSel")) el("fieldBonusSel").value = data.fieldBonus || "85";
   if (el("eventBonusSel")) el("eventBonusSel").value = data.eventBonus || "0";
   if (el("optNcPika")) el("optNcPika").checked = !!data.ncPika;
-
-  if (data.calcMode) {
-    const radio = document.querySelector(`input[name="calcMode"][value="${data.calcMode}"]`);
-    if (radio) radio.checked = true;
-  } else {
-    const defaultRadio = document.querySelector(`input[name="calcMode"][value="default"]`);
-    if (defaultRadio) defaultRadio.checked = true;
-  }
 
   if (data.ingredients) {
     data.ingredients.forEach(item => {
@@ -627,7 +609,7 @@ function restoreState(data) {
       addRecipeRow(row); 
     });
   } else {
-    addRecipeRow({ meals: 0 });
+    addRecipeRow({ meals: 21 });
   }
 
   refreshAllMealDropdowns();
@@ -652,6 +634,7 @@ function updateSSButtons() {
 function createSnapshot() {
   const current = getCurrentState();
   
+  // ★空いているスロットを探す (1 -> 2 -> 3)
   let targetIndex = -1;
   for (let i = 0; i < 3; i++) {
     if (!localStorage.getItem(SS_KEYS[i])) {
@@ -660,6 +643,7 @@ function createSnapshot() {
     }
   }
 
+  // ★もし全て埋まっていたら、ローテーションポインタを使う
   if (targetIndex === -1) {
     const pointerStr = localStorage.getItem(SS_POINTER_KEY);
     targetIndex = pointerStr ? parseInt(pointerStr) : 0;
@@ -732,17 +716,11 @@ window.onload = () => {
   el("fieldBonusSel")?.addEventListener("change", calc);
   el("eventBonusSel")?.addEventListener("change", calc);
 
-  document.querySelectorAll('input[name="calcMode"]').forEach(r => {
-    r.addEventListener('change', calc);
-  });
-
   el("optNcPika")?.addEventListener("change", () => calc());
+  el("addRecipe").onclick = () => addRecipeRow();
   
-  // ★手動で追加ボタンを押した時は 0 食を初期値にする
-  el("addRecipe").onclick = () => addRecipeRow({ meals: 0 });
-  
-  // クリア時の動作
   el("clearAll").onclick = () => {
+    
     el("recipeList").innerHTML = "";
     state.recipeRows = [];
     
@@ -750,22 +728,14 @@ window.onload = () => {
     el("eventBonusSel").value = "0";
     el("optNcPika").checked = false;
 
-    // 計算モードを「デフォルト」に戻す
-    const defaultModeRadio = document.querySelector('input[name="calcMode"][value="default"]');
-    if (defaultModeRadio) defaultModeRadio.checked = true;
-
     document.querySelectorAll(".exChk").forEach(c => c.checked = false);
     document.querySelectorAll(".repQty").forEach(i => i.value = "");
     
-    // ★クリア時は 0 食で追加する
-    addRecipeRow({ meals: 0 }); 
+    addRecipeRow({ meals: 0 });
     calc();
   };
 
-  // ★ページを開いた直後は 21 食で追加する
-  if (state.recipeRows.length === 0) {
-    addRecipeRow({ meals: 21 });
-  }
+  if (state.recipeRows.length === 0) addRecipeRow({ meals: 21 });
 
   const savedTab = localStorage.getItem("activeTab") || "tab1";
   switchTab(savedTab);
