@@ -58,7 +58,7 @@ const THEMES = {
    SW / Cache reset
 ========================================================= */
 async function resetSWAndCacheOnce() {
-  const KEY = "sw_cache_reset_done_v113"; // バージョンアップに伴い変更
+  const KEY = "sw_cache_reset_done_v113";
   if (localStorage.getItem(KEY)) return;
   try {
     if ("serviceWorker" in navigator) {
@@ -446,8 +446,14 @@ function buildExcludeSet() {
 function calc() {
   const exclude = buildExcludeSet();
   const perDay = buildReplenishPerDayMap();
-  const resultGrid = el("resultGrid");
   
+  // ★ ここで結果を描画する枠が見つかるかチェック ★
+  const resultGrid = el("resultGrid");
+  if (!resultGrid) {
+    console.warn("⚠️ resultGrid が見つかりません。index.html内で <div id=\"resultGrid\" class=\"ingGrid\"></div> が消えていないか確認してください！");
+    return; // 枠がなければ描画できないのでここで処理を止める（これが原因で何も表示されていませんでした）
+  }
+
   const fbVal = Number(el("fieldBonusSel")?.value || 0);
   const fbMul = 1 + (fbVal / 100);
   const evPatKey = el("eventBonusSel")?.value || "0";
@@ -486,16 +492,17 @@ function calc() {
   const energyRes = el("energyResultVal");
   if (energyRes) energyRes.textContent = totalEnergy.toLocaleString();
 
-  if (!resultGrid) return;
-
+  // ラジオボタンの選択モードを取得（HTMLに存在しない場合はデフォルトとして動く）
   const calcMode = document.querySelector('input[name="calcMode"]:checked')?.value || "default";
 
   const gross = new Map();
   Object.values(catSums).forEach(map => {
     map.forEach((val, iid) => {
       if (calcMode === "simple") {
+        // 単純加算モード：すべての必要数を足し上げる
         gross.set(iid, (gross.get(iid) || 0) + val);
       } else {
+        // デフォルトモード：各カテゴリーの最大値を参照する
         gross.set(iid, Math.max(gross.get(iid) || 0, val));
       }
     });
