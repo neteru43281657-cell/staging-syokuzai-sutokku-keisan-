@@ -267,20 +267,17 @@ function refreshAllMealDropdowns() {
 }
 
 /* =========================================================
-   行追加ロジック (修正：初期食数0)
+   行追加ロジック (初期食数0)
 ========================================================= */
 function addRecipeRow(init) {
   if (state.recipeRows.length >= MAX_ROWS) return;
 
   const rowId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ("rid_" + Date.now() + "_" + Math.random().toString(16).slice(2));
   
-  // ★修正：スナップショットからの復元(init.meals)がない場合は「0」を初期値にする
   let initialMeals = 0;
-  
   if (init && typeof init.meals === 'number') {
     initialMeals = init.meals;
   } else {
-    // 新規追加時は常に0
     initialMeals = 0;
   }
 
@@ -491,10 +488,16 @@ function calc() {
 
   if (!resultGrid) return;
 
+  const calcMode = document.querySelector('input[name="calcMode"]:checked')?.value || "default";
+
   const gross = new Map();
   Object.values(catSums).forEach(map => {
     map.forEach((val, iid) => {
-      gross.set(iid, Math.max(gross.get(iid) || 0, val));
+      if (calcMode === "simple") {
+        gross.set(iid, (gross.get(iid) || 0) + val);
+      } else {
+        gross.set(iid, Math.max(gross.get(iid) || 0, val));
+      }
     });
   });
 
@@ -533,7 +536,6 @@ function calc() {
 const SS_KEYS = ["stockcalc_ss_1", "stockcalc_ss_2", "stockcalc_ss_3"];
 const SS_POINTER_KEY = "stockcalc_ss_pointer";
 
-// 長押し検知ユーティリティ
 function setupLongPress(element, callback, clickCallback) {
   let timer;
   let isLong = false;
@@ -573,6 +575,7 @@ function getCurrentState() {
   const fieldBonus = el("fieldBonusSel")?.value || "85";
   const eventBonus = el("eventBonusSel")?.value || "0";
   const ncPika = el("optNcPika")?.checked || false;
+  const calcMode = document.querySelector('input[name="calcMode"]:checked')?.value || "default";
   
   const ingredients = [];
   document.querySelectorAll(".repQty").forEach(input => {
@@ -582,7 +585,7 @@ function getCurrentState() {
     ingredients.push({ iid, qty, isExcluded });
   });
 
-  return { recipes, fieldBonus, eventBonus, ncPika, ingredients };
+  return { recipes, fieldBonus, eventBonus, ncPika, ingredients, calcMode };
 }
 
 function restoreState(data) {
@@ -594,6 +597,14 @@ function restoreState(data) {
   if (el("fieldBonusSel")) el("fieldBonusSel").value = data.fieldBonus || "85";
   if (el("eventBonusSel")) el("eventBonusSel").value = data.eventBonus || "0";
   if (el("optNcPika")) el("optNcPika").checked = !!data.ncPika;
+
+  if (data.calcMode) {
+    const radio = document.querySelector(`input[name="calcMode"][value="${data.calcMode}"]`);
+    if (radio) radio.checked = true;
+  } else {
+    const defaultRadio = document.querySelector('input[name="calcMode"][value="default"]');
+    if (defaultRadio) defaultRadio.checked = true;
+  }
 
   if (data.ingredients) {
     data.ingredients.forEach(item => {
@@ -634,7 +645,6 @@ function updateSSButtons() {
 function createSnapshot() {
   const current = getCurrentState();
   
-  // ★空いているスロットを探す (1 -> 2 -> 3)
   let targetIndex = -1;
   for (let i = 0; i < 3; i++) {
     if (!localStorage.getItem(SS_KEYS[i])) {
@@ -643,7 +653,6 @@ function createSnapshot() {
     }
   }
 
-  // ★もし全て埋まっていたら、ローテーションポインタを使う
   if (targetIndex === -1) {
     const pointerStr = localStorage.getItem(SS_POINTER_KEY);
     targetIndex = pointerStr ? parseInt(pointerStr) : 0;
@@ -716,6 +725,8 @@ window.onload = () => {
   el("fieldBonusSel")?.addEventListener("change", calc);
   el("eventBonusSel")?.addEventListener("change", calc);
 
+  document.querySelectorAll('input[name="calcMode"]').forEach(r => r.addEventListener("change", calc));
+
   el("optNcPika")?.addEventListener("change", () => calc());
   el("addRecipe").onclick = () => addRecipeRow();
   
@@ -727,6 +738,9 @@ window.onload = () => {
     el("fieldBonusSel").value = "85";
     el("eventBonusSel").value = "0";
     el("optNcPika").checked = false;
+
+    const defaultMode = document.querySelector('input[name="calcMode"][value="default"]');
+    if (defaultMode) defaultMode.checked = true;
 
     document.querySelectorAll(".exChk").forEach(c => c.checked = false);
     document.querySelectorAll(".repQty").forEach(i => i.value = "");
