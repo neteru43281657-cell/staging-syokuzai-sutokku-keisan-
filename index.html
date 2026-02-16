@@ -736,18 +736,26 @@
       </div>
     
       <div id="mode3Note" class="mode3Note">
-        💡カテゴリーを跨いで計算する場合、各レシピの中で「一番多く使う分量」に合わせて計算されます（食材の不足を防ぐため）
-      </div>
-    
-      <div class="resultDivider"></div>
-      <div id="resultGrid" class="grid5"></div>
+      <div style="margin-bottom: 6px;">💡カテゴリーを跨いで計算中です。モードを選択できます。</div>
       
-      <div class="resultDivider" style="margin-top: 24px; margin-bottom: 24px; height: 2px; opacity: 0.3;"></div>
-
-      <div style="font-size:12px; font-weight:900; color:var(--text); margin-bottom:8px;">獲得エナジー</div>
-      <div class="energyResultBox">
-        <div style="font-size:28px; font-weight:900; line-height:1;" id="energyResultVal">0</div>
-        <div style="font-size:10px; margin-top:6px; opacity:0.8;">※追加食材なしの場合の概算値です</div>
+      <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 2px;">
+          <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; cursor: pointer; color: var(--text); font-weight: 700; margin: 0;">
+            <input type="radio" name="calcMode" value="default" checked style="margin: 0; transform: scale(1.1);">
+            デフォルト
+          </label>
+          <span class="info-btn-tiny" onclick="showInfo('各レシピの中で「一番多く使う分量」に合わせて計算される、スマートなモードです')">ⓘ</span>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 2px;">
+          <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; cursor: pointer; color: var(--text); font-weight: 700; margin: 0;">
+            <input type="radio" name="calcMode" value="simple" style="margin: 0; transform: scale(1.1);">
+            単純加算
+          </label>
+          <span class="info-btn-tiny" onclick="showInfo('各レシピを単純に足し算します（食材の重み付けを重視する方はこちら）')">ⓘ</span>
+        </div>
+      </div>
+    </div>
       </div>
     </section>
   </div>
