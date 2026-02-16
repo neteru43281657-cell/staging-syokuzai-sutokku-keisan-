@@ -735,10 +735,15 @@
         <span class="badge total-badge" id="totalBadge">総合計 0個</span>
       </div>
 
-      <div class="energyResultBox" style="margin-bottom: 16px;">
-        <div style="font-size: 12px; font-weight: 800; color: var(--muted); margin-bottom: 2px;">獲得エナジー</div>
-        <div style="font-size: 26px; font-weight: 900; line-height: 1.2;"><span id="energyResultVal">0</span></div>
+      <div class="resultDivider"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
+        <div style="font-weight: 900; font-size: 14px; color: var(--muted);">獲得エナジー</div>
+        <div style="font-weight: 900; font-size: 22px; color: var(--main);"><span id="energyResultVal">0</span></div>
       </div>
+      <div style="font-size: 10px; font-weight: 700; color: var(--muted); text-align: right; margin-top: 2px;">
+        ※追加食材なしの場合の概算値です
+      </div>
+      <div class="resultDivider"></div>
       <div id="mode3Note" class="mode3Note" style="display: none; padding: 12px; margin-bottom: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center; max-width: 360px; margin: 0 auto; gap: 10px;">
           <div style="text-align: left; font-size: 13px; font-weight: bold; line-height: 1.6;">
