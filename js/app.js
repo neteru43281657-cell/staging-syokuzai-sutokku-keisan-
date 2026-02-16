@@ -509,6 +509,14 @@ function calc() {
   });
 
   resultGrid.innerHTML = "";
+  
+  // HTML側で class="ingGrid" が外れていた場合でも画面いっぱいにならないよう、
+  // JavaScript側から元のレイアウト（横幅70pxベースのグリッド）を強制します。
+  resultGrid.className = "ingGrid";
+  resultGrid.style.display = "grid";
+  resultGrid.style.gridTemplateColumns = "repeat(auto-fill, minmax(70px, 1fr))";
+  resultGrid.style.gap = "8px";
+
   let grandTotal = 0;
 
   ingredientOrder.forEach(iid => {
@@ -519,12 +527,16 @@ function calc() {
     if (finalNeed <= 0) return;
     grandTotal += finalNeed;
     const ing = getIng(iid);
-    resultGrid.innerHTML += `
-      <div class="tile">
-        <div class="tileName">${ing?.name}</div>
-        <img class="icon" src="${imgSrc(ing?.file)}">
-        <div style="font-weight:900; font-size:13px;">${finalNeed}個</div>
-      </div>`;
+    
+    // innerHTML += を避け、要素を作って追加することで以前の綺麗な形を維持します
+    const tile = document.createElement("div");
+    tile.className = "tile";
+    tile.innerHTML = `
+      <div class="tileName" title="${ing?.name}">${ing?.name}</div>
+      <img class="icon" src="${imgSrc(ing?.file)}" alt="">
+      <div style="font-weight:900; font-size:13px; margin-top:4px;">${finalNeed}個</div>
+    `;
+    resultGrid.appendChild(tile);
   });
 
   const totalBadge = el("totalBadge");
