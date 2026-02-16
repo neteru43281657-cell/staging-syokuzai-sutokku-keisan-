@@ -734,15 +734,17 @@
         </button>
         <span class="badge total-badge" id="totalBadge">総合計 0個</span>
       </div>
-    
+
+      <div class="energyResultBox" style="margin-bottom: 16px;">
+        <div style="font-size: 12px; font-weight: 800; color: var(--muted); margin-bottom: 2px;">獲得エナジー</div>
+        <div style="font-size: 26px; font-weight: 900; line-height: 1.2;"><span id="energyResultVal">0</span></div>
+      </div>
       <div id="mode3Note" class="mode3Note" style="display: none; padding: 12px; margin-bottom: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center; max-width: 360px; margin: 0 auto; gap: 10px;">
-          
           <div style="text-align: left; font-size: 13px; font-weight: bold; line-height: 1.6;">
             💡カテゴリーを跨いで計算中です。<br>
             　モードを選択できます。
           </div>
-
           <div style="display: flex; flex-direction: column; gap: 8px;">
             <label style="display: flex; align-items: center; font-size: 13px; font-weight: bold; cursor: pointer;">
               <input type="radio" name="calcMode" value="default" checked style="margin: 0 6px 0 0; display: inline-block;">
