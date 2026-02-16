@@ -58,7 +58,7 @@ const THEMES = {
    SW / Cache reset
 ========================================================= */
 async function resetSWAndCacheOnce() {
-  const KEY = "sw_cache_reset_done_v114"; // バージョンアップに伴い変更
+  const KEY = "sw_cache_reset_done_v115";
   if (localStorage.getItem(KEY)) return;
   try {
     if ("serviceWorker" in navigator) {
@@ -253,6 +253,12 @@ function refreshAllMealDropdowns() {
       const opt = document.createElement("option");
       opt.value = i; 
       opt.textContent = i;
+
+      // ★修正：意図した値に明示的に selected を付与する
+      if (i === intendedVal) {
+        opt.selected = true;
+      }
+
       mSel.appendChild(opt);
     }
     
@@ -274,12 +280,14 @@ function addRecipeRow(init) {
 
   const rowId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ("rid_" + Date.now() + "_" + Math.random().toString(16).slice(2));
   
+  // ★修正：初期値は「残り回数（最大21）」に戻す。
+  // ただし、init.meals が指定されている場合（クリア時の0など）はそれを優先。
   let initialMeals = 0;
-  
   if (init && typeof init.meals === 'number') {
     initialMeals = init.meals;
   } else {
-    initialMeals = 0;
+    const currentTotal = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
+    initialMeals = Math.min(21, 21 - currentTotal);
   }
 
   const rowData = {
@@ -454,7 +462,6 @@ function calc() {
   const evPatKey = el("eventBonusSel")?.value || "0";
   const evPattern = EVENT_PATTERNS[evPatKey];
 
-  // ★モードの取得
   const calcModeEl = document.querySelector('input[name="calcMode"]:checked');
   const calcMode = calcModeEl ? calcModeEl.value : "default";
 
@@ -496,11 +503,10 @@ function calc() {
   const gross = new Map();
   Object.values(catSums).forEach(map => {
     map.forEach((val, iid) => {
-      // ★モードに応じた計算方法の分岐
       if (calcMode === "simple") {
-        gross.set(iid, (gross.get(iid) || 0) + val); // 単純に足し算
+        gross.set(iid, (gross.get(iid) || 0) + val);
       } else {
-        gross.set(iid, Math.max(gross.get(iid) || 0, val)); // カテゴリ間でMAXをとる（デフォルト）
+        gross.set(iid, Math.max(gross.get(iid) || 0, val));
       }
     });
   });
@@ -580,7 +586,6 @@ function getCurrentState() {
   const eventBonus = el("eventBonusSel")?.value || "0";
   const ncPika = el("optNcPika")?.checked || false;
   
-  // ★モードも保存する
   const calcModeEl = document.querySelector('input[name="calcMode"]:checked');
   const calcMode = calcModeEl ? calcModeEl.value : "default";
 
@@ -605,12 +610,10 @@ function restoreState(data) {
   if (el("eventBonusSel")) el("eventBonusSel").value = data.eventBonus || "0";
   if (el("optNcPika")) el("optNcPika").checked = !!data.ncPika;
 
-  // ★モードの復元
   if (data.calcMode) {
     const radio = document.querySelector(`input[name="calcMode"][value="${data.calcMode}"]`);
     if (radio) radio.checked = true;
   } else {
-    // 過去のSSでcalcModeが保存されていない場合はデフォルトにする
     const defaultRadio = document.querySelector(`input[name="calcMode"][value="default"]`);
     if (defaultRadio) defaultRadio.checked = true;
   }
@@ -734,7 +737,6 @@ window.onload = () => {
   el("fieldBonusSel")?.addEventListener("change", calc);
   el("eventBonusSel")?.addEventListener("change", calc);
 
-  // ★追加：モード切り替えラジオボタンのイベントリスナー
   document.querySelectorAll('input[name="calcMode"]').forEach(r => {
     r.addEventListener('change', calc);
   });
@@ -750,17 +752,17 @@ window.onload = () => {
     el("eventBonusSel").value = "0";
     el("optNcPika").checked = false;
 
-    // ★追加：クリア時はラジオボタンのチェックを全て外す（空白）
     document.querySelectorAll('input[name="calcMode"]').forEach(r => r.checked = false);
 
     document.querySelectorAll(".exChk").forEach(c => c.checked = false);
     document.querySelectorAll(".repQty").forEach(i => i.value = "");
     
-    addRecipeRow({ meals: 0 });
+    addRecipeRow({ meals: 0 }); // ★クリア時は0食を追加
     calc();
   };
 
-  if (state.recipeRows.length === 0) addRecipeRow({ meals: 0 });
+  // ★ページを開いた直後はデフォルト（21食）で追加させる
+  if (state.recipeRows.length === 0) addRecipeRow();
 
   const savedTab = localStorage.getItem("activeTab") || "tab1";
   switchTab(savedTab);
