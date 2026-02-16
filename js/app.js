@@ -58,7 +58,7 @@ const THEMES = {
    SW / Cache reset
 ========================================================= */
 async function resetSWAndCacheOnce() {
-  const KEY = "sw_cache_reset_done_v115";
+  const KEY = "sw_cache_reset_done_v116"; // バージョンアップ
   if (localStorage.getItem(KEY)) return;
   try {
     if ("serviceWorker" in navigator) {
@@ -227,7 +227,7 @@ function renderGrids() {
 }
 
 /* =========================================================
-   食数ドロップダウンの更新ロジック
+   食数ドロップダウンの更新ロジック (★堅牢化)
 ========================================================= */
 function refreshAllMealDropdowns() {
   state.recipeRows.forEach(row => {
@@ -243,30 +243,23 @@ function refreshAllMealDropdowns() {
       .reduce((sum, r) => sum + r.meals, 0);
     const maxAllowed = Math.max(0, 21 - otherTotal);
 
-    mSel.innerHTML = "";
-    
+    let newHtml = "";
     const effectiveMax = Math.max(maxAllowed, intendedVal); 
     
     for (let i = effectiveMax; i >= 0; i--) {
       if (i > maxAllowed && i !== intendedVal) continue; 
-      
-      const opt = document.createElement("option");
-      opt.value = i; 
-      opt.textContent = i;
-
-      // ★修正：意図した値に明示的に selected を付与する
-      if (i === intendedVal) {
-        opt.selected = true;
-      }
-
-      mSel.appendChild(opt);
+      // HTMLの段階で selected を付与して確実に反映させる
+      const selAttr = (i === intendedVal) ? " selected" : "";
+      newHtml += `<option value="${i}"${selAttr}>${i}</option>`;
     }
     
-    if (intendedVal <= maxAllowed) {
-      mSel.value = intendedVal;
-    } else {
+    mSel.innerHTML = newHtml;
+    
+    if (intendedVal > maxAllowed) {
       mSel.value = maxAllowed;
       row.meals = maxAllowed;
+    } else {
+      mSel.value = intendedVal;
     }
   });
   updateSummary();
@@ -280,14 +273,9 @@ function addRecipeRow(init) {
 
   const rowId = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ("rid_" + Date.now() + "_" + Math.random().toString(16).slice(2));
   
-  // ★修正：初期値は「残り回数（最大21）」に戻す。
-  // ただし、init.meals が指定されている場合（クリア時の0など）はそれを優先。
   let initialMeals = 0;
   if (init && typeof init.meals === 'number') {
     initialMeals = init.meals;
-  } else {
-    const currentTotal = state.recipeRows.reduce((sum, r) => sum + r.meals, 0);
-    initialMeals = Math.min(21, 21 - currentTotal);
   }
 
   const rowData = {
@@ -373,12 +361,16 @@ function addRecipeRow(init) {
   const updatePreview = () => {
     rowData.cat = cSel.value;
     rowData.recipeId = rSel.value;
-    if (document.activeElement === mSel) {
+    
+    // ★修正：mSelに選択肢が生成されている（空っぽじゃない）時のみ値を読み取る
+    if (mSel.options && mSel.options.length > 0) {
        rowData.meals = Number(mSel.value);
     }
     
     rowData.level = Number(lSel.value) || 1;
-    rowData.successType = wrap.querySelector(`input[name="${radioName}"]:checked`).value;
+    
+    const checkedRadio = wrap.querySelector(`input[name="${radioName}"]:checked`);
+    rowData.successType = checkedRadio ? checkedRadio.value : "normal";
 
     const r = RECIPES.find((x) => x.id === rSel.value);
     if (r) {
@@ -423,8 +415,9 @@ function addRecipeRow(init) {
     calc();
   };
 
-  updateRecipeList();
+  // 先にDOMに追加してからリストを構築する（安全策）
   el("recipeList").appendChild(wrap);
+  updateRecipeList();
   refreshAllMealDropdowns();
   updatePreview();
 }
@@ -536,6 +529,8 @@ function calc() {
   const note = el("mode3Note");
   if (note) {
     const activeCats = new Set(state.recipeRows.map(r => r.cat));
+    // モード選択UIがあるので、カテゴリが複数なくても常に表示させる運用もアリですが、
+    // ここでは元々の「2つ以上の時に表示」という仕様を踏襲します
     note.style.display = (activeCats.size > 1) ? "block" : "none";
   }
 }
@@ -742,8 +737,11 @@ window.onload = () => {
   });
 
   el("optNcPika")?.addEventListener("change", () => calc());
-  el("addRecipe").onclick = () => addRecipeRow();
   
+  // ★手動で追加ボタンを押した時は 0 食を初期値にする
+  el("addRecipe").onclick = () => addRecipeRow({ meals: 0 });
+  
+  // クリア時の動作
   el("clearAll").onclick = () => {
     el("recipeList").innerHTML = "";
     state.recipeRows = [];
@@ -752,17 +750,22 @@ window.onload = () => {
     el("eventBonusSel").value = "0";
     el("optNcPika").checked = false;
 
-    document.querySelectorAll('input[name="calcMode"]').forEach(r => r.checked = false);
+    // 計算モードを「デフォルト」に戻す
+    const defaultModeRadio = document.querySelector('input[name="calcMode"][value="default"]');
+    if (defaultModeRadio) defaultModeRadio.checked = true;
 
     document.querySelectorAll(".exChk").forEach(c => c.checked = false);
     document.querySelectorAll(".repQty").forEach(i => i.value = "");
     
-    addRecipeRow({ meals: 0 }); // ★クリア時は0食を追加
+    // ★クリア時は 0 食で追加する
+    addRecipeRow({ meals: 0 }); 
     calc();
   };
 
-  // ★ページを開いた直後はデフォルト（21食）で追加させる
-  if (state.recipeRows.length === 0) addRecipeRow();
+  // ★ページを開いた直後は 21 食で追加する
+  if (state.recipeRows.length === 0) {
+    addRecipeRow({ meals: 21 });
+  }
 
   const savedTab = localStorage.getItem("activeTab") || "tab1";
   switchTab(savedTab);
