@@ -670,27 +670,49 @@
       .ss-btn { width: 38px; height: 26px; font-size: 10px; }
 
       /* EXPタブの文字サイズ自動縮小 (画面幅に合わせて無段階に小さくなる) */
+      /* ナビゲーションバーの文字切り替え（極小画面のみ「経験値シミュ」にする） */
+      .nav-text-exp { font-size: 0; }
+      .nav-text-exp::after { content: "経験値シミュ"; font-size: 9px; }
+
+      /* EXPタブ：枠の突き抜け防止＆縦ラインの統一 */
       #tab3 .lvlLabel, #tab3 .lvlOptName { 
-        font-size: clamp(10px, 3.5vw, 13px); 
+        font-size: clamp(10px, 3.2vw, 12px); 
         letter-spacing: -0.5px; 
+        white-space: normal; /* はみ出し防止のため改行を許可 */
+        line-height: 1.2;
+        flex-shrink: 1; /* 縮むことを許可 */
       }
-      #tab3 .lvlRight { max-width: 155px; } /* 右側の幅を少し詰める */
       
-      /* クイックボタンを折り返して綺麗に配置 */
+      #tab3 .lvlRow { gap: 6px; }
+      
+      /* 入力エリア（右側）の幅を固定して縦ラインをピシッと揃える */
+      #tab3 .lvlRight { 
+        width: 145px !important; 
+        max-width: 55% !important; 
+        flex-shrink: 0; 
+      }
+      
+      /* クイックボタン：Gridを使って絶対にはみ出させない */
+      #tab3 .lvlQuick { 
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(36px, 1fr)) !important;
+        gap: 4px !important;
+      }
       #tab3 .lvlQuickBtn { 
-        flex: 1 1 30%; 
-        min-width: 32px; 
+        width: 100% !important; 
+        min-width: 0 !important; 
         height: 24px; 
         font-size: 10px; 
+        padding: 0;
       }
       
-      #tab3 .lvlRadio { font-size: 11px; }
+      #tab3 .lvlRadios, #tab3 .lvlBoostRadios { gap: 6px !important; flex-wrap: wrap; }
+      #tab3 .lvlRadio { font-size: 10px; }
       #tab3 .lvlUnit { font-size: clamp(9px, 3vw, 11px); }
       #tab3 input::placeholder { font-size: 9px; }
-      #tab3 .lvlInMain { width: 44px; }
-      #tab3 .lvlInSub { width: 56px; }
-      #tab3 .lvlInMini { width: 44px; }
-    }
+      #tab3 .lvlInMain { width: 40px; }
+      #tab3 .lvlInSub { width: 50px; }
+      #tab3 .lvlInMini { width: 40px; }
 </style>
 </head>
 
@@ -1036,7 +1058,7 @@
       </div>
       <div class="nav-item" onclick="switchTab('tab3', this)">
         <span class="nav-icon">🔍</span>
-        <span>EXPシミュレーター</span>
+        <span>経験値シミュレーター</span>
       </div>
       <div class="nav-item" onclick="switchTab('tab4', this)">
         <span class="nav-icon">🌙</span>
