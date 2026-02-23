@@ -807,8 +807,10 @@ window.switchTab = function (tabId, clickedEl) {
     items[idx]?.classList.add("active");
   }
 
-  // ★ タイトルを「EXPシミュレーター」に変更
-  el("headerTitle").textContent = { tab1: "料理計算", tab2: "出現ポケモン一覧", tab3: "経験値シミュレーター", tab4: "月齢カレンダー" }[tabId];
+  // ★ 画面幅に応じてヘッダーのタイトルを切り替え
+  const isNarrow = window.innerWidth <= 450;
+  const tab3Title = isNarrow ? "経験値シミュ" : "経験値シミュレーター";
+  el("headerTitle").textContent = { tab1: "料理計算", tab2: "出現ポケモン一覧", tab3: tab3Title, tab4: "月齢カレンダー" }[tabId];
   localStorage.setItem("activeTab", tabId);
 
   if (tabId === "tab2" && window.PokedexTab?.renderFieldMenu) window.PokedexTab.renderFieldMenu();
