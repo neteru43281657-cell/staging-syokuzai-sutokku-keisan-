@@ -673,15 +673,10 @@
     .poke-vars-table th, .poke-vars-table td { border-bottom: 1px solid var(--line); }
     .poke-vars-table tr:last-child td { border-bottom: none; }
 
-    /* =========================================================
-       ★★★ スマホ全体の微調整 (iPhone 13, 14, 15など 450px以下) ★★★
+      /* =========================================================
+       ★★★ スマホ全体の微調整 (450px以下) ★★★
        ========================================================= */
     @media (max-width: 450px) {
-      .nav-text-exp-pc { display: none !important; }
-      .nav-text-exp-sp { display: inline !important; }
-
-      /* ※ここにあったカレンダー2列の記述を削除し、さらに下へ移動しました */
-      
       .resultHeader { gap: 4px; }
       .resultTitle { font-size: 14px; }
       .capsule-btn, .total-badge { font-size: 10px; padding: 0 8px; }
@@ -728,7 +723,11 @@
        ★★★ iPhone SE など極小画面専用の微調整 (380px以下) ★★★
        ========================================================= */
     @media (max-width: 380px) {
-      /* ★ここで初めてカレンダーを2列化します */
+      /* ★極小画面のときだけ「経験値シミュ」に切り替え */
+      .nav-text-exp-pc { display: none !important; }
+      .nav-text-exp-sp { display: inline !important; }
+
+      /* ★極小画面のときだけカレンダーを2列化 */
       .calendar-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }
       .month-card { padding: 4px !important; font-size: 9px !important; }
       .days-grid { gap: 1px !important; }
