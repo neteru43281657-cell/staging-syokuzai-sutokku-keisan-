@@ -142,6 +142,10 @@
     .nav-item.active { color: var(--main); }
     .nav-icon { font-size: 18px; }
 
+    /* タブの文字切り替え用クラス（通常はPC名を表示、SP名は隠す） */
+    .nav-text-exp-pc { display: inline; }
+    .nav-text-exp-sp { display: none; }
+
     .card {
       background: var(--card);
       border: 1px solid var(--line);
@@ -592,7 +596,7 @@
       width: 100%; 
     }
     
-    /* クイックボタンエリアの折り返し許可（突き抜け防止） */
+    /* クイックボタンエリア */
     #tab3 .lvlQuick { 
       display: flex; 
       gap: 4px; 
@@ -602,7 +606,8 @@
       flex-wrap: wrap; 
     }
     #tab3 .lvlQuickBtn { 
-      width: auto !important; 
+      min-width: 38px;  /* 自動で広がらず一定幅を保つ */
+      padding: 0 6px;
       height: 28px; 
       border-radius: 8px; 
       border: 1px solid var(--line) !important; 
@@ -614,8 +619,6 @@
       justify-content: center; 
       color: var(--muted) !important; 
       cursor: pointer; 
-      padding: 0; 
-      flex: 1 1 30px; 
     }
 
     #tab3 input[type="number"] { -moz-appearance: textfield; line-height: normal !important; vertical-align: middle; text-align: center; font-weight: 900; }
@@ -633,11 +636,35 @@
     #tab3 .lvlInSub { width: 65px; }
     #tab3 .lvlInMini { width: 50px; }
     #tab3 .lvlUnit { font-size: 11px; font-weight: 900; white-space: nowrap; }
-    #tab3 .lvlOptGroup .lvlRow { align-items: flex-start; }
+
+    /* オプションレイアウトの調整 */
+    #tab3 .lvlOptGroup .lvlRow { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: flex-start; 
+      gap: 12px;
+    }
     #tab3 .lvlOptGroup .lvlLabel { margin-top: 8px; }
-    #tab3 .lvlOptItems { display: flex; flex-direction: column; gap: 10px; flex: 1.5; }
-    #tab3 .lvlOptLine { display: flex; justify-content: flex-end; align-items: center; gap: 8px; width: 100%; }
-    #tab3 .lvlOptName { margin-left: auto; text-align: right; } /* ★追加：入力欄の左側にビタ付け */
+    #tab3 .lvlOptItems { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 10px; 
+      align-items: flex-end; /* 右寄せ */
+      flex: 1; 
+    }
+    #tab3 .lvlOptLine { 
+      display: flex; 
+      justify-content: flex-end; 
+      align-items: center; 
+      gap: 8px; 
+      width: 100%; 
+    }
+    #tab3 .lvlOptName { 
+      white-space: nowrap; 
+      text-align: right; 
+      font-weight: 900; 
+    } 
+
     #tab3 .lvlResult { margin-top: 12px; border: 2px solid var(--main); background: #ffffff; border-radius: 16px; padding: 16px; display: block; position: relative; min-height: 60px; }
     #tab3 .lvResTitle { font-weight: 900; font-size: 16px; color: var(--main); margin-bottom: 12px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
     #tab3 .lvResRow { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
@@ -660,12 +687,13 @@
     .poke-vars-table th, .poke-vars-table td { border-bottom: 1px solid var(--line); }
     .poke-vars-table tr:last-child td { border-bottom: none; }
 
-    .nav-text-exp-pc { display: inline; }
-    .nav-text-exp-sp { display: none; }
-  
     /* ★★★ スマホ（iPhone SE等）極小画面向けの微調整 ★★★ */
     @media (max-width: 450px) {
-      /* カレンダーを2列表示（2列×6段）に変更し、隙間と文字を縮めて突き抜けを防止 */
+      /* タブ文字の切り替え */
+      .nav-text-exp-pc { display: none !important; }
+      .nav-text-exp-sp { display: inline !important; }
+
+      /* カレンダーを2列表示に変更 */
       .calendar-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }
       .month-card { padding: 4px !important; font-size: 9px !important; }
       .days-grid { gap: 1px !important; }
@@ -676,39 +704,37 @@
       .capsule-btn, .total-badge { font-size: 10px; padding: 0 8px; }
       .ss-btn { width: 38px; height: 26px; font-size: 10px; }
 
-      .nav-text-exp-pc { display: none !important; }
-      .nav-text-exp-sp { display: inline !important; }
-      
-      /* 修正後 */
+      /* EXPタブ：枠の突き抜け防止＆縦ラインの統一 */
       #tab3 .lvlLabel, #tab3 .lvlOptName { 
         font-size: clamp(10px, 3.2vw, 12px); 
         letter-spacing: -0.5px; 
-        white-space: nowrap; /* ★変更: 改行を禁止する */
+        white-space: nowrap; /* ★改行を禁止 */
         line-height: 1.2;
-        flex-shrink: 0;      /* ★変更: 縮ませないことで幅を確保 */
+        flex-shrink: 0; /* ★縮むことを禁止し幅を確保 */
       }
       
       #tab3 .lvlRow { gap: 6px; }
       
-      /* 入力エリア（右側）の幅を固定して縦ラインをピシッと揃える */
+      /* 入力エリア（右側）の幅を柔軟にして縦ラインを揃える */
       #tab3 .lvlRight { 
-        width: 145px !important; 
-        max-width: 55% !important; 
+        width: auto !important; 
+        max-width: 60% !important; 
         flex-shrink: 0; 
       }
       
-      /* クイックボタン：Gridを使って絶対にはみ出させない */
+      /* クイックボタン */
       #tab3 .lvlQuick { 
-        display: grid !important;
-        grid-template-columns: repeat(auto-fit, minmax(36px, 1fr)) !important;
+        display: flex !important;
+        flex-wrap: wrap;
+        justify-content: flex-end;
         gap: 4px !important;
       }
       #tab3 .lvlQuickBtn { 
-        width: 100% !important; 
-        min-width: 0 !important; 
+        width: auto !important; 
+        min-width: 32px !important; 
         height: 24px; 
         font-size: 10px; 
-        padding: 0;
+        padding: 0 4px;
       }
       
       #tab3 .lvlRadios, #tab3 .lvlBoostRadios { gap: 6px !important; flex-wrap: wrap; }
@@ -718,7 +744,9 @@
       #tab3 .lvlInMain { width: 40px; }
       #tab3 .lvlInSub { width: 50px; }
       #tab3 .lvlInMini { width: 40px; }
+    }
 </style>
+  
 </head>
 
 <body>
@@ -1063,13 +1091,8 @@
       </div>
       <div class="nav-item" onclick="switchTab('tab3', this)">
         <span class="nav-icon">🔍</span>
-        <span class="nav-text-exp">経験値シミュレーター</span>
-      </div>
-
-      <div class="nav-item" onclick="switchTab('tab3', this)">
-        <span class="nav-icon">🔍</span>
         <span class="nav-text-exp-pc">経験値シミュレーター</span>
-        <span class="nav-text-exp-sp" style="display:none;">経験値シミュ</span>
+        <span class="nav-text-exp-sp">経験値シミュ</span>
       </div>
       <div class="nav-item" onclick="switchTab('tab4', this)">
         <span class="nav-icon">🌙</span>
