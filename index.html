@@ -561,7 +561,7 @@
 
     @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-    /* ★★★ EXPシミュレーターの突き抜け・改行防止 ★★★ */
+/* ★★★ EXPシミュレーターの突き抜け・改行防止 ★★★ */
     #tab3 .lvlForm { display: flex; flex-direction: column; gap: 16px; font-family: inherit; }
     #tab3 .lvlGroup { display: flex; flex-direction: column; gap: 14px; }
     #tab3 .lvlDivider { height: 1px; background: var(--line); margin: 4px 0; opacity: 0.6; }
@@ -570,30 +570,30 @@
       font-weight: 900; 
       font-size: 14px; 
       color: var(--text); 
-      flex-shrink: 0;      /* 縮ませない */
-      white-space: nowrap; /* 改行させない */
+      flex-shrink: 0;      
+      white-space: nowrap; 
     }
     
     #tab3 .lvlReq { color: #ff0000; margin-right: 4px; font-weight: 900; font-size: 1.2em; vertical-align: middle; }
     #tab3 .lvlRow { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: nowrap; }
     #tab3 .lvlRowTop { align-items: flex-start !important; padding-top: 4px; }
     
-    /* 右側入力エリアの固定幅（縦ラインの揃え） */
+    /* ★修正: 余計な固定幅を消し、残りのスペースを柔軟に使う（iPhone 17等での改行防止） */
     #tab3 .lvlRight { 
       display: flex; 
       flex-direction: column; 
       align-items: flex-end; 
       gap: 8px; 
-      width: 100%;
-      max-width: 180px; 
+      flex: 1; 
+      min-width: 0; 
     }
     
+    /* ★修正: width: 100% を削除し、中身のサイズにピタッと合わせる */
     #tab3 .lvlInputWrapper { 
       display: flex; 
       align-items: center; 
       gap: 4px; 
       justify-content: flex-end; 
-      width: 100%; 
     }
     
     /* クイックボタンエリア */
@@ -606,7 +606,7 @@
       flex-wrap: wrap; 
     }
     #tab3 .lvlQuickBtn { 
-      min-width: 38px;  /* 自動で広がらず一定幅を保つ */
+      min-width: 38px;
       padding: 0 6px;
       height: 28px; 
       border-radius: 8px; 
@@ -637,27 +637,29 @@
     #tab3 .lvlInMini { width: 50px; }
     #tab3 .lvlUnit { font-size: 11px; font-weight: 900; white-space: nowrap; }
 
-    /* オプションレイアウトの調整 */
+    /* ★修正: オプションレイアウトの調整（縦並びにして、項目だけ右寄せ） */
     #tab3 .lvlOptGroup .lvlRow { 
       display: flex; 
-      justify-content: space-between; 
-      align-items: flex-start; 
+      flex-direction: column; /* 横並びから縦並びに変更 */
+      align-items: stretch; 
       gap: 12px;
     }
-    #tab3 .lvlOptGroup .lvlLabel { margin-top: 8px; }
+    #tab3 .lvlOptGroup .lvlLabel { 
+      margin-top: 0; 
+      text-align: left;
+    }
     #tab3 .lvlOptItems { 
       display: flex; 
       flex-direction: column; 
       gap: 10px; 
-      align-items: flex-end; /* 右寄せ */
-      flex: 1; 
+      align-items: flex-end; /* 項目全体を右寄せ */
     }
     #tab3 .lvlOptLine { 
       display: flex; 
       justify-content: flex-end; 
       align-items: center; 
       gap: 8px; 
-      width: 100%; 
+      /* ここにあった width: 100% も削除し、左の文字をビタ付けします */
     }
     #tab3 .lvlOptName { 
       white-space: nowrap; 
@@ -689,11 +691,9 @@
 
     /* ★★★ スマホ（iPhone SE等）極小画面向けの微調整 ★★★ */
     @media (max-width: 450px) {
-      /* タブ文字の切り替え */
       .nav-text-exp-pc { display: none !important; }
       .nav-text-exp-sp { display: inline !important; }
 
-      /* カレンダーを2列表示に変更 */
       .calendar-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }
       .month-card { padding: 4px !important; font-size: 9px !important; }
       .days-grid { gap: 1px !important; }
@@ -704,25 +704,21 @@
       .capsule-btn, .total-badge { font-size: 10px; padding: 0 8px; }
       .ss-btn { width: 38px; height: 26px; font-size: 10px; }
 
-      /* EXPタブ：枠の突き抜け防止＆縦ラインの統一 */
       #tab3 .lvlLabel, #tab3 .lvlOptName { 
         font-size: clamp(10px, 3.2vw, 12px); 
         letter-spacing: -0.5px; 
-        white-space: nowrap; /* ★改行を禁止 */
+        white-space: nowrap; 
         line-height: 1.2;
-        flex-shrink: 0; /* ★縮むことを禁止し幅を確保 */
+        flex-shrink: 0; 
       }
       
       #tab3 .lvlRow { gap: 6px; }
       
-      /* 入力エリア（右側）の幅を柔軟にして縦ラインを揃える */
+      /* ★修正: 変な縛り（max-width: 60%等）を消去 */
       #tab3 .lvlRight { 
-        width: auto !important; 
-        max-width: 60% !important; 
         flex-shrink: 0; 
       }
       
-      /* クイックボタン */
       #tab3 .lvlQuick { 
         display: flex !important;
         flex-wrap: wrap;
