@@ -29,10 +29,9 @@
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     const dows = ["月", "火", "水", "木", "金", "土", "日"];
     
+    // 修正後
     container.innerHTML = "";
-    container.style.display = "grid";
-    container.style.gridTemplateColumns = "repeat(3, 1fr)";
-    container.style.gap = "8px";
+    container.className = "calendar-grid"; // index.htmlに定義済みのCSSクラスを適用
 
     for (let m = 0; m < 12; m++) {
       let html = `
