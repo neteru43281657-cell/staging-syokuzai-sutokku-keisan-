@@ -85,7 +85,7 @@
       color: #fff;
       position: sticky;
       top: 0;
-      z-index: 1500; /* ★タブコンテンツより手前に来るよう強化 */
+      z-index: 1500;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -368,7 +368,6 @@
       white-space: nowrap;
     }
 
-    /* ★カプセルボタンと総合計バッジの高さ統一 */
     .capsule-btn, .total-badge {
       height: 28px;
       font-size: 11px;
@@ -557,17 +556,67 @@
 
     @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-    /* tab3 (経験値シミュレーター) */
+    /* ★★★ EXPシミュレーターの突き抜け・改行防止 ★★★ */
     #tab3 .lvlForm { display: flex; flex-direction: column; gap: 16px; font-family: inherit; }
     #tab3 .lvlGroup { display: flex; flex-direction: column; gap: 14px; }
     #tab3 .lvlDivider { height: 1px; background: var(--line); margin: 4px 0; opacity: 0.6; }
-    #tab3 .lvlLabel { font-weight: 900; font-size: 14px; color: var(--text); flex: 1; white-space: nowrap; } /* ★改行防止 */
+    
+    #tab3 .lvlLabel, #tab3 .lvlOptName { 
+      font-weight: 900; 
+      font-size: 14px; 
+      color: var(--text); 
+      flex-shrink: 0;      /* 縮ませない */
+      white-space: nowrap; /* 改行させない */
+    }
+    
     #tab3 .lvlReq { color: #ff0000; margin-right: 4px; font-weight: 900; font-size: 1.2em; vertical-align: middle; }
-    #tab3 .lvlRow { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    #tab3 .lvlRow { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: nowrap; }
     #tab3 .lvlRowTop { align-items: flex-start !important; padding-top: 4px; }
-    #tab3 .lvlRight { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-    #tab3 .lvlGrid6 { display: grid !important; grid-template-columns: repeat(6, 1fr) !important; gap: 4px !important; justify-content: flex-end !important; width: 100% !important; max-width: 250px; margin-top: 4px; }
-    #tab3 .lvlQuickBtn { width: auto !important; height: 28px; border-radius: 8px; border: 1px solid var(--line) !important; background: #fff !important; font-size: 10px; font-weight: 900; display: flex; align-items: center; justify-content: center; color: var(--muted) !important; cursor: pointer; padding: 0; }
+    
+    /* 右側入力エリアの固定幅（縦ラインの揃え） */
+    #tab3 .lvlRight { 
+      display: flex; 
+      flex-direction: column; 
+      align-items: flex-end; 
+      gap: 8px; 
+      width: 100%;
+      max-width: 180px; 
+    }
+    
+    #tab3 .lvlInputWrapper { 
+      display: flex; 
+      align-items: center; 
+      gap: 4px; 
+      justify-content: flex-end; 
+      width: 100%; 
+    }
+    
+    /* クイックボタンエリアの折り返し許可（突き抜け防止） */
+    #tab3 .lvlQuick { 
+      display: flex; 
+      gap: 4px; 
+      justify-content: flex-end; 
+      width: 100%; 
+      margin-top: 4px; 
+      flex-wrap: wrap; 
+    }
+    #tab3 .lvlQuickBtn { 
+      width: auto !important; 
+      height: 28px; 
+      border-radius: 8px; 
+      border: 1px solid var(--line) !important; 
+      background: #fff !important; 
+      font-size: 10px; 
+      font-weight: 900; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      color: var(--muted) !important; 
+      cursor: pointer; 
+      padding: 0; 
+      flex: 1 1 30px; 
+    }
+
     #tab3 input[type="number"] { -moz-appearance: textfield; line-height: normal !important; vertical-align: middle; text-align: center; font-weight: 900; }
     #tab3 input[type="number"]::-webkit-outer-spin-button, #tab3 input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     #tab3 input::placeholder { color: #d1d5db; opacity: 1; font-size: 11px; text-align: center; font-weight: 900; }
@@ -579,7 +628,6 @@
     #tab3 .lvlRadio { font-size: 12px; cursor: pointer; color: var(--text); }
     #tab3 .lvlBoostRow { display: grid; grid-template-columns: 1fr auto; align-items: center; row-gap: 8px; }
     #tab3 .lvlBoostRow .lvlBoostRadios { grid-column: 1 / -1; display: flex; gap: 16px; justify-content: flex-start; padding-left: 4px; }
-    #tab3 .lvlInputWrapper { display: flex; align-items: center; gap: 4px; justify-content: flex-end; }
     #tab3 .lvlInMain { width: 50px; }
     #tab3 .lvlInSub { width: 65px; }
     #tab3 .lvlInMini { width: 50px; }
@@ -587,8 +635,7 @@
     #tab3 .lvlOptGroup .lvlRow { align-items: flex-start; }
     #tab3 .lvlOptGroup .lvlLabel { margin-top: 8px; }
     #tab3 .lvlOptItems { display: flex; flex-direction: column; gap: 10px; flex: 1.5; }
-    #tab3 .lvlOptLine { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
-    #tab3 .lvlOptName { font-size: 12px; font-weight: 900; color: var(--muted); white-space: nowrap; } /* ★改行防止 */
+    #tab3 .lvlOptLine { display: flex; justify-content: flex-end; align-items: center; gap: 8px; width: 100%; }
     #tab3 .lvlResult { margin-top: 12px; border: 2px solid var(--main); background: #ffffff; border-radius: 16px; padding: 16px; display: block; position: relative; min-height: 60px; }
     #tab3 .lvResTitle { font-weight: 900; font-size: 16px; color: var(--main); margin-bottom: 12px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
     #tab3 .lvResRow { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
@@ -596,6 +643,7 @@
     #tab3 .lvResVal { font-weight: 900; font-size: 14px; }
     #tab3 .lvResSubTitle { margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--line); width: 100%; display: block; font-weight: 900; font-size: 13px; color: var(--main); }
     #tab3 .lvResultClose { position: absolute; top: -8px; right: -8px; border: 1px solid var(--line); background: #fff; color: var(--danger); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; z-index: 10; }
+    
     .info-btn-tiny { display: inline-block; color: var(--muted); font-size: 14px; font-weight: 400; cursor: pointer; margin-left: 2px; margin-right: 6px; vertical-align: middle; line-height: 1; opacity: 0.7; transition: opacity 0.2s; }
     .info-btn-tiny:active { opacity: 1.0; transform: scale(0.95); }
     .type-badge { padding: 4px 16px; border-radius: 99px; color: #fff; font-weight: 900; font-size: 12px; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
@@ -611,20 +659,33 @@
     .poke-vars-table tr:last-child td { border-bottom: none; }
 
     /* ★★★ スマホ（iPhone SE等）極小画面向けの微調整 ★★★ */
-    @media (max-width: 400px) {
-      .calendar-grid { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 450px) {
+      /* カレンダーを2ヶ月表示に変更 */
+      .calendar-grid { grid-template-columns: repeat(2, 1fr) !important; }
+      .calendar-grid .month-card:nth-child(3) { display: none !important; }
       
       .resultHeader { gap: 4px; }
       .resultTitle { font-size: 14px; }
       .capsule-btn, .total-badge { font-size: 10px; padding: 0 8px; }
       .ss-btn { width: 38px; height: 26px; font-size: 10px; }
 
-      /* 経験値タブの文字縮小 */
-      #tab3 .lvlLabel, #tab3 .lvlOptName { font-size: 11px; letter-spacing: -0.5px; }
-      #tab3 .lvlRight { gap: 6px; }
-      #tab3 .lvlQuickBtn { width: 34px; font-size: 10px; }
+      /* EXPタブの文字サイズ自動縮小 (画面幅に合わせて無段階に小さくなる) */
+      #tab3 .lvlLabel, #tab3 .lvlOptName { 
+        font-size: clamp(10px, 3.5vw, 13px); 
+        letter-spacing: -0.5px; 
+      }
+      #tab3 .lvlRight { max-width: 155px; } /* 右側の幅を少し詰める */
+      
+      /* クイックボタンを折り返して綺麗に配置 */
+      #tab3 .lvlQuickBtn { 
+        flex: 1 1 30%; 
+        min-width: 32px; 
+        height: 24px; 
+        font-size: 10px; 
+      }
+      
       #tab3 .lvlRadio { font-size: 11px; }
-      #tab3 .lvlUnit { font-size: 9px; }
+      #tab3 .lvlUnit { font-size: clamp(9px, 3vw, 11px); }
       #tab3 input::placeholder { font-size: 9px; }
       #tab3 .lvlInMain { width: 44px; }
       #tab3 .lvlInSub { width: 56px; }
@@ -642,15 +703,13 @@
   </div>
 
   <div style="display:flex; align-items:center; gap:10px;">
-    <button id="openTheme" style="background:none; border:none; color:#fff; cursor:pointer; display:flex; align-items:center; gap:6px; padding:6px 8px;">
-      <span style="font-size:18px; line-height:1;">🎨</span>
-      <span style="font-size:12px; font-weight:800;">テーマカラー</span>
+    <button id="openTheme" style="background:none; border:none; color:#fff; cursor:pointer; display:flex; align-items:center; padding:6px;">
+      <span style="font-size:20px; line-height:1;">🎨</span>
     </button>
-    <button id="openDocs" style="background:none; border:none; color:#fff; cursor:pointer; display:flex; align-items:center; gap:6px; padding:6px 8px;">
-      <span style="font-size:18px; line-height:1;">📖</span>
-      <span style="font-size:12px; font-weight:800;">資料集</span>
+    <button id="openDocs" style="background:none; border:none; color:#fff; cursor:pointer; display:flex; align-items:center; padding:6px;">
+      <span style="font-size:20px; line-height:1;">📖</span>
     </button>
-    <button id="openNotice" style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer; padding:6px 8px;">ⓘ</button>
+    <button id="openNotice" style="background:none; border:none; color:#fff; font-size:22px; cursor:pointer; padding:6px;">ⓘ</button>
   </div>
 </header>
 
@@ -804,12 +863,12 @@
                   <input id="lvNow" class="lvlInMain" type="number" placeholder="xx" inputmode="numeric">
                   <span class="lvlUnit">レベル</span>
                 </div>
-                <div class="lvlQuick" style="display: flex; gap: 4px; justify-content: flex-end; width: 100%; margin-top: 4px;">
-                  <button type="button" class="lvlQuickBtn" data-now="25" style="flex: 1; min-width: 40px;">25</button>
-                  <button type="button" class="lvlQuickBtn" data-now="30" style="flex: 1; min-width: 40px;">30</button>
-                  <button type="button" class="lvlQuickBtn" data-now="50" style="flex: 1; min-width: 40px;">50</button>
-                  <button type="button" class="lvlQuickBtn" data-now="55" style="flex: 1; min-width: 40px;">55</button>
-                  <button type="button" class="lvlQuickBtn" data-now="60" style="flex: 1; min-width: 40px;">60</button>
+                <div class="lvlQuick">
+                  <button type="button" class="lvlQuickBtn" data-now="25">25</button>
+                  <button type="button" class="lvlQuickBtn" data-now="30">30</button>
+                  <button type="button" class="lvlQuickBtn" data-now="50">50</button>
+                  <button type="button" class="lvlQuickBtn" data-now="55">55</button>
+                  <button type="button" class="lvlQuickBtn" data-now="60">60</button>
                 </div>
               </div>
             </div>
@@ -821,13 +880,13 @@
                   <input id="lvTarget" class="lvlInMain" type="number" placeholder="xx" inputmode="numeric">
                   <span class="lvlUnit">レベル</span>
                 </div>
-                <div class="lvlQuick" style="display: flex; gap: 4px; justify-content: flex-end; width: 100%; margin-top: 4px;">
-                  <button type="button" class="lvlQuickBtn" data-target="25" style="flex: 1; min-width: 40px;">25</button>
-                  <button type="button" class="lvlQuickBtn" data-target="30" style="flex: 1; min-width: 40px;">30</button>
-                  <button type="button" class="lvlQuickBtn" data-target="50" style="flex: 1; min-width: 40px;">50</button>
-                  <button type="button" class="lvlQuickBtn" data-target="55" style="flex: 1; min-width: 40px;">55</button>
-                  <button type="button" class="lvlQuickBtn" data-target="60" style="flex: 1; min-width: 40px;">60</button>
-                  <button type="button" class="lvlQuickBtn" data-target="65" style="flex: 1; min-width: 40px;">65</button>
+                <div class="lvlQuick">
+                  <button type="button" class="lvlQuickBtn" data-target="25">25</button>
+                  <button type="button" class="lvlQuickBtn" data-target="30">30</button>
+                  <button type="button" class="lvlQuickBtn" data-target="50">50</button>
+                  <button type="button" class="lvlQuickBtn" data-target="55">55</button>
+                  <button type="button" class="lvlQuickBtn" data-target="60">60</button>
+                  <button type="button" class="lvlQuickBtn" data-target="65">65</button>
                 </div>
               </div>
             </div>
@@ -905,25 +964,20 @@
                     <span class="lvlUnit">体</span>
                   </div>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 2px; align-items: flex-start; width: fit-content; margin-left: auto;">
-                  <div class="lvlOptLine" style="width: 100%; margin: 0; padding: 0;">
-                    <span class="lvlOptName">せいちょうのおこう</span>
-                    <span class="info-btn-tiny" onclick="showInfo('最高効率で自動配分されます')">ⓘ</span>
-                    <div class="lvlInputWrapper">
-                      <input id="lvGrowthIncense" class="lvlInMini" type="number" placeholder="xxx">
-                      <span class="lvlUnit">個</span>
-                    </div>
+                <div class="lvlOptLine">
+                  <span class="lvlOptName">せいちょうのおこう</span>
+                  <span class="info-btn-tiny" onclick="showInfo('最高効率で自動配分されます')">ⓘ</span>
+                  <div class="lvlInputWrapper">
+                    <input id="lvGrowthIncense" class="lvlInMini" type="number" placeholder="xxx">
+                    <span class="lvlUnit">個</span>
                   </div>
                 </div>
-                
-                <div style="display: flex; flex-direction: column; gap: 2px; align-items: flex-start; width: fit-content; margin-left: auto; margin-top: 4px;">
-                  <div class="lvlOptLine" style="width: 100%; margin: 0; padding: 0;">
-                    <span class="lvlOptName">グッドスリープデー</span>
-                    <span class="info-btn-tiny" onclick="showInfo('通しの3日間で1回扱いです')">ⓘ</span>
-                    <div class="lvlInputWrapper">
-                      <input id="lvGSD" class="lvlInMini" type="number" placeholder="xx">
-                      <span class="lvlUnit">回</span>
-                    </div>
+                <div class="lvlOptLine">
+                  <span class="lvlOptName">グッドスリープデー</span>
+                  <span class="info-btn-tiny" onclick="showInfo('通しの3日間で1回扱いです')">ⓘ</span>
+                  <div class="lvlInputWrapper">
+                    <input id="lvGSD" class="lvlInMini" type="number" placeholder="xx">
+                    <span class="lvlUnit">回</span>
                   </div>
                 </div>
               </div>
@@ -982,7 +1036,7 @@
       </div>
       <div class="nav-item" onclick="switchTab('tab3', this)">
         <span class="nav-icon">🔍</span>
-        <span>経験値シミュレータ―</span>
+        <span>EXPシミュレーター</span>
       </div>
       <div class="nav-item" onclick="switchTab('tab4', this)">
         <span class="nav-icon">🌙</span>
