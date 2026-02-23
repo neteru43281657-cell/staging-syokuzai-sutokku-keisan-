@@ -660,6 +660,9 @@
     .poke-vars-table th, .poke-vars-table td { border-bottom: 1px solid var(--line); }
     .poke-vars-table tr:last-child td { border-bottom: none; }
 
+    .nav-text-exp-pc { display: inline; }
+    .nav-text-exp-sp { display: none; }
+  
     /* ★★★ スマホ（iPhone SE等）極小画面向けの微調整 ★★★ */
     @media (max-width: 450px) {
       /* カレンダーを2列表示（2列×6段）に変更し、隙間と文字を縮めて突き抜けを防止 */
@@ -673,18 +676,16 @@
       .capsule-btn, .total-badge { font-size: 10px; padding: 0 8px; }
       .ss-btn { width: 38px; height: 26px; font-size: 10px; }
 
-      /* EXPタブの文字サイズ自動縮小 (画面幅に合わせて無段階に小さくなる) */
-      /* ナビゲーションバーの文字切り替え（極小画面のみ「経験値シミュ」にする） */
-      .nav-text-exp { font-size: 0; }
-      .nav-text-exp::after { content: "経験値シミュ"; font-size: 9px; }
-
-      /* EXPタブ：枠の突き抜け防止＆縦ラインの統一 */
+      .nav-text-exp-pc { display: none !important; }
+      .nav-text-exp-sp { display: inline !important; }
+      
+      /* 修正後 */
       #tab3 .lvlLabel, #tab3 .lvlOptName { 
         font-size: clamp(10px, 3.2vw, 12px); 
         letter-spacing: -0.5px; 
-        white-space: normal; /* はみ出し防止のため改行を許可 */
+        white-space: nowrap; /* ★変更: 改行を禁止する */
         line-height: 1.2;
-        flex-shrink: 1; /* 縮むことを許可 */
+        flex-shrink: 0;      /* ★変更: 縮ませないことで幅を確保 */
       }
       
       #tab3 .lvlRow { gap: 6px; }
@@ -1063,6 +1064,12 @@
       <div class="nav-item" onclick="switchTab('tab3', this)">
         <span class="nav-icon">🔍</span>
         <span class="nav-text-exp">経験値シミュレーター</span>
+      </div>
+
+      <div class="nav-item" onclick="switchTab('tab3', this)">
+        <span class="nav-icon">🔍</span>
+        <span class="nav-text-exp-pc">経験値シミュレーター</span>
+        <span class="nav-text-exp-sp" style="display:none;">経験値シミュ</span>
       </div>
       <div class="nav-item" onclick="switchTab('tab4', this)">
         <span class="nav-icon">🌙</span>
