@@ -58,7 +58,7 @@ const THEMES = {
    SW / Cache reset
 ========================================================= */
 async function resetSWAndCacheOnce() {
-  const KEY = "sw_cache_reset_done_v114"; // 更新を確実にするためバージョンを上げています
+  const KEY = "sw_cache_reset_done_v115";
   if (localStorage.getItem(KEY)) return;
   try {
     if ("serviceWorker" in navigator) {
@@ -448,10 +448,7 @@ function calc() {
   const perDay = buildReplenishPerDayMap();
   
   const resultGrid = el("resultGrid");
-  if (!resultGrid) {
-    console.warn("⚠️ resultGrid が見つかりません。");
-    return;
-  }
+  if (!resultGrid) return;
 
   const fbVal = Number(el("fieldBonusSel")?.value || 0);
   const fbMul = 1 + (fbVal / 100);
@@ -669,7 +666,7 @@ function createSnapshot() {
   const targetKey = SS_KEYS[targetIndex];
   localStorage.setItem(targetKey, JSON.stringify(current));
   
-  showInfo(`SS${targetIndex + 1} に保存しました`);
+  showInfo(`スロ${targetIndex + 1} に保存しました`); // 文言変更
   updateSSButtons();
 }
 
@@ -681,7 +678,7 @@ function loadSnapshot(ssid) {
   try {
     const data = JSON.parse(raw);
     restoreState(data);
-    showInfo(`SS${ssid} を読み込みました`);
+    showInfo(`スロ${ssid} を読み込みました`); // 文言変更
   } catch(e) {
     console.error(e);
     showInfo("データの読み込みに失敗しました");
@@ -689,7 +686,7 @@ function loadSnapshot(ssid) {
 }
 
 function clearSnapshot(ssid) {
-  if (confirm(`スナップショット${ssid} を削除しますか？`)) {
+  if (confirm(`スロット${ssid} を削除しますか？`)) { // 文言変更
     const key = SS_KEYS[ssid - 1];
     localStorage.removeItem(key);
     updateSSButtons();
@@ -710,6 +707,30 @@ function initSnapshotFeature() {
     );
   });
   updateSSButtons();
+}
+
+/* =========================================================
+   キーボード監視機能 (iOS/Android対応)
+========================================================= */
+function initKeyboardObserver() {
+  if (window.visualViewport) {
+    const initialHeight = window.visualViewport.height;
+    window.visualViewport.addEventListener("resize", () => {
+      // 画面の高さが初期値より大きく縮んだら（キーボードが出現したら）
+      if (window.visualViewport.height < initialHeight - 150) {
+        document.body.classList.add("keyboard-open");
+      } else {
+        document.body.classList.remove("keyboard-open");
+      }
+    });
+  } else {
+    // visualViewport非対応時のフォールバック
+    const inputs = document.querySelectorAll("input, select, textarea");
+    inputs.forEach(el => {
+      el.addEventListener("focus", () => document.body.classList.add("keyboard-open"));
+      el.addEventListener("blur", () => document.body.classList.remove("keyboard-open"));
+    });
+  }
 }
 
 /* =========================================================
@@ -767,6 +788,7 @@ window.onload = () => {
   el("closeDocViewer").onclick = () => vM.style.display = "none";
   
   initSnapshotFeature();
+  initKeyboardObserver(); // ★追加
 };
 
 window.switchTab = function (tabId, clickedEl) {
