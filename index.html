@@ -341,22 +341,6 @@
       white-space: nowrap;
     }
 
-    @media (max-width: 450px) {
-      .ss-area-in-box {
-        width: 100%;
-        margin-left: 0;
-        margin-top: 4px;
-        padding-top: 4px;
-        border-top: 1px dashed #e0e0e0;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .ss-note-tiny {
-        order: -1;
-      }
-    }
-
     .resultHeader {
       display: flex;
       align-items: center;
@@ -546,7 +530,9 @@
     .dex-icon-btn.active-filter[data-id="2"] { background: #fadbd8; border-color: #e74c3c; color: #e74c3c; }
     .dex-icon-btn.active-filter[data-id="3"] { background: #d5f5e3; border-color: #2ecc71; color: #2ecc71; }
     
+    /* === カレンダー：通常時(3列) === */
     .calendar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+    
     .month-card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 10px; }
     .month-name { font-weight: 900; text-align: center; border-bottom: 1px solid var(--line); margin-bottom: 5px; color: var(--text); }
     .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; align-items: center; justify-items: center; }
@@ -561,7 +547,7 @@
 
     @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-/* ★★★ EXPシミュレーターの突き抜け・改行防止 ★★★ */
+    /* ★★★ EXPシミュレーターの突き抜け・改行防止 ★★★ */
     #tab3 .lvlForm { display: flex; flex-direction: column; gap: 16px; font-family: inherit; }
     #tab3 .lvlGroup { display: flex; flex-direction: column; gap: 14px; }
     #tab3 .lvlDivider { height: 1px; background: var(--line); margin: 4px 0; opacity: 0.6; }
@@ -578,7 +564,6 @@
     #tab3 .lvlRow { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: nowrap; }
     #tab3 .lvlRowTop { align-items: flex-start !important; padding-top: 4px; }
     
-    /* ★修正: 余計な固定幅を消し、残りのスペースを柔軟に使う（iPhone 17等での改行防止） */
     #tab3 .lvlRight { 
       display: flex; 
       flex-direction: column; 
@@ -588,7 +573,6 @@
       min-width: 0; 
     }
     
-    /* ★修正: width: 100% を削除し、中身のサイズにピタッと合わせる */
     #tab3 .lvlInputWrapper { 
       display: flex; 
       align-items: center; 
@@ -637,10 +621,10 @@
     #tab3 .lvlInMini { width: 50px; }
     #tab3 .lvlUnit { font-size: 11px; font-weight: 900; white-space: nowrap; }
 
-    /* ★修正: オプションレイアウトの調整（縦並びにして、項目だけ右寄せ） */
+    /* ★修正: オプションレイアウトの右寄せ徹底 */
     #tab3 .lvlOptGroup .lvlRow { 
       display: flex; 
-      flex-direction: column; /* 横並びから縦並びに変更 */
+      flex-direction: column; 
       align-items: stretch; 
       gap: 12px;
     }
@@ -652,14 +636,14 @@
       display: flex; 
       flex-direction: column; 
       gap: 10px; 
-      align-items: flex-end; /* 項目全体を右寄せ */
+      align-items: flex-end; /* ★項目全体を右寄せ */
+      width: 100%;           /* ★横幅いっぱいのエリアを確保して、右に寄せる */
     }
     #tab3 .lvlOptLine { 
       display: flex; 
-      justify-content: flex-end; 
+      justify-content: flex-end; /* ★行内も右端から詰める */
       align-items: center; 
       gap: 8px; 
-      /* ここにあった width: 100% も削除し、左の文字をビタ付けします */
     }
     #tab3 .lvlOptName { 
       white-space: nowrap; 
@@ -689,15 +673,14 @@
     .poke-vars-table th, .poke-vars-table td { border-bottom: 1px solid var(--line); }
     .poke-vars-table tr:last-child td { border-bottom: none; }
 
-    /* ★★★ スマホ（iPhone SE等）極小画面向けの微調整 ★★★ */
+    /* =========================================================
+       ★★★ スマホ全体の微調整 (iPhone 13, 14, 15など 450px以下) ★★★
+       ========================================================= */
     @media (max-width: 450px) {
       .nav-text-exp-pc { display: none !important; }
       .nav-text-exp-sp { display: inline !important; }
 
-      .calendar-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }
-      .month-card { padding: 4px !important; font-size: 9px !important; }
-      .days-grid { gap: 1px !important; }
-      .day { font-size: 9px !important; }
+      /* ※ここにあったカレンダー2列の記述を削除し、さらに下へ移動しました */
       
       .resultHeader { gap: 4px; }
       .resultTitle { font-size: 14px; }
@@ -714,7 +697,6 @@
       
       #tab3 .lvlRow { gap: 6px; }
       
-      /* ★修正: 変な縛り（max-width: 60%等）を消去 */
       #tab3 .lvlRight { 
         flex-shrink: 0; 
       }
@@ -740,6 +722,17 @@
       #tab3 .lvlInMain { width: 40px; }
       #tab3 .lvlInSub { width: 50px; }
       #tab3 .lvlInMini { width: 40px; }
+    }
+
+    /* =========================================================
+       ★★★ iPhone SE など極小画面専用の微調整 (380px以下) ★★★
+       ========================================================= */
+    @media (max-width: 380px) {
+      /* ★ここで初めてカレンダーを2列化します */
+      .calendar-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }
+      .month-card { padding: 4px !important; font-size: 9px !important; }
+      .days-grid { gap: 1px !important; }
+      .day { font-size: 9px !important; }
     }
 </style>
   
