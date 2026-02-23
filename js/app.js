@@ -58,7 +58,7 @@ const THEMES = {
    SW / Cache reset
 ========================================================= */
 async function resetSWAndCacheOnce() {
-  const KEY = "sw_cache_reset_done_v115";
+  const KEY = "sw_cache_reset_done_v116"; // ★アップデート用バージョン
   if (localStorage.getItem(KEY)) return;
   try {
     if ("serviceWorker" in navigator) {
@@ -666,7 +666,7 @@ function createSnapshot() {
   const targetKey = SS_KEYS[targetIndex];
   localStorage.setItem(targetKey, JSON.stringify(current));
   
-  showInfo(`スロ${targetIndex + 1} に保存しました`); // 文言変更
+  showInfo(`スロ${targetIndex + 1} に保存しました`);
   updateSSButtons();
 }
 
@@ -678,7 +678,7 @@ function loadSnapshot(ssid) {
   try {
     const data = JSON.parse(raw);
     restoreState(data);
-    showInfo(`スロ${ssid} を読み込みました`); // 文言変更
+    showInfo(`スロ${ssid} を読み込みました`);
   } catch(e) {
     console.error(e);
     showInfo("データの読み込みに失敗しました");
@@ -686,7 +686,7 @@ function loadSnapshot(ssid) {
 }
 
 function clearSnapshot(ssid) {
-  if (confirm(`スロット${ssid} を削除しますか？`)) { // 文言変更
+  if (confirm(`スロット${ssid} を削除しますか？`)) {
     const key = SS_KEYS[ssid - 1];
     localStorage.removeItem(key);
     updateSSButtons();
@@ -788,7 +788,7 @@ window.onload = () => {
   el("closeDocViewer").onclick = () => vM.style.display = "none";
   
   initSnapshotFeature();
-  initKeyboardObserver(); // ★追加
+  initKeyboardObserver();
 };
 
 window.switchTab = function (tabId, clickedEl) {
@@ -807,7 +807,8 @@ window.switchTab = function (tabId, clickedEl) {
     items[idx]?.classList.add("active");
   }
 
-  el("headerTitle").textContent = { tab1: "料理計算", tab2: "出現ポケモン一覧", tab3: "経験値シミュレーター", tab4: "月齢カレンダー" }[tabId];
+  // ★ タイトルを「EXPシミュレーター」に変更
+  el("headerTitle").textContent = { tab1: "料理計算", tab2: "出現ポケモン一覧", tab3: "EXPシミュレーター", tab4: "月齢カレンダー" }[tabId];
   localStorage.setItem("activeTab", tabId);
 
   if (tabId === "tab2" && window.PokedexTab?.renderFieldMenu) window.PokedexTab.renderFieldMenu();
