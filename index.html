@@ -416,8 +416,9 @@
       display: flex; background: #f3f6fa; border-radius: 8px; padding: 2px; border: 1px solid var(--line);
     }
     .radioGroup label {
-      flex: 1; text-align: center; cursor: pointer; padding: 8px 4px; border-radius: 6px;
-      font-size: 10px; margin: 0; color: var(--muted); font-weight: 700; transition: all 0.2s;
+      flex: 1; text-align: center; cursor: pointer; padding: 8px 2px; border-radius: 6px;
+      font-size: clamp(8px, 2.5vw, 10px); margin: 0; color: var(--muted); font-weight: 700; transition: all 0.2s;
+      white-space: nowrap;
     }
     .radioGroup input { display: none; }
     .radioGroup label:has(input:checked) {
@@ -636,6 +637,7 @@
     #tab3 .lvlOptGroup .lvlLabel { margin-top: 8px; }
     #tab3 .lvlOptItems { display: flex; flex-direction: column; gap: 10px; flex: 1.5; }
     #tab3 .lvlOptLine { display: flex; justify-content: flex-end; align-items: center; gap: 8px; width: 100%; }
+    #tab3 .lvlOptName { margin-left: auto; text-align: right; } /* ★追加：入力欄の左側にビタ付け */
     #tab3 .lvlResult { margin-top: 12px; border: 2px solid var(--main); background: #ffffff; border-radius: 16px; padding: 16px; display: block; position: relative; min-height: 60px; }
     #tab3 .lvResTitle { font-weight: 900; font-size: 16px; color: var(--main); margin-bottom: 12px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
     #tab3 .lvResRow { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
@@ -660,9 +662,11 @@
 
     /* ★★★ スマホ（iPhone SE等）極小画面向けの微調整 ★★★ */
     @media (max-width: 450px) {
-      /* カレンダーを2ヶ月表示に変更 */
-      .calendar-grid { grid-template-columns: repeat(2, 1fr) !important; }
-      .calendar-grid .month-card:nth-child(3) { display: none !important; }
+      /* カレンダーを2列表示（2列×6段）に変更し、隙間と文字を縮めて突き抜けを防止 */
+      .calendar-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }
+      .month-card { padding: 4px !important; font-size: 9px !important; }
+      .days-grid { gap: 1px !important; }
+      .day { font-size: 9px !important; }
       
       .resultHeader { gap: 4px; }
       .resultTitle { font-size: 14px; }
