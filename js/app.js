@@ -819,14 +819,19 @@ window.switchTab = function (tabId, clickedEl) {
 };
 
 window.showInfo = function(msg) {
-  const modal = document.getElementById("simpleModal");
-  const msgBox = document.getElementById("simpleModalMsg");
-  if (modal && msgBox) {
-    msgBox.innerHTML = msg.replace(/\n/g, "<br>");
-    modal.style.display = "flex";
-  } else {
-    alert(msg);
+  let container = document.getElementById("toastContainer");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toastContainer";
+    document.body.appendChild(container);
   }
+  const toast = document.createElement("div");
+  toast.className = "toast-msg";
+  toast.innerHTML = msg.replace(/\n/g, "<br>");
+  container.appendChild(toast);
+  
+  // 2.8秒後に自動で消滅させる
+  setTimeout(() => { toast.remove(); }, 2800);
 };
 
 window.openDoc = function(fileName) {
