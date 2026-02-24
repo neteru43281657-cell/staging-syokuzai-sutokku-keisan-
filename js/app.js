@@ -801,7 +801,7 @@ window.onload = () => {
       secretTapCount++;
       clearTimeout(secretTapTimer);
       
-      // タップするごとに少しずつ㊙️がはっきり見えるようにする演出
+      // タップするごとに少しずつ文字がはっきり見えるようにする演出
       secretBtn.style.opacity = Math.min(1, 0.15 + (secretTapCount * 0.2));
       
       // 1秒以内に連続タップしないと回数がリセットされる
@@ -812,27 +812,47 @@ window.onload = () => {
       
       // 5回連続でタップされたら
       if (secretTapCount === 5) {
-        document.body.classList.toggle("gaming-mode");
-        const isGaming = document.body.classList.contains("gaming-mode");
-         
-        // PWAのテーマカラー設定用のmetaタグを取得
-        let metaThemeColor = document.querySelector('meta[name="theme-color"]');
-        if (!metaThemeColor) {
-          // なければ作る
-          metaThemeColor = document.createElement('meta');
-          metaThemeColor.name = "theme-color";
-          document.head.appendChild(metaThemeColor);
-        }
-        // ゲーミング中は黒(#000000)、解除時は元の青(#007bff)に戻す
-        // （※補足: ここは必要に応じて選択中のテーマカラーを取得して戻すことも可能です）
-        metaThemeColor.content = isGaming ? "#000000" : "#007bff";
+        // ★ 起動のみに変更（解除はここで行わない）
+        if (!document.body.classList.contains("gaming-mode")) {
+          document.body.classList.add("gaming-mode");
+           
+          // PWAのテーマカラー設定用のmetaタグを取得して黒にする
+          let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+          if (!metaThemeColor) {
+            metaThemeColor = document.createElement('meta');
+            metaThemeColor.name = "theme-color";
+            document.head.appendChild(metaThemeColor);
+          }
+          metaThemeColor.content = "#000000";
 
-        window.showInfo(isGaming ? "🌈 ゲーミングモード起動 🌈" : "ゲーミングモード終了");
-        
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+          window.showInfo("🌈 ゲーミングモード起動 🌈\nテーマを変更すると元に戻ります");
+          
+          if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+        }
         
         secretTapCount = 0;
-        secretBtn.style.opacity = 0.2;
+        secretBtn.style.opacity = 0.15;
+      }
+    });
+  }
+
+  // ★追加：テーマカラーを変更した時にゲーミングモードを終了する処理
+  const themeGrid = document.getElementById("themeGrid");
+  if (themeGrid) {
+    themeGrid.addEventListener("click", () => {
+      // ゲーミングモード中にテーマがクリックされたら
+      if (document.body.classList.contains("gaming-mode")) {
+        document.body.classList.remove("gaming-mode"); // ゲーミングモードを解除
+        
+        // 元のテーマ適用処理とバッティングしないよう、ほんの少し遅らせてステータスバーの色を同期
+        setTimeout(() => {
+          const currentBg = getComputedStyle(document.body).getPropertyValue('--main').trim();
+          let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+          if (metaThemeColor && currentBg) {
+            metaThemeColor.content = currentBg;
+          }
+          window.showInfo("ゲーミングモードを終了しました");
+        }, 100);
       }
     });
   }
