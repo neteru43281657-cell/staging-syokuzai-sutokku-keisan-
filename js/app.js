@@ -789,6 +789,43 @@ window.onload = () => {
   
   initSnapshotFeature();
   initKeyboardObserver();
+
+// ====== ここから追加（隠しゲーミングモード） ======
+  let secretTapCount = 0;
+  let secretTapTimer = null;
+
+  const secretBtn = document.getElementById("secretGamingBtn");
+  
+  if (secretBtn) {
+    secretBtn.addEventListener("click", () => {
+      secretTapCount++;
+      clearTimeout(secretTapTimer);
+      
+      // タップするごとに少しずつ㊙️がはっきり見えるようにする演出
+      secretBtn.style.opacity = Math.min(1, 0.15 + (secretTapCount * 0.2));
+      
+      // 1秒以内に連続タップしないと回数がリセットされる
+      secretTapTimer = setTimeout(() => { 
+        secretTapCount = 0; 
+        secretBtn.style.opacity = 0.15; // 透明度を元に戻す
+      }, 1000);
+      
+      // 5回連続でタップされたら
+      if (secretTapCount === 5) {
+        document.body.classList.toggle("gaming-mode");
+        const isGaming = document.body.classList.contains("gaming-mode");
+        
+        window.showInfo(isGaming ? "🌈 ゲーミングモード起動 🌈" : "ゲーミングモード終了");
+        
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+        
+        secretTapCount = 0;
+        secretBtn.style.opacity = 0.15;
+      }
+    });
+  }
+  // ====== 追加ここまで ======
+   
 };
 
 window.switchTab = function (tabId, clickedEl) {
