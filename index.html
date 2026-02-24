@@ -813,37 +813,72 @@
       .toast-msg { background: rgba(255, 255, 255, 0.9); color: #000; }
     }
 
-  /* =========================================================
-       🌈 おふざけ機能：ゲーミングモード 🌈
+    /* =========================================================
+       🌈 ゲーミングモード 🌈
        ========================================================= */
-    body.gaming-mode header,
-    body.gaming-mode .primary,
-    body.gaming-mode .capsule-btn,
-    body.gaming-mode .total-badge,
-    body.gaming-mode .sleep-badge {
-      /* 虹色のグラデーションを作成して動かす */
-      background: linear-gradient(90deg, #ff4757, #ffa502, #eccc68, #2ed573, #007bff, #5352ed, #ff4757) !important;
-      background-size: 200% 200% !important;
-      animation: gamingRainbow 1.5s linear infinite !important;
-      color: white !important;
-      border: none !important;
+    
+    /* 虹色グラデーションを定義（赤→黄→緑→水→青→紫→赤で一周） */
+    :root {
+      --gaming-gradient: linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #00ffff, #0000ff, #8b00ff, #ff0000);
     }
 
-    /* 下部タブのアクティブ状態も虹色の文字にする */
-    body.gaming-mode .nav-item.active {
-      color: transparent !important;
-      background: linear-gradient(90deg, #ff4757, #ffa502, #eccc68, #2ed573, #007bff, #5352ed, #ff4757) !important;
-      background-size: 200% 200% !important;
-      -webkit-background-clip: text !important;
-      background-clip: text !important;
-      animation: gamingRainbow 1.5s linear infinite !important;
-    }
-
-    /* グラデーションを横にスライドさせ続けるアニメーション */
-    @keyframes gamingRainbow {
+    /* 常に動く虹色アニメーションの定義 */
+    @keyframes gamingFlow {
       0% { background-position: 0% 50%; }
       100% { background-position: 200% 50%; }
     }
+
+    /* -------------------------------
+       適用対象1：背景を虹色にする要素（ヘッダー、ボタン類）
+    ------------------------------- */
+    body.gaming-mode header,
+    body.gaming-mode button.primary,
+    body.gaming-mode .capsule-btn,
+    body.gaming-mode .total-badge,
+    body.gaming-mode .sleep-badge,
+    body.gaming-mode .ss-btn.active,
+    body.gaming-mode .bm-icon.active,
+    body.gaming-mode .dex-icon-btn.active-filter,
+    /* ↓ 追加：経験値シミュの結果枠の線 ↓ */
+    body.gaming-mode #tab3 .lvlResult,
+    body.gaming-mode .result-card {
+      background-image: var(--gaming-gradient) !important;
+      background-size: 200% 200% !important; /* グラデーションを大きく引き伸ばす */
+      animation: gamingFlow 2s linear infinite !important; /* 2秒で一周ループ */
+      color: #fff !important; /* 文字は白 */
+      border-color: transparent !important; /* 枠線は消して虹色を強調 */
+    }
+    
+    /* 経験値シミュの結果枠は背景色を白に戻し、枠線だけ虹色に見せる */
+    body.gaming-mode #tab3 .lvlResult,
+    body.gaming-mode .result-card {
+      background-color: var(--card) !important; /* 背景はカード色 */
+      background-origin: border-box !important;
+      border: 3px solid transparent !important; /* 透明な太い枠線を設定 */
+      box-shadow: inset 0 0 0 1000px var(--card) !important; /* 内側を塗りつぶす小技 */
+    }
+
+    /* -------------------------------
+       適用対象2：文字を虹色にする要素（タブ、見出し類）
+    ------------------------------- */
+    /* 下部タブのアクティブ状態 */
+    body.gaming-mode .nav-item.active,
+    /* 追加：経験値シミュの結果タイトル類 */
+    body.gaming-mode #tab3 .lvResTitle,
+    body.gaming-mode #tab3 .lvResSubTitle,
+    /* 追加：各セクションの青い縦線見出し */
+    body.gaming-mode .sectionTitle {
+      background-image: var(--gaming-gradient) !important;
+      background-size: 200% 200% !important;
+      animation: gamingFlow 2s linear infinite !important;
+      color: transparent !important; /* 文字色を透明にして */
+      -webkit-background-clip: text !important; /* 背景の虹色を文字の形に切り抜く */
+      background-clip: text !important;
+      border-color: transparent !important; /* ボーダーも虹色の一部として馴染ませる */
+    }
+    
+    /* 隠しボタンは選択不可にする */
+    #secretGamingBtn { user-select: none; }
   
 </style>
   
