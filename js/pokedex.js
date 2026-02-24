@@ -749,11 +749,11 @@ async function openDetail(name) {
           <span>${label}</span>
           <span>${val}${unit}</span>
         </div>
-        <div style="background:#f0f0f0; height:8px; border-radius:4px; overflow:hidden; margin-bottom:4px;">
+        <div style="background:var(--bg); height:8px; border-radius:4px; overflow:hidden; margin-bottom:4px;">
           <div style="width:${w1}%; background:${col1}; height:100%;"></div>
         </div>
         ${avgVal ? `
-        <div style="background:#f0f0f0; height:6px; border-radius:3px; overflow:hidden; margin-bottom:2px;">
+        <div style="background:var(--bg); height:6px; border-radius:3px; overflow:hidden; margin-bottom:2px;">
            <div style="width:${w2}%; background:${col2}; height:100%;"></div>
         </div>
         <div style="font-size:9px; color:var(--muted); text-align:right;">同タイプ平均：${avgVal.toFixed(1)}${unit}</div>
@@ -780,13 +780,13 @@ async function openDetail(name) {
   if (p.variations.length > 1) {
     const trs = p.variations.map((v, idx) => {
       const label = sizeLabels[idx] || `#${idx+1}`;
-      return `<tr><td style="font-weight:900;">${label}</td><td>${v.helpTime}秒</td><td>${v.ingProb}%</td><td>${v.skillProb}%</td><td>${v.carry}個</td></tr>`;
+      return `<tr style="background:var(--bg); color:var(--muted);"><td style="font-weight:900;">${label}</td><td>${v.helpTime}秒</td><td>${v.ingProb}%</td><td>${v.skillProb}%</td><td>${v.carry}個</td></tr>`;
     }).join("");
     statsHtml = `
       <div style="margin-bottom:12px; overflow-x:auto;">
         <table style="width:100%; font-size:11px; border-collapse:collapse; text-align:center;" class="poke-vars-table">
           <thead>
-            <tr style="background:#f0f2f5; color:var(--muted);">
+            <tr style="background:var(--bg); color:var(--muted);">
               <th style="padding:4px;">個体</th><th style="padding:4px;">時間</th><th style="padding:4px;">食材</th><th style="padding:4px;">スキル</th><th style="padding:4px;">所持数</th>
             </tr>
           </thead>
@@ -796,11 +796,11 @@ async function openDetail(name) {
   } else {
     statsHtml = `
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
-        <div style="background:#f8f9fa; padding:10px; border-radius:12px; text-align:center;">
+        <div style="background:var(--bg); padding:10px; border-radius:12px; text-align:center;">
           <div style="font-size:10px; color:var(--muted); font-weight:700;">おてつだい時間</div>
           <div style="font-size:15px; font-weight:900;">${p.helpTime}秒</div>
         </div>
-        <div style="background:#f8f9fa; padding:10px; border-radius:12px; text-align:center;">
+        <div style="background:var(--bg); padding:10px; border-radius:12px; text-align:center;">
           <div style="font-size:10px; color:var(--muted); font-weight:700;">最大所持数</div>
           <div style="font-size:15px; font-weight:900;">${p.carry}個</div>
         </div>
@@ -825,7 +825,7 @@ async function openDetail(name) {
 
   body.innerHTML = `
     <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
-      <img src="${imgSrc(p.file)}" style="width:72px; height:72px; object-fit:contain; border:1px solid var(--line); border-radius:16px; background:#fff;">
+      <img src="${imgSrc(p.file)}" style="width:72px; height:72px; object-fit:contain; border:1px solid var(--line); border-radius:16px; background:var(--card);">
       <div style="flex:1;">
         <div class="type-badge-row" style="display:flex; align-items:center;">
           <div class="element-type">
