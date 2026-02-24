@@ -959,7 +959,24 @@
       background-size: 100% 100%, 200% 100% !important;
       animation: gamingFlow 2s linear infinite !important;
     }
+
+    /* タマゴが孵化するときの揺れアニメーション */
+    @keyframes eggShake {
+      0% { transform: rotate(0deg); }
+      20% { transform: rotate(-6deg); }
+      40% { transform: rotate(6deg); }
+      60% { transform: rotate(-4deg); }
+      80% { transform: rotate(4deg); }
+      100% { transform: rotate(0deg); }
+    }
     
+    .egg-shaking {
+      /* アニメーションを0.4秒間再生 */
+      animation: eggShake 0.4s ease-in-out !important;
+      /* span要素を回転させるためには inline-block にする必要があるため */
+      display: inline-block !important; 
+    }
+  
     /* 隠しボタンは選択不可にする */
     #secretGamingBtn { user-select: none; }
   
