@@ -745,7 +745,11 @@ window.onload = () => {
   applyTheme(savedTheme);
   renderThemeGrid();
 
-  el("openTheme").onclick = () => el("themeModal").style.display = "flex";
+  el("openTheme").onclick = () => {
+    const m = el("themeModal");
+    m.style.display = "flex";
+    m.scrollTop = 0; // 毎回必ず一番上から表示させる
+  };
   el("closeTheme").onclick = () => el("themeModal").style.display = "none";
 
   el("fieldBonusSel")?.addEventListener("change", calc);
