@@ -43,7 +43,7 @@
       dows.forEach((d, idx) => {
         let color = "var(--muted)";
         if (idx === 5) color = "#007bff";
-        if (idx === 6) color = "#e74c3c";
+        if (idx === 6) color = "#e74c3b";
         html += `<div style="font-size: 9px; font-weight: 900; text-align: center; color: ${color};">${d}</div>`;
       });
 
