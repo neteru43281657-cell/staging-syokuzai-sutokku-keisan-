@@ -816,7 +816,7 @@
     /* =========================================================
        🌈 ゲーミングモード（修正版） 🌈
        ========================================================= */
-    
+  
     /* ① 継ぎ目を完全になくすため、虹色を「2周分」定義する */
     :root {
       --gaming-gradient: linear-gradient(to right, 
@@ -846,7 +846,7 @@
       100% { accent-color: #ff0000; }
     }
 
-    /* ③ 枠線だけが虹色になる要素（結果カード、プルダウン枠、条件設定の枠など） */
+    /* ③ 単純な枠線のアニメーション（border-colorを直接変更できるもの） */
     @keyframes gamingBorder {
       0% { border-color: #ff0000; }
       14% { border-color: #ff7f00; }
@@ -856,15 +856,6 @@
       71% { border-color: #0000ff; }
       85% { border-color: #8b00ff; }
       100% { border-color: #ff0000; }
-    }
-    body.gaming-mode .sectionTitle,
-    body.gaming-mode .result-card,
-    body.gaming-mode .energyResultBox,
-    body.gaming-mode .emphSelect,
-    body.gaming-mode .field-item.highlight-blue,
-    body.gaming-mode .poke-item.highlight-blue img {
-      animation: gamingBorder 2s linear infinite !important;
-      border-color: #ff0000 !important; /* フォールバック */
     }
 
     /* カレンダーの当日の赤枠線（outlineで描画されているため専用処理） */
@@ -883,7 +874,7 @@
       outline-color: #ff0000 !important;
     }
 
-    /* ④ 文字色・枠線・背景色がすべて虹色になる要素（テーブルヘッダー、n食/21食、カレンダー〇月など） */
+    /* ④ 文字色・枠線・背景色がすべて虹色に明滅する要素（テーブルヘッダー、n食/21食、カレンダー〇月など） */
     @keyframes gamingBorderTextBg {
       0% { color: #ff0000; border-color: #ff0000; background-color: rgba(255,0,0,0.15); }
       14% { color: #ff7f00; border-color: #ff7f00; background-color: rgba(255,127,0,0.15); }
@@ -920,12 +911,13 @@
       border-color: transparent !important;
     }
 
-    /* ⑥ 文字だけがグラデーションになる要素（計算結果テキスト、インフォモーダル内のリンク等） */
+    /* ⑥ 文字だけがグラデーションになる要素（アスタリスク、計算結果テキスト、インフォモーダル内のリンク等） */
     body.gaming-mode .nav-item.active,
     body.gaming-mode .lvResTitle,
     body.gaming-mode .lvResSubTitle,
     body.gaming-mode #energyResultVal,
     body.gaming-mode .resultTitle,
+    body.gaming-mode .lvlReq,
     body.gaming-mode [style*="color:var(--main)"],
     body.gaming-mode [style*="color: var(--main)"] {
       background-image: var(--gaming-gradient) !important;
@@ -934,6 +926,32 @@
       color: transparent !important;
       -webkit-background-clip: text !important;
       background-clip: text !important;
+    }
+
+    /* ⑦ sectionTitle（文字はグラデーションに流しつつ、左側の枠線も虹色に変化させる同時掛け） */
+    body.gaming-mode .sectionTitle {
+      background-image: var(--gaming-gradient) !important;
+      background-size: 200% 100% !important;
+      color: transparent !important;
+      -webkit-background-clip: text !important;
+      background-clip: text !important;
+      animation: gamingFlow 2s linear infinite, gamingBorder 2s linear infinite !important;
+    }
+
+    /* ⑧ 枠線をグラデーションアニメーションにする要素群（中身は通常のカード背景） */
+    body.gaming-mode .result-card,
+    body.gaming-mode #tab3 .lvlResult,
+    body.gaming-mode .energyResultBox,
+    body.gaming-mode .emphSelect,
+    body.gaming-mode .field-item.highlight-blue,
+    body.gaming-mode .poke-item.highlight-blue img {
+      border-color: transparent !important;
+      /* 背景を2層にし、内側を無地、外側（枠線部分）をグラデーションにするハック */
+      background-image: linear-gradient(var(--card), var(--card)), var(--gaming-gradient) !important;
+      background-origin: padding-box, border-box !important;
+      background-clip: padding-box, border-box !important;
+      background-size: 100% 100%, 200% 100% !important;
+      animation: gamingFlow 2s linear infinite !important;
     }
     
     /* 隠しボタンは選択不可にする */
