@@ -846,7 +846,7 @@
       100% { accent-color: #ff0000; }
     }
 
-    /* ③ 枠線だけが虹色になる要素（プルダウン枠、条件設定の枠など） */
+    /* ③ 枠線だけが虹色になる要素（結果カード、プルダウン枠、条件設定の枠など） */
     @keyframes gamingBorder {
       0% { border-color: #ff0000; }
       14% { border-color: #ff7f00; }
@@ -859,7 +859,6 @@
     }
     body.gaming-mode .sectionTitle,
     body.gaming-mode .result-card,
-    body.gaming-mode #tab3 .lvlResult,
     body.gaming-mode .energyResultBox,
     body.gaming-mode .emphSelect,
     body.gaming-mode .field-item.highlight-blue,
@@ -884,7 +883,7 @@
       outline-color: #ff0000 !important;
     }
 
-    /* ④ 文字色・枠線・背景色がすべて虹色になる要素（n食/21食、カレンダー〇月など） */
+    /* ④ 文字色・枠線・背景色がすべて虹色になる要素（テーブルヘッダー、n食/21食、カレンダー〇月など） */
     @keyframes gamingBorderTextBg {
       0% { color: #ff0000; border-color: #ff0000; background-color: rgba(255,0,0,0.15); }
       14% { color: #ff7f00; border-color: #ff7f00; background-color: rgba(255,127,0,0.15); }
@@ -899,7 +898,9 @@
     body.gaming-mode .month-name,
     body.gaming-mode .radioGroup label:has(input:checked),
     body.gaming-mode .preview span,
-    body.gaming-mode .badge {
+    body.gaming-mode .badge,
+    body.gaming-mode .energy-table th,
+    body.gaming-mode .mode3Note {
       animation: gamingBorderTextBg 2s linear infinite !important;
     }
 
@@ -919,11 +920,14 @@
       border-color: transparent !important;
     }
 
-    /* ⑥ 文字だけがグラデーションになる要素 */
+    /* ⑥ 文字だけがグラデーションになる要素（計算結果テキスト、インフォモーダル内のリンク等） */
     body.gaming-mode .nav-item.active,
-    body.gaming-mode #tab3 .lvResTitle,
-    body.gaming-mode #tab3 .lvResSubTitle,
-    body.gaming-mode #energyResultVal {
+    body.gaming-mode .lvResTitle,
+    body.gaming-mode .lvResSubTitle,
+    body.gaming-mode #energyResultVal,
+    body.gaming-mode .resultTitle,
+    body.gaming-mode [style*="color:var(--main)"],
+    body.gaming-mode [style*="color: var(--main)"] {
       background-image: var(--gaming-gradient) !important;
       background-size: 200% 100% !important;
       animation: gamingFlow 2s linear infinite !important;
@@ -933,7 +937,7 @@
     }
     
     /* 隠しボタンは選択不可にする */
-    #secretGamingBtn { user-select: none; }}
+    #secretGamingBtn { user-select: none; }
   
 </style>
   
