@@ -814,23 +814,96 @@
     }
 
     /* =========================================================
-       🌈 ゲーミングモード 🌈
+       🌈 ゲーミングモード（修正版） 🌈
        ========================================================= */
     
-    /* 虹色グラデーションを定義（赤→黄→緑→水→青→紫→赤で一周） */
+    /* ① 継ぎ目を完全になくすため、虹色を「2周分」定義する */
     :root {
-      --gaming-gradient: linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #00ffff, #0000ff, #8b00ff, #ff0000);
+      --gaming-gradient: linear-gradient(to right, 
+        #ff0000, #ff7f00, #ffff00, #00ff00, #00ffff, #0000ff, #8b00ff,
+        #ff0000, #ff7f00, #ffff00, #00ff00, #00ffff, #0000ff, #8b00ff,
+        #ff0000);
     }
 
-    /* 常に動く虹色アニメーションの定義 */
+    /* 背景が流れるアニメーション（ズレないように100%動かしてループさせる） */
     @keyframes gamingFlow {
       0% { background-position: 0% 50%; }
-      100% { background-position: 200% 50%; }
+      100% { background-position: 100% 50%; }
     }
 
-    /* -------------------------------
-       適用対象1：背景を虹色にする要素（ヘッダー、ボタン類）
-    ------------------------------- */
+    /* ② アクセントカラー（チェックボックス・ラジオボタン用）のアニメーション */
+    body.gaming-mode {
+      animation: gamingAccent 2s linear infinite !important;
+    }
+    @keyframes gamingAccent {
+      0% { accent-color: #ff0000; }
+      14% { accent-color: #ff7f00; }
+      28% { accent-color: #ffff00; }
+      42% { accent-color: #00ff00; }
+      57% { accent-color: #00ffff; }
+      71% { accent-color: #0000ff; }
+      85% { accent-color: #8b00ff; }
+      100% { accent-color: #ff0000; }
+    }
+
+    /* ③ 枠線だけが虹色になる要素（プルダウン枠、条件設定の枠など） */
+    @keyframes gamingBorder {
+      0% { border-color: #ff0000; }
+      14% { border-color: #ff7f00; }
+      28% { border-color: #ffff00; }
+      42% { border-color: #00ff00; }
+      57% { border-color: #00ffff; }
+      71% { border-color: #0000ff; }
+      85% { border-color: #8b00ff; }
+      100% { border-color: #ff0000; }
+    }
+    body.gaming-mode .sectionTitle,
+    body.gaming-mode .result-card,
+    body.gaming-mode #tab3 .lvlResult,
+    body.gaming-mode .energyResultBox,
+    body.gaming-mode .emphSelect,
+    body.gaming-mode .field-item.highlight-blue,
+    body.gaming-mode .poke-item.highlight-blue img {
+      animation: gamingBorder 2s linear infinite !important;
+      border-color: #ff0000 !important; /* フォールバック */
+    }
+
+    /* カレンダーの当日の赤枠線（outlineで描画されているため専用処理） */
+    @keyframes gamingOutline {
+      0% { outline-color: #ff0000; }
+      14% { outline-color: #ff7f00; }
+      28% { outline-color: #ffff00; }
+      42% { outline-color: #00ff00; }
+      57% { outline-color: #00ffff; }
+      71% { outline-color: #0000ff; }
+      85% { outline-color: #8b00ff; }
+      100% { outline-color: #ff0000; }
+    }
+    body.gaming-mode .days-grid div[style*="outline"] {
+      animation: gamingOutline 2s linear infinite !important;
+      outline-color: #ff0000 !important;
+    }
+
+    /* ④ 文字色・枠線・背景色がすべて虹色になる要素（n食/21食、カレンダー〇月など） */
+    @keyframes gamingBorderTextBg {
+      0% { color: #ff0000; border-color: #ff0000; background-color: rgba(255,0,0,0.15); }
+      14% { color: #ff7f00; border-color: #ff7f00; background-color: rgba(255,127,0,0.15); }
+      28% { color: #ffff00; border-color: #ffff00; background-color: rgba(255,255,0,0.15); }
+      42% { color: #00ff00; border-color: #00ff00; background-color: rgba(0,255,0,0.15); }
+      57% { color: #00ffff; border-color: #00ffff; background-color: rgba(0,255,255,0.15); }
+      71% { color: #0000ff; border-color: #0000ff; background-color: rgba(0,0,255,0.15); }
+      85% { color: #8b00ff; border-color: #8b00ff; background-color: rgba(139,0,255,0.15); }
+      100% { color: #ff0000; border-color: #ff0000; background-color: rgba(255,0,0,0.15); }
+    }
+    body.gaming-mode #summaryBadge,
+    body.gaming-mode .month-name,
+    body.gaming-mode .radioGroup label:has(input:checked),
+    body.gaming-mode .preview span,
+    body.gaming-mode .badge {
+      animation: gamingBorderTextBg 2s linear infinite !important;
+    }
+
+    /* ⑤ 面が広い要素（グラデーション背景＋白文字） */
     body.gaming-mode header,
     body.gaming-mode button.primary,
     body.gaming-mode .capsule-btn,
@@ -838,47 +911,29 @@
     body.gaming-mode .sleep-badge,
     body.gaming-mode .ss-btn.active,
     body.gaming-mode .bm-icon.active,
-    body.gaming-mode .dex-icon-btn.active-filter,
-    /* ↓ 追加：経験値シミュの結果枠の線 ↓ */
-    body.gaming-mode #tab3 .lvlResult,
-    body.gaming-mode .result-card {
+    body.gaming-mode .dex-icon-btn.active-filter {
       background-image: var(--gaming-gradient) !important;
-      background-size: 200% 200% !important; /* グラデーションを大きく引き伸ばす */
-      animation: gamingFlow 2s linear infinite !important; /* 2秒で一周ループ */
-      color: #fff !important; /* 文字は白 */
-      border-color: transparent !important; /* 枠線は消して虹色を強調 */
-    }
-    
-    /* 経験値シミュの結果枠は背景色を白に戻し、枠線だけ虹色に見せる */
-    body.gaming-mode #tab3 .lvlResult,
-    body.gaming-mode .result-card {
-      background-color: var(--card) !important; /* 背景はカード色 */
-      background-origin: border-box !important;
-      border: 3px solid transparent !important; /* 透明な太い枠線を設定 */
-      box-shadow: inset 0 0 0 1000px var(--card) !important; /* 内側を塗りつぶす小技 */
+      background-size: 200% 100% !important;
+      animation: gamingFlow 2s linear infinite !important;
+      color: #fff !important;
+      border-color: transparent !important;
     }
 
-    /* -------------------------------
-       適用対象2：文字を虹色にする要素（タブ、見出し類）
-    ------------------------------- */
-    /* 下部タブのアクティブ状態 */
+    /* ⑥ 文字だけがグラデーションになる要素 */
     body.gaming-mode .nav-item.active,
-    /* 追加：経験値シミュの結果タイトル類 */
     body.gaming-mode #tab3 .lvResTitle,
     body.gaming-mode #tab3 .lvResSubTitle,
-    /* 追加：各セクションの青い縦線見出し */
-    body.gaming-mode .sectionTitle {
+    body.gaming-mode #energyResultVal {
       background-image: var(--gaming-gradient) !important;
-      background-size: 200% 200% !important;
+      background-size: 200% 100% !important;
       animation: gamingFlow 2s linear infinite !important;
-      color: transparent !important; /* 文字色を透明にして */
-      -webkit-background-clip: text !important; /* 背景の虹色を文字の形に切り抜く */
+      color: transparent !important;
+      -webkit-background-clip: text !important;
       background-clip: text !important;
-      border-color: transparent !important; /* ボーダーも虹色の一部として馴染ませる */
     }
     
     /* 隠しボタンは選択不可にする */
-    #secretGamingBtn { user-select: none; }
+    #secretGamingBtn { user-select: none; }}
   
 </style>
   
