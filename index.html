@@ -733,6 +733,69 @@
       .days-grid { gap: 1px !important; }
       .day { font-size: 9px !important; }
     }
+
+    /* =========================================================
+       ★★★ UI/UX アップデート追加分 ★★★
+       ========================================================= */
+
+    /* ④ タブ切り替え時のフェード＆スライドアニメーション */
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .tab-content.active {
+      animation: fadeSlideIn 0.2s ease-out forwards;
+    }
+
+    /* ⑤ アイコンの「ポンッ」と跳ねるアニメーション */
+    @keyframes popBounce {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.25); }
+      100% { transform: scale(1); }
+    }
+    .bm-icon.active, .dex-icon-btn.active-filter {
+      animation: popBounce 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    /* ② トースト通知用のスタイル */
+    #toastContainer {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+    }
+    .toast-msg {
+      background: rgba(0, 0, 0, 0.8); color: #fff; padding: 10px 20px;
+      border-radius: 20px; font-size: 13px; font-weight: 700; text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15); white-space: nowrap;
+      animation: toastFadeIn 0.2s ease-out forwards, toastFadeOut 0.3s ease-in 2.5s forwards;
+    }
+    @keyframes toastFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes toastFadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
+
+    /* ① OSのダークモード自動検知と適用 */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121212;
+        --card: #1e1e1e;
+        --text: #e0e0e0;
+        --muted: #999999;
+        --line: #333333;
+      }
+      /* 白固定されている背景色をダークモード用に上書き */
+      .card, .result-card, .bottom-nav, .field-item, .sleep-section, .dex-tool-bar, .dex-suggest-list, .month-card, .tile, .recipeRow, select, input, .lvlQuickBtn, .capsule-btn, .radioGroup label:has(input:checked), .removeBtn, #docViewerImg {
+        background: var(--card) !important;
+        color: var(--text) !important;
+        border-color: var(--line) !important;
+      }
+      /* 少し濃いグレーの背景要素 */
+      .settings-grey-box, .radioGroup, .ss-btn, .ing-lv, .bm-icon, .dex-icon-btn {
+        background: #2a2a2a !important;
+        border-color: var(--line) !important;
+        color: var(--text);
+      }
+      /* トースト通知の色反転 */
+      .toast-msg { background: rgba(255, 255, 255, 0.9); color: #000; }
+    }
+  
 </style>
   
 </head>
