@@ -795,8 +795,9 @@ window.onload = () => {
   let secretTapTimer = null;
 
   const secretBtn = document.getElementById("secretGamingBtn");
-  // ★ 変更：JS側でも \n を使って改行を含める
-  const defaultText = "……おや！？\nアプリの　ようすが……！";
+  
+  // ★ 変更1： \n ではなく <br> を使う
+  const defaultText = "……おや！？<br>アプリの　ようすが……！";
   
   if (secretBtn) {
     secretBtn.addEventListener("click", () => {
@@ -805,34 +806,34 @@ window.onload = () => {
       
       const remain = 5 - secretTapCount;
       
-      // ★ 変更：カウントダウンもさらに改行して下に綺麗に表示させる
+      // ★ 変更2： innerText ではなく innerHTML を使い、<br> で確実につなぐ
       if (remain > 0) {
-        secretBtn.innerText = `${defaultText}\n(あと ${remain})`;
+        secretBtn.innerHTML = `${defaultText}<br>(あと ${remain})`;
       }
 
       // タップするごとに少しずつ文字がはっきり見えるようにする演出
       secretBtn.style.opacity = Math.min(1, 0.15 + (secretTapCount * 0.2));
       
-      // ★タマゴの揺れアニメーションを毎回発火させるためのハック
+      // タマゴの揺れアニメーション
       secretBtn.classList.remove("egg-shaking");
-      void secretBtn.offsetWidth; // 一度ブラウザに計算（リフロー）させてアニメーションをリセット
+      void secretBtn.offsetWidth; 
       secretBtn.classList.add("egg-shaking");
       
       // 1秒以内に連続タップしないと回数がリセットされる
       secretTapTimer = setTimeout(() => { 
         secretTapCount = 0; 
-        secretBtn.style.opacity = 0.15; // 透明度を元に戻す
-        secretBtn.innerText = defaultText; // テキストを元に戻す
+        secretBtn.style.opacity = 0.15; 
+        secretBtn.innerHTML = defaultText; // ★変更3：innerHTMLで戻す
       }, 1000);
       
       // 5回連続でタップされたら
       if (secretTapCount === 5) {
-        // 起動のみ
         if (!document.body.classList.contains("gaming-mode")) {
           document.body.classList.add("gaming-mode");
-          document.getElementById("themeModal").style.display = "none";  
            
-          // PWAのテーマカラー設定用のmetaタグを取得して黒にする
+          // モーダルを強制的に閉じる
+          document.getElementById("themeModal").style.display = "none";
+           
           let metaThemeColor = document.querySelector('meta[name="theme-color"]');
           if (!metaThemeColor) {
             metaThemeColor = document.createElement('meta');
@@ -848,7 +849,7 @@ window.onload = () => {
         
         secretTapCount = 0;
         secretBtn.style.opacity = 0.15;
-        secretBtn.innerText = defaultText; // テキストを元に戻す
+        secretBtn.innerHTML = defaultText; // ★変更4：innerHTMLで戻す
       }
     });
   }
