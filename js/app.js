@@ -796,7 +796,21 @@ window.onload = () => {
 
   const secretBtn = document.getElementById("secretGamingBtn");
   
-   // 5回連続でタップされたら
+  if (secretBtn) {
+    secretBtn.addEventListener("click", () => {
+      secretTapCount++;
+      clearTimeout(secretTapTimer);
+      
+      // タップするごとに少しずつ㊙️がはっきり見えるようにする演出
+      secretBtn.style.opacity = Math.min(1, 0.15 + (secretTapCount * 0.2));
+      
+      // 1秒以内に連続タップしないと回数がリセットされる
+      secretTapTimer = setTimeout(() => { 
+        secretTapCount = 0; 
+        secretBtn.style.opacity = 0.15; // 透明度を元に戻す
+      }, 1000);
+      
+      // 5回連続でタップされたら
       if (secretTapCount === 5) {
         document.body.classList.toggle("gaming-mode");
         const isGaming = document.body.classList.contains("gaming-mode");
@@ -810,6 +824,7 @@ window.onload = () => {
           document.head.appendChild(metaThemeColor);
         }
         // ゲーミング中は黒(#000000)、解除時は元の青(#007bff)に戻す
+        // （※補足: ここは必要に応じて選択中のテーマカラーを取得して戻すことも可能です）
         metaThemeColor.content = isGaming ? "#000000" : "#007bff";
 
         window.showInfo(isGaming ? "🌈 ゲーミングモード起動 🌈" : "ゲーミングモード終了");
@@ -823,7 +838,7 @@ window.onload = () => {
   }
   // ====== 追加ここまで ======
    
-};
+}; // ← window.onload の最後の閉じ括弧
 
 window.switchTab = function (tabId, clickedEl) {
   if (typeof gtag === 'function') {
