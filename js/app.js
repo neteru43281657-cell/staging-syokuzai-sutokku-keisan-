@@ -796,31 +796,28 @@ window.onload = () => {
 
   const secretBtn = document.getElementById("secretGamingBtn");
   
-  if (secretBtn) {
-    secretBtn.addEventListener("click", () => {
-      secretTapCount++;
-      clearTimeout(secretTapTimer);
-      
-      // タップするごとに少しずつ㊙️がはっきり見えるようにする演出
-      secretBtn.style.opacity = Math.min(1, 0.15 + (secretTapCount * 0.2));
-      
-      // 1秒以内に連続タップしないと回数がリセットされる
-      secretTapTimer = setTimeout(() => { 
-        secretTapCount = 0; 
-        secretBtn.style.opacity = 0.15; // 透明度を元に戻す
-      }, 1000);
-      
-      // 5回連続でタップされたら
+   // 5回連続でタップされたら
       if (secretTapCount === 5) {
         document.body.classList.toggle("gaming-mode");
         const isGaming = document.body.classList.contains("gaming-mode");
-        
+         
+        // PWAのテーマカラー設定用のmetaタグを取得
+        let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (!metaThemeColor) {
+          // なければ作る
+          metaThemeColor = document.createElement('meta');
+          metaThemeColor.name = "theme-color";
+          document.head.appendChild(metaThemeColor);
+        }
+        // ゲーミング中は黒(#000000)、解除時は元の青(#007bff)に戻す
+        metaThemeColor.content = isGaming ? "#000000" : "#007bff";
+
         window.showInfo(isGaming ? "🌈 ゲーミングモード起動 🌈" : "ゲーミングモード終了");
         
         if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
         
         secretTapCount = 0;
-        secretBtn.style.opacity = 0.15;
+        secretBtn.style.opacity = 0.2;
       }
     });
   }
