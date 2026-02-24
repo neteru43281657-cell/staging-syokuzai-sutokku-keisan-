@@ -60,7 +60,7 @@
         
         let color = "var(--text)";
         if (dayOfWeek === 6) color = "#007bff";
-        else if (dayOfWeek === 0) color = "#e74c3c";
+        else if (dayOfWeek === 0) color = "#e74c3b";
         
         // 祝日の色を鮮やかなオレンジに
         if (data.holidays.includes(dateStr)) color = "#ff8c00";
