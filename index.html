@@ -1439,26 +1439,26 @@
     </div>
   </div>
 
-  <div id="themeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; overflow-y:auto; flex-direction:column;">
-    
-    <div style="display:flex; align-items:center; justify-content:center; width:100%; min-height:100%; padding:20px; flex-shrink:0;">
+  <div id="themeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; overflow-y:auto;">
+    <div style="display: flex; flex-direction: column; width: 100%;">
       
-      <div class="card" style="max-width:520px; width:100%; position:relative;">
-        <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); padding-bottom:10px; margin-bottom:16px;">
-          <div style="font-weight:900; font-size:14px;">🎨 テーマカラー設定</div>
-          <button id="closeTheme" style="background:none; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-weight:800; cursor:pointer;">閉じる</button>
+      <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;">
+        
+        <div class="card" style="max-width:520px; width:100%; position:relative;">
+          <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); padding-bottom:10px; margin-bottom:16px;">
+            <div style="font-weight:900; font-size:14px;">🎨 テーマカラー設定</div>
+            <button id="closeTheme" style="background:none; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-weight:800; cursor:pointer;">閉じる</button>
+          </div>
+          <div id="themeGrid" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:10px;"></div>
         </div>
-        <div id="themeGrid" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:10px;"></div>
+        
+      </div>
+      
+      <div style="height: 120vh; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 50px;">
+        <span id="secretGamingBtn" style="font-size: 14px; font-weight: 900; letter-spacing: 2px; cursor: pointer; user-select: none; opacity: 0.15; transition: opacity 0.2s; color: #ffffff; line-height: 1.5; text-align: center;">……おや！？<br>アプリの　ようすが……！</span>
       </div>
       
     </div>
-    
-    <div style="height: 150vh; width: 100%; flex-shrink: 0;"></div>
-    
-    <div style="text-align: center; padding-bottom: 50px; flex-shrink: 0;">
-      <span id="secretGamingBtn" style="font-size: 14px; font-weight: 900; letter-spacing: 2px; cursor: pointer; user-select: none; opacity: 0.15; transition: opacity 0.2s; color: #ffffff; line-height: 1.5;">……おや！？<br>アプリの　ようすが……！</span>
-    </div>
-    
   </div>
     
   <script src="data/ingredients.js"></script>
