@@ -673,6 +673,15 @@
     .poke-vars-table th, .poke-vars-table td { border-bottom: 1px solid var(--line); }
     .poke-vars-table tr:last-child td { border-bottom: none; }
 
+    /* 画面が狭くて2段になった時でも、数値を右揃えに保つ */
+    .lvResVal {
+      text-align: right !important;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: center;
+    }
+  
       /* =========================================================
        ★★★ スマホ全体の微調整 (450px以下) ★★★
        ========================================================= */
