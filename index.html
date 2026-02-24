@@ -765,7 +765,11 @@
     .toast-msg {
       background: rgba(0, 0, 0, 0.8); color: #fff; padding: 10px 20px;
       border-radius: 20px; font-size: 13px; font-weight: 700; text-align: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15); white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+      white-space: normal;      /* ★変更：改行を許可 */
+      width: max-content;       /* ★追加：文字の長さに合わせる */
+      max-width: 90vw;          /* ★追加：最大幅を画面の90%までに制限 */
+      line-height: 1.4;         /* ★追加：改行時の行間を見やすく */
       animation: toastFadeIn 0.2s ease-out forwards, toastFadeOut 0.3s ease-in 2.5s forwards;
     }
     @keyframes toastFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -919,7 +923,9 @@
     body.gaming-mode .resultTitle,
     body.gaming-mode .lvlReq,
     body.gaming-mode [style*="color:var(--main)"],
-    body.gaming-mode [style*="color: var(--main)"] {
+    body.gaming-mode [style*="color: var(--main)"],
+    body.gaming-mode [style*="color:#e74c3c"],
+    body.gaming-mode [style*="color: #e74c3c"] {
       background-image: var(--gaming-gradient) !important;
       background-size: 200% 100% !important;
       animation: gamingFlow 2s linear infinite !important;
@@ -1427,7 +1433,7 @@
       <div style="height: 150vh; width: 100%; flex-shrink: 0;"></div>
       
       <div style="text-align: center; padding-bottom: 50px;">
-        <span id="secretGamingBtn" style="font-size: 36px; cursor: pointer; user-select: none; opacity: 0.2; transition: opacity 0.2s;">㊙️</span>
+        <span id="secretGamingBtn" style="font-size: 14px; font-weight: 900; letter-spacing: 2px; cursor: pointer; user-select: none; opacity: 0.15; transition: opacity 0.2s;">……おや！？　アプリの　ようすが……！</span>
       </div>
       
     </div>
