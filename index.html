@@ -787,11 +787,20 @@
         border-color: var(--line) !important;
       }
       /* 少し濃いグレーの背景要素 */
-      .settings-grey-box, .radioGroup, .ss-btn, .ing-lv, .bm-icon, .dex-icon-btn {
+      .settings-grey-box, .radioGroup, .ing-lv {
         background: #2a2a2a !important;
         border-color: var(--line) !important;
         color: var(--text);
       }
+      .ss-btn:not(.active), .bm-icon:not(.active), .dex-icon-btn:not(.active-filter) {
+        background: #2a2a2a !important;
+        border-color: var(--line) !important;
+        color: var(--text) !important;
+      }
+      /* 検索バー横のフィルターアイコン（ダークモードでも浮かないように背景色を微調整） */
+      .dex-icon-btn.active-filter[data-id="1"] { background: rgba(241, 196, 15, 0.2) !important; }
+      .dex-icon-btn.active-filter[data-id="2"] { background: rgba(231, 76, 60, 0.2) !important; }
+      .dex-icon-btn.active-filter[data-id="3"] { background: rgba(46, 204, 113, 0.2) !important; }
       /* トースト通知の色反転 */
       .toast-msg { background: rgba(255, 255, 255, 0.9); color: #000; }
     }
