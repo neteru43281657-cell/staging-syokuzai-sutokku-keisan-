@@ -829,6 +829,7 @@ window.onload = () => {
         // 起動のみ
         if (!document.body.classList.contains("gaming-mode")) {
           document.body.classList.add("gaming-mode");
+          document.getElementById("themeModal").style.display = "none";  
            
           // PWAのテーマカラー設定用のmetaタグを取得して黒にする
           let metaThemeColor = document.querySelector('meta[name="theme-color"]');
