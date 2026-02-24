@@ -795,7 +795,8 @@ window.onload = () => {
   let secretTapTimer = null;
 
   const secretBtn = document.getElementById("secretGamingBtn");
-  const defaultText = "……おや！？　アプリの　ようすが……！";
+  // ★ 変更：JS側でも \n を使って改行を含める
+  const defaultText = "……おや！？\nアプリの　ようすが……！";
   
   if (secretBtn) {
     secretBtn.addEventListener("click", () => {
@@ -804,9 +805,9 @@ window.onload = () => {
       
       const remain = 5 - secretTapCount;
       
-      // テキストの更新（残り回数を表示）
+      // ★ 変更：カウントダウンもさらに改行して下に綺麗に表示させる
       if (remain > 0) {
-        secretBtn.innerText = `${defaultText} (あと ${remain})`;
+        secretBtn.innerText = `${defaultText}\n(あと ${remain})`;
       }
 
       // タップするごとに少しずつ文字がはっきり見えるようにする演出
