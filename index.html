@@ -823,7 +823,8 @@
   
     /* ① 継ぎ目を完全になくすため、虹色を「2周分」定義する */
     :root {
-      --gaming-gradient: linear-gradient(to right, 
+      /* ★ 変更1：to right を to left に変更 */
+      --gaming-gradient: linear-gradient(to left, 
         #ff0000, #ff7f00, #ffff00, #00ff00, #00ffff, #0000ff, #8b00ff,
         #ff0000, #ff7f00, #ffff00, #00ff00, #00ffff, #0000ff, #8b00ff,
         #ff0000);
@@ -831,8 +832,9 @@
 
     /* 背景が流れるアニメーション（ズレないように100%動かしてループさせる） */
     @keyframes gamingFlow {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 100% 50%; }
+      /* ★ 変更2：100%から0%へ減らしていくことで、左から右への流れにする */
+      0% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
 
     /* ② アクセントカラー（チェックボックス・ラジオボタン用）のアニメーション */
