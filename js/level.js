@@ -262,10 +262,11 @@ function toNum(v) {
       let boostHeader = "";
       const boostRateInfo = boostKind === "mini" ? "(EXP2倍/かけら4倍)" : "(EXP2倍/かけら5倍)";
       
+      // ★変更点：半角スペースを <br> に変えて、確実に2段になるようにしました
       if (isBoostCountEmpty) {
-        boostHeader = `${boostKind === "mini" ? "ミニアメブースト" : "アメブースト"}最大数適用時 ${boostRateInfo}`;
+        boostHeader = `${boostKind === "mini" ? "ミニアメブースト" : "アメブースト"}最大数適用時<br>${boostRateInfo}`;
       } else {
-        boostHeader = `${boostKind === "mini" ? "ミニアメブースト" : "アメブースト"} ${bCount}個適用時 ${boostRateInfo}`;
+        boostHeader = `${boostKind === "mini" ? "ミニアメブースト" : "アメブースト"} ${bCount}個適用時<br>${boostRateInfo}`;
       }
 
       // 3. ブースト計算結果の表示
@@ -377,3 +378,4 @@ function toNum(v) {
     }
   };
 })();
+
