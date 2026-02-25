@@ -185,7 +185,9 @@
     .emphSelect {
       font-weight: 800 !important;
       border: 2px solid var(--main) !important;
-      background: #fff !important;
+      /* ★変更：一括指定を分解して、アニメーションへの干渉を防ぐ */
+      background-color: #fff !important;
+      background-image: none !important;
       box-shadow: 0 4px 10px rgba(0,0,0,.06) !important;
       border-radius: 10px !important;
       height: 38px !important;
@@ -794,13 +796,15 @@
         --line: #333333;
       }
       /* 白固定されている背景色をダークモード用に上書き */
+      /* ★変更： background の一括指定を解除し、 background-color に限定 */
       .card, .result-card, .bottom-nav, .field-item, .sleep-section, .dex-tool-bar, .dex-suggest-list, .month-card, .tile, .recipeRow, select, input, .lvlQuickBtn, .capsule-btn, .radioGroup label:has(input:checked), .removeBtn, #docViewerImg {
-        background: var(--card) !important;
+        background-color: var(--card) !important;
+        background-image: none !important;
         color: var(--text) !important;
         border-color: var(--line) !important;
       }
       
-      /* ★修正1: アクティブ状態のボタンは除外し、本来のテーマカラーで光らせる */
+      /* アクティブ状態のボタンは除外し、本来のテーマカラーで光らせる */
       .settings-grey-box, .radioGroup, .ing-lv {
         background: #2a2a2a !important;
         border-color: var(--line) !important;
@@ -817,7 +821,7 @@
       .dex-icon-btn.active-filter[data-id="2"] { background: rgba(231, 76, 60, 0.2) !important; }
       .dex-icon-btn.active-filter[data-id="3"] { background: rgba(46, 204, 113, 0.2) !important; }
       
-      /* ★修正2: お気に入りポケモンの白塗りつぶしを無くし、枠線のみにする */
+      /* お気に入りポケモンの白塗りつぶしを無くし、枠線のみにする */
       .poke-item.highlight-blue img {
         background: transparent !important;
       }
@@ -832,7 +836,6 @@
   
     /* ① 継ぎ目を完全になくすため、虹色を「2周分」定義する */
     :root {
-      /* ★ 変更1：to right を to left に変更 */
       --gaming-gradient: linear-gradient(to left, 
         #ff0000, #ff7f00, #ffff00, #00ff00, #00ffff, #0000ff, #8b00ff,
         #ff0000, #ff7f00, #ffff00, #00ff00, #00ffff, #0000ff, #8b00ff,
@@ -841,7 +844,6 @@
 
     /* 背景が流れるアニメーション（ズレないように100%動かしてループさせる） */
     @keyframes gamingFlow {
-      /* ★ 変更2：100%から0%へ減らしていくことで、左から右への流れにする */
       0% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
@@ -871,14 +873,6 @@
       71% { border-color: #0000ff; }
       85% { border-color: #8b00ff; }
       100% { border-color: #ff0000; }
-    }
-
-    /* ③-2 セレクトボックス専用アニメーション（枠線でも影でもなく"アウトライン"で描画する） */
-    body.gaming-mode .emphSelect {
-      border-color: transparent !important; /* 元の枠線を透明にして場所だけ確保 */
-      outline: 2px solid #ff0000 !important; /* 代わりにアウトラインを引く */
-      outline-offset: -2px !important; /* アウトラインを内側に2pxズラして枠線と完全に重ねる */
-      animation: gamingOutline 2s linear infinite !important;
     }
   
     /* カレンダーの当日の赤枠線（outlineで描画されているため専用処理） */
@@ -967,6 +961,7 @@
     body.gaming-mode .result-card,
     body.gaming-mode #tab3 .lvlResult,
     body.gaming-mode .energyResultBox,
+    body.gaming-mode .emphSelect,   /* ★ emphSelect（プルダウン）を本来の最高に光る位置に大復活！！ */
     body.gaming-mode .field-item.highlight-blue,
     body.gaming-mode .poke-item.highlight-blue img {
       border-color: transparent !important;
