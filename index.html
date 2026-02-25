@@ -184,8 +184,9 @@
 
     .emphSelect {
       font-weight: 800 !important;
-      border: 2px solid var(--main) !important;
-      /* ★変更：一括指定を分解して、アニメーションへの干渉を防ぐ */
+      border-width: 2px !important;
+      border-style: solid !important;
+      border-color: var(--main);    
       background-color: #fff !important;
       background-image: none !important;
       box-shadow: 0 4px 10px rgba(0,0,0,.06) !important;
@@ -883,6 +884,10 @@
       85% { border-color: #8b00ff; }
       100% { border-color: #ff0000; }
     }
+
+    body.gaming-mode .emphSelect {
+      animation: gamingBorder 2s linear infinite !important;
+    }
   
     /* カレンダーの当日の赤枠線（outlineで描画されているため専用処理） */
     @keyframes gamingOutline {
@@ -970,7 +975,6 @@
     body.gaming-mode .result-card,
     body.gaming-mode #tab3 .lvlResult,
     body.gaming-mode .energyResultBox,
-    body.gaming-mode .emphSelect,
     body.gaming-mode .field-item.highlight-blue,
     body.gaming-mode .poke-item.highlight-blue img {
       border-color: transparent !important;
