@@ -184,9 +184,8 @@
 
     .emphSelect {
       font-weight: 800 !important;
-      border-width: 2px !important;
-      border-style: solid !important;
-      border-color: var(--main);    
+      border: 2px solid var(--main) !important;
+      /* ★変更：一括指定を分解して、アニメーションへの干渉を防ぐ */
       background-color: #fff !important;
       background-image: none !important;
       box-shadow: 0 4px 10px rgba(0,0,0,.06) !important;
@@ -830,14 +829,6 @@
       /* トースト通知の色反転 */
       .toast-msg { background: rgba(255, 255, 255, 0.9); color: #000; }
     }
-  
-    /* 操作中（フォーカス時）に出るブラウザ標準の黒枠・青枠をアプリ全体で消し去る */
-    select:focus,
-    input:focus,
-    .emphSelect:focus {
-      outline: none !important;
-    }
-
 
   
     /* =========================================================
@@ -883,10 +874,6 @@
       71% { border-color: #0000ff; }
       85% { border-color: #8b00ff; }
       100% { border-color: #ff0000; }
-    }
-
-    body.gaming-mode .emphSelect {
-      animation: gamingBorder 2s linear infinite !important;
     }
   
     /* カレンダーの当日の赤枠線（outlineで描画されているため専用処理） */
@@ -975,6 +962,7 @@
     body.gaming-mode .result-card,
     body.gaming-mode #tab3 .lvlResult,
     body.gaming-mode .energyResultBox,
+    body.gaming-mode .emphSelect,
     body.gaming-mode .field-item.highlight-blue,
     body.gaming-mode .poke-item.highlight-blue img {
       border-color: transparent !important;
