@@ -873,6 +873,10 @@
       100% { border-color: #ff0000; }
     }
 
+    body.gaming-mode .emphSelect {
+      animation: gamingBorder 2s linear infinite !important;
+    }
+  
     /* カレンダーの当日の赤枠線（outlineで描画されているため専用処理） */
     @keyframes gamingOutline {
       0% { outline-color: #ff0000; }
@@ -959,7 +963,6 @@
     body.gaming-mode .result-card,
     body.gaming-mode #tab3 .lvlResult,
     body.gaming-mode .energyResultBox,
-    body.gaming-mode .emphSelect,
     body.gaming-mode .field-item.highlight-blue,
     body.gaming-mode .poke-item.highlight-blue img {
       border-color: transparent !important;
