@@ -873,8 +873,20 @@
       100% { border-color: #ff0000; }
     }
 
+    /* ③-2 セレクトボックス専用のアニメーション（頑固なborder-colorを避けて影で枠線を表現） */
+    @keyframes gamingSelectBox {
+      0% { box-shadow: 0 0 0 2px #ff0000; }
+      14% { box-shadow: 0 0 0 2px #ff7f00; }
+      28% { box-shadow: 0 0 0 2px #ffff00; }
+      42% { box-shadow: 0 0 0 2px #00ff00; }
+      57% { box-shadow: 0 0 0 2px #00ffff; }
+      71% { box-shadow: 0 0 0 2px #0000ff; }
+      85% { box-shadow: 0 0 0 2px #8b00ff; }
+      100% { box-shadow: 0 0 0 2px #ff0000; }
+    }
     body.gaming-mode .emphSelect {
-      animation: gamingBorder 2s linear infinite !important;
+      border-color: transparent !important; /* 元の枠線を透明にして消す */
+      animation: gamingSelectBox 2s linear infinite !important;
     }
   
     /* カレンダーの当日の赤枠線（outlineで描画されているため専用処理） */
