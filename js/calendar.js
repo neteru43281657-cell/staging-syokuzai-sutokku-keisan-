@@ -24,14 +24,23 @@
     if (!container || !window.CALENDAR_DATA) return;
 
     const data = window.CALENDAR_DATA;
-    const year = 2026;
+
+    // ★ 修正: カレンダーデータの年を自動判定
+    //   CALENDAR_DATA の fullMoons の最初のエントリから年を取得
+    //   データがない場合は現在年にフォールバック
+    let year = new Date().getFullYear();
+    if (data.fullMoons && data.fullMoons.length > 0) {
+      const firstDate = data.fullMoons[0];
+      const parsed = parseInt(firstDate.split("-")[0], 10);
+      if (parsed) year = parsed;
+    }
+
     const today = new Date();
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     const dows = ["月", "火", "水", "木", "金", "土", "日"];
     
-    // 修正後
     container.innerHTML = "";
-    container.className = "calendar-grid"; // index.htmlに定義済みのCSSクラスを適用
+    container.className = "calendar-grid";
 
     for (let m = 0; m < 12; m++) {
       let html = `

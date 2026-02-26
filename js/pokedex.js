@@ -2,7 +2,19 @@
 "use strict";
 
 const pokEl = (id) => document.getElementById(id);
-function imgSrc(file) { return "images/" + encodeURIComponent(file); }
+
+// ★ imgSrc の二重定義を削除（app.js 側の定義を使用）
+
+// ★ HTMLエスケープ用ヘルパー（XSS対策）
+function escapeHTML(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
 // caches
 let POKE_LIST = null;     
@@ -48,7 +60,11 @@ function initBookmarks() {
 }
 
 function saveBookmarks() {
-  localStorage.setItem("poke_bookmarks", JSON.stringify(BOOKMARKS));
+  try {
+    localStorage.setItem("poke_bookmarks", JSON.stringify(BOOKMARKS));
+  } catch (e) {
+    console.warn("Bookmark save failed", e);
+  }
 }
 
 function hasBookmark(iconId, name) {
@@ -83,13 +99,14 @@ function toggleBookmark(iconId, name) {
   return added; 
 }
 
-// 青枠の即時更新ロジック
+// ★ 修正: querySelectorAll にユーザーデータを直接埋め込まない
 function updateGridHighlight(name) {
-  const items = document.querySelectorAll(`.poke-item[data-name="${name}"]`);
+  const items = document.querySelectorAll(".poke-item");
   const activeBtn = document.querySelector(".dex-icon-btn.active-filter");
   const activeFilterId = activeBtn ? activeBtn.dataset.id : null;
 
   items.forEach(item => {
+    if (item.dataset.name !== name) return;
     // ブックマーク操作時の青枠制御
     if (activeFilterId) {
       if (hasBookmark(activeFilterId, name)) {
@@ -330,7 +347,7 @@ function makeToolbarHTML(placeholderText, withNote = false) {
   return `
     <div class="dex-tool-bar">
       <div class="dex-search-row">
-        <input type="text" class="dex-search-input" placeholder="${placeholderText}" autocomplete="off">
+        <input type="text" class="dex-search-input" placeholder="${escapeHTML(placeholderText)}" autocomplete="off">
         <div class="dex-search-clear">×</div> <div class="dex-suggest-list"></div>
       </div>
       <div class="dex-icon-row">
@@ -372,7 +389,7 @@ function attachToolbarEvents(container, onSearch, onIconClick) {
       return name.startsWith(searchVal);
     });
     
-    // ★修正: 五十音順にソート
+    // 五十音順にソート
     matches.sort((a, b) => a.localeCompare(b, "ja"));
     
     if (matches.length === 0) {
@@ -380,10 +397,11 @@ function attachToolbarEvents(container, onSearch, onIconClick) {
       return;
     }
 
-    // リスト生成
-    suggestList.innerHTML = matches.map(name => `
-      <div class="dex-suggest-item" data-val="${name}">${name}</div>
-    `).join("");
+    // ★ 修正: エスケープしてサジェスト生成
+    suggestList.innerHTML = matches.map(name => {
+      const escaped = escapeHTML(name);
+      return `<div class="dex-suggest-item" data-val="${escaped}">${escaped}</div>`;
+    }).join("");
     suggestList.style.display = "block";
 
     // 候補クリックイベント
@@ -391,7 +409,7 @@ function attachToolbarEvents(container, onSearch, onIconClick) {
       item.addEventListener("click", () => {
         input.value = item.dataset.val;
         suggestList.style.display = "none";
-        clearBtn.style.display = "block"; // 確定したら✕表示
+        clearBtn.style.display = "block";
         
         // 検索実行
         if (onSearch) onSearch(input.value.trim());
@@ -406,13 +424,11 @@ function attachToolbarEvents(container, onSearch, onIconClick) {
 
   // input イベント：サジェスト表示 & ✕ボタン制御
   input.addEventListener("input", (e) => {
-    const val = e.target.value; // trimしない(空白削除判定のため)
+    const val = e.target.value;
     showSuggest(val.trim());
     
-    // ✕ボタンの表示切り替え
     clearBtn.style.display = val.length > 0 ? "block" : "none";
 
-    // ★修正: 文字が空になったら、青枠（検索結果）を消す＝検索解除
     if (val === "") {
       if (onSearch) onSearch("");
     }
@@ -427,12 +443,11 @@ function attachToolbarEvents(container, onSearch, onIconClick) {
     }
   });
   
-  // ★追加: ✕ボタンクリック時
+  // ✕ボタンクリック時
   clearBtn.addEventListener("click", () => {
     input.value = "";
     clearBtn.style.display = "none";
     suggestList.style.display = "none";
-    // 検索解除（青枠を消す）
     if (onSearch) onSearch("");
     input.focus();
   });
@@ -484,12 +499,21 @@ async function renderFieldMenu() {
   `;
 
   const grid = menuContainer.querySelector(".field-grid");
+
+  // ★ 修正: onclick属性ではなく addEventListener を使用
   grid.innerHTML = FIELDS.map(field => `
-    <div class="field-item" data-field="${field.name}" onclick="window.PokedexTab.showFieldDetail('${field.id}')">
-      <img src="images/${field.file}" class="field-img">
-      <div class="field-name">${field.name}</div>
+    <div class="field-item" data-field="${escapeHTML(field.name)}" data-field-id="${escapeHTML(field.id)}">
+      <img src="images/${encodeURIComponent(field.file)}" class="field-img">
+      <div class="field-name">${escapeHTML(field.name)}</div>
     </div>
   `).join("");
+
+  grid.querySelectorAll(".field-item").forEach(item => {
+    item.addEventListener("click", () => {
+      const fieldId = item.dataset.fieldId;
+      if (fieldId) window.PokedexTab.showFieldDetail(fieldId);
+    });
+  });
 
   const toolbar = menuContainer.querySelector(".dex-tool-bar");
   
@@ -510,7 +534,6 @@ async function renderFieldMenu() {
       let match = false;
       if (keyword) {
         const searchVal = hiraToKata(keyword);
-        // 部分一致
         if (allPokes.some(pName => pName.includes(searchVal))) match = true;
       }
       if (activeIconId) {
@@ -551,15 +574,17 @@ function buildPokemonGridHTML(label, badgeClass, names, pokeMap, pokeList) {
   const sorted = sortByDexOrder(names, pokeList);
   const items = sorted.map(name => {
     const p = pokeMap.get(name);
+    const escapedName = escapeHTML(name);
     const src = p ? imgSrc(p.file) : "";
     const imgHtml = p
-      ? `<img src="${src}" alt="${name}">`
+      ? `<img src="${src}" alt="${escapedName}">`
       : `<div style="width:44px;height:44px;border:1px dashed #ccc;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#999;">no img</div>`;
     
+    // ★ 修正: onclick属性ではなく data属性のみ付与（後からaddEventListenerで接続）
     return `
-      <div class="poke-item" data-name="${name}" title="${name}" onclick="window.PokedexTab.openDetail('${name}')">
+      <div class="poke-item" data-name="${escapedName}" title="${escapedName}">
         ${imgHtml}
-        <div class="poke-name">${name}</div>
+        <div class="poke-name">${escapedName}</div>
       </div>
     `;
   }).join("");
@@ -573,6 +598,16 @@ function buildPokemonGridHTML(label, badgeClass, names, pokeMap, pokeList) {
       <div class="poke-grid">${items}</div>
     </div>
   `;
+}
+
+// ★ ポケモンカードへのクリックイベントを一括付与するヘルパー
+function attachPokeItemEvents(container) {
+  container.querySelectorAll(".poke-item").forEach(item => {
+    item.addEventListener("click", () => {
+      const name = item.dataset.name;
+      if (name) window.PokedexTab.openDetail(name);
+    });
+  });
 }
 
 async function showFieldDetail(fieldId, opts = {}) {
@@ -602,7 +637,7 @@ async function showFieldDetail(fieldId, opts = {}) {
 
     const eRows = energyMap.get(field.name) || [];
     const eTrs = eRows.filter(r => r.count >= 4 && r.count <= 8)
-      .map(r => `<tr><td style="font-weight:900;">${r.count}体</td><td style="font-weight:900;">${r.energyText}</td></tr>`).join("");
+      .map(r => `<tr><td style="font-weight:900;">${r.count}体</td><td style="font-weight:900;">${escapeHTML(r.energyText)}</td></tr>`).join("");
     const energyHtml = eTrs ? `
       <table class="energy-table">
         <thead><tr><th>出現ポケモン数</th><th>必要エナジー</th></tr></thead>
@@ -612,8 +647,8 @@ async function showFieldDetail(fieldId, opts = {}) {
     const headerHtml = `
       <div class="card">
         <div class="field-header">
-          <img src="images/${field.file}" alt="${field.name}">
-          <div class="field-title">${field.name}</div>
+          <img src="images/${encodeURIComponent(field.file)}" alt="${escapeHTML(field.name)}">
+          <div class="field-title">${escapeHTML(field.name)}</div>
         </div>
         ${energyHtml}
       </div>
@@ -632,6 +667,9 @@ async function showFieldDetail(fieldId, opts = {}) {
       ${suya}
       ${gusu}
     `;
+
+    // ★ 修正: ポケモンカードのクリックイベントをaddEventListenerで付与
+    attachPokeItemEvents(pokEl("detailContent"));
 
     const toolbar = pokEl("detailContent").querySelector(".dex-tool-bar");
     const gridItems = pokEl("detailContent").querySelectorAll(".poke-item");
@@ -665,8 +703,15 @@ async function showFieldDetail(fieldId, opts = {}) {
     );
 
   } catch (err) {
-    pokEl("detailContent").innerHTML = `
-      <div class="card"><div style="color:red;">読み込み失敗: ${err}</div></div>`;
+    // ★ 修正: エラーメッセージをtextContentで安全に表示
+    const errCard = document.createElement("div");
+    errCard.className = "card";
+    const errDiv = document.createElement("div");
+    errDiv.style.cssText = "color:red; font-weight:700;";
+    errDiv.textContent = "読み込み失敗: " + String(err);
+    errCard.appendChild(errDiv);
+    pokEl("detailContent").innerHTML = "";
+    pokEl("detailContent").appendChild(errCard);
   }
 }
 
@@ -705,6 +750,17 @@ function getIngIcon(name) {
   return found ? imgSrc(found.file) : "";
 }
 
+// ★ 修正: スキルURLをhttps限定でバリデーション
+function isValidSkillUrl(url) {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:";
+  } catch (_) {
+    return false;
+  }
+}
+
 async function openDetail(name) {
   initBookmarks(); 
   const { map } = await loadPokemonMaster();
@@ -723,9 +779,10 @@ async function openDetail(name) {
   }
 
   const skillUrl = skills.get(p.skillName) || null;
-  const skillHtml = skillUrl 
-    ? `<a href="${skillUrl}" target="_blank" style="color:var(--main); text-decoration:underline; font-weight:900;">${p.skillName} <span style="font-size:10px;">↗</span></a><br><span style="font-size:10px; color:var(--muted); font-weight:normal;">※外部Wikiへ遷移します</span>`
-    : p.skillName;
+  // ★ 修正: URLバリデーション追加
+  const skillHtml = (skillUrl && isValidSkillUrl(skillUrl))
+    ? `<a href="${escapeHTML(skillUrl)}" target="_blank" rel="noopener noreferrer" style="color:var(--main); text-decoration:underline; font-weight:900;">${escapeHTML(p.skillName)} <span style="font-size:10px;">↗</span></a><br><span style="font-size:10px; color:var(--muted); font-weight:normal;">※外部Wikiへ遷移します</span>`
+    : escapeHTML(p.skillName);
 
   const avgKey = `${p.type}_${p.evo}`;
   const avg = STATS_AVG ? STATS_AVG[avgKey] : null;
@@ -746,8 +803,8 @@ async function openDetail(name) {
     return `
       <div style="margin-bottom:12px;">
         <div style="font-size:11px; font-weight:700; margin-bottom:4px; display:flex; justify-content:space-between;">
-          <span>${label}</span>
-          <span>${val}${unit}</span>
+          <span>${escapeHTML(label)}</span>
+          <span>${val}${escapeHTML(unit)}</span>
         </div>
         <div style="background:var(--bg); height:8px; border-radius:4px; overflow:hidden; margin-bottom:4px;">
           <div style="width:${w1}%; background:${col1}; height:100%;"></div>
@@ -756,7 +813,7 @@ async function openDetail(name) {
         <div style="background:var(--bg); height:6px; border-radius:3px; overflow:hidden; margin-bottom:2px;">
            <div style="width:${w2}%; background:${col2}; height:100%;"></div>
         </div>
-        <div style="font-size:9px; color:var(--muted); text-align:right;">同タイプ平均：${avgVal.toFixed(1)}${unit}</div>
+        <div style="font-size:9px; color:var(--muted); text-align:right;">同タイプ平均：${avgVal.toFixed(1)}${escapeHTML(unit)}</div>
         ` : ""}
       </div>
     `;
@@ -769,7 +826,7 @@ async function openDetail(name) {
     const icon = getIngIcon(name); 
     return `
       <div class="ing-item">
-        ${icon ? `<img src="${icon}" class="ing-icon">` : `<span class="ing-name" style="font-size:10px; color:var(--muted);">${name}</span>`}
+        ${icon ? `<img src="${icon}" class="ing-icon">` : `<span class="ing-name" style="font-size:10px; color:var(--muted);">${escapeHTML(name)}</span>`}
       </div>
     `;
   };
@@ -811,6 +868,7 @@ async function openDetail(name) {
       </div>`;
   }
 
+  const escapedName = escapeHTML(p.name);
   const b1 = hasBookmark("1", name) ? "active" : "";
   const b2 = hasBookmark("2", name) ? "active" : "";
   const b3 = hasBookmark("3", name) ? "active" : "";
@@ -830,13 +888,13 @@ async function openDetail(name) {
         <div class="type-badge-row" style="display:flex; align-items:center;">
           <div class="element-type">
             ${typeIconHtml}
-            <span>${p.typeName}</span>
+            <span>${escapeHTML(p.typeName)}</span>
           </div>
-          <span class="type-badge ${typeClass}" style="font-size:11px; padding:2px 10px; min-width:auto; margin-right:auto;">${p.type}</span>
+          <span class="type-badge ${typeClass}" style="font-size:11px; padding:2px 10px; min-width:auto; margin-right:auto;">${escapeHTML(p.type)}</span>
           ${bookmarksHtml}
         </div>
         <div style="font-size:20px; font-weight:900; line-height:1.2; margin-top:4px;">
-          ${p.name}
+          ${escapedName}
         </div>
       </div>
     </div>
@@ -862,7 +920,6 @@ async function openDetail(name) {
       if (added) btn.classList.add("active");
       else btn.classList.remove("active");
       
-      // 青枠更新ロジック: 一覧画面(裏側)を即時更新する
       updateGridHighlight(p.name);
     };
     setupLongPress(btn, () => {
@@ -897,7 +954,6 @@ function backToMenu(viaPop = false) {
     }
     replaceMenuState();
   }
-  // 戻った際、青枠状態を念のため再同期
   window.PokedexTab.renderFieldMenu();
 }
 
