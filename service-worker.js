@@ -1,6 +1,6 @@
 // service-worker.js
 
-const CACHE_NAME = "stockcalc-v2.5.5"; // ★更新のたびに必ず上げること
+const CACHE_NAME = "stockcalc-v2.5.3"; // ★更新のたびに必ず上げること
 
 // 事前キャッシュ（最低限）
 const ASSETS = [
@@ -66,6 +66,11 @@ self.addEventListener("fetch", (e) => {
 
   // GET以外は触らない
   if (req.method !== "GET") return;
+
+  // ★ 修正: 同一オリジンのリクエストのみキャッシュ対象にする
+  //   Google Analytics等の外部リクエストはキャッシュしない
+  const reqUrl = new URL(req.url);
+  if (reqUrl.origin !== self.location.origin) return;
 
   e.respondWith(
     fetch(req)
