@@ -664,11 +664,14 @@ function createSnapshot() {
   }
 
   const targetKey = SS_KEYS[targetIndex];
-  localStorage.setItem(targetKey, JSON.stringify(current));
-  
-  showInfo(`スロ${targetIndex + 1} に保存しました`);
+  try {
+    localStorage.setItem(targetKey, JSON.stringify(current));
+    showInfo(`スロ${targetIndex + 1} に保存しました`);
+  } catch (e) {
+    console.warn("Snapshot save failed:", e);
+    showInfo("保存に失敗しました\nストレージの空き容量が不足しています");
+  }
   updateSSButtons();
-}
 
 function loadSnapshot(ssid) {
   const key = SS_KEYS[ssid - 1];
@@ -736,7 +739,7 @@ function initKeyboardObserver() {
 /* =========================================================
    onload / タブ切替
 ========================================================= */
-window.onload = () => {
+window.addEventListener("load", () => {
   resetSWAndCacheOnce();
   registerSW();
   renderGrids();
@@ -878,7 +881,7 @@ window.onload = () => {
   }
   // ====== 追加ここまで ======
    
-}; // ← window.onload の最後の閉じ括弧
+});// ← addEventListener("load") の最後の閉じ括弧
 
 window.switchTab = function (tabId, clickedEl) {
   if (typeof gtag === 'function') {
