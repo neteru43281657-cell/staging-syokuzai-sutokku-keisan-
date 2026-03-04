@@ -456,7 +456,7 @@ function calc() {
   const evPattern = EVENT_PATTERNS[evPatKey];
 
   const catSums = { "カレー・シチュー": new Map(), "サラダ": new Map(), "デザート・ドリンク": new Map() };
-  const ingredientOrder = [];
+  const ingredientOrder = (window.INGREDIENTS || []).map(ing => ing.id);
   let totalEnergy = 0;
 
   state.recipeRows.forEach(row => {
@@ -480,7 +480,6 @@ function calc() {
 
     const map = catSums[row.cat];
     Object.entries(r.ingredients).forEach(([iid, qty]) => {
-      if (!ingredientOrder.includes(iid)) ingredientOrder.push(iid);
       map.set(iid, (map.get(iid) || 0) + (qty * row.meals));
     });
   });
