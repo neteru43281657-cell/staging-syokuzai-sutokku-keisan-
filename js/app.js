@@ -326,7 +326,7 @@ function addRecipeRow(init) {
         
         <div style="flex:1 0 55px;">
           <label class="emphLabel">レシピLv</label>
-          <select class="lvlInput" style="text-align:center; height:38px; border:1px solid var(--line); border-radius:10px; background:#fff; font-weight:800; width:100%;">
+          <select class="lvlInput" style="height:38px; border:1px solid var(--line); border-radius:10px; background:#fff; font-weight:800; width:100%;">
             ${levelOptions}
           </select>
         </div>
