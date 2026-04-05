@@ -873,7 +873,7 @@
     /* ① 面が広い要素（事前定義グラデーション＋positionアニメーションでなめらかに） */
     @keyframes gamingFlow {
       from { background-position: 0% 50%; }
-      to { background-position: 200% 50%; }
+      to { background-position: 100% 50%; }
     }
 
     body.gaming-mode header,
@@ -885,7 +885,9 @@
     body.gaming-mode .bm-icon.active,
     body.gaming-mode .dex-icon-btn.active-filter {
       background: linear-gradient(to right,
-        #ff0000, #ff7f00, #ffff00, #00ff00, #00ffff, #0000ff, #8b00ff, #ff0000) !important;
+        #ff0000, #ff7f00, #ffff00, #00ff00, #00ffff, #0000ff, #8b00ff,
+        #ff0000, #ff7f00, #ffff00, #00ff00, #00ffff, #0000ff, #8b00ff,
+        #ff0000) !important;
       background-size: 200% 100% !important;
       animation: gamingFlow 2s linear infinite !important;
       color: #fff !important;
