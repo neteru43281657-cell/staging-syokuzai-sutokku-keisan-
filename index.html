@@ -848,89 +848,29 @@
     }
 
   
-    /* =========================================================
-       🌈 ゲーミングモード（修正版） 🌈
+/* =========================================================
+       🌈 ゲーミングモード（v2 - 完全同期版） 🌈
+       --g-hue という1つの変数だけをアニメーションし、
+       全要素がそれを参照することで色のズレをゼロにする
        ========================================================= */
-  
-    /* ① 継ぎ目を完全になくすため、虹色を「2周分」定義する */
-    :root {
-      --gaming-gradient: linear-gradient(to left, 
-        #ff0000, #ff7f00, #ffff00, #00ff00, #00ffff, #0000ff, #8b00ff,
-        #ff0000, #ff7f00, #ffff00, #00ff00, #00ffff, #0000ff, #8b00ff,
-        #ff0000);
+
+    @property --g-hue {
+      syntax: '<number>';
+      inherits: true;
+      initial-value: 0;
     }
 
-    /* 背景が流れるアニメーション（ズレないように100%動かしてループさせる） */
-    @keyframes gamingFlow {
-      0% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    @keyframes gamingHue {
+      from { --g-hue: 0; }
+      to { --g-hue: 360; }
     }
 
-    /* ② アクセントカラー（チェックボックス・ラジオボタン用）のアニメーション */
     body.gaming-mode {
-      animation: gamingAccent 2s linear infinite !important;
-    }
-    @keyframes gamingAccent {
-      0% { accent-color: #ff0000; }
-      14% { accent-color: #ff7f00; }
-      28% { accent-color: #ffff00; }
-      42% { accent-color: #00ff00; }
-      57% { accent-color: #00ffff; }
-      71% { accent-color: #0000ff; }
-      85% { accent-color: #8b00ff; }
-      100% { accent-color: #ff0000; }
+      animation: gamingHue 2s linear infinite;
+      accent-color: hsl(var(--g-hue), 100%, 50%);
     }
 
-    /* ③ 単純な枠線のアニメーション（border-colorを直接変更できるもの） */
-    @keyframes gamingBorder {
-      0% { border-color: #ff0000; }
-      14% { border-color: #ff7f00; }
-      28% { border-color: #ffff00; }
-      42% { border-color: #00ff00; }
-      57% { border-color: #00ffff; }
-      71% { border-color: #0000ff; }
-      85% { border-color: #8b00ff; }
-      100% { border-color: #ff0000; }
-    }
-  
-    /* カレンダーの当日の赤枠線（outlineで描画されているため専用処理） */
-    @keyframes gamingOutline {
-      0% { outline-color: #ff0000; }
-      14% { outline-color: #ff7f00; }
-      28% { outline-color: #ffff00; }
-      42% { outline-color: #00ff00; }
-      57% { outline-color: #00ffff; }
-      71% { outline-color: #0000ff; }
-      85% { outline-color: #8b00ff; }
-      100% { outline-color: #ff0000; }
-    }
-    body.gaming-mode .days-grid div[style*="outline"] {
-      animation: gamingOutline 2s linear infinite !important;
-      outline-color: #ff0000 !important;
-    }
-
-    /* ④ 文字色・枠線・背景色がすべて虹色に明滅する要素（テーブルヘッダー、n食/21食、カレンダー〇月など） */
-    @keyframes gamingBorderTextBg {
-      0% { color: #ff0000; border-color: #ff0000; background-color: rgba(255,0,0,0.15); }
-      14% { color: #ff7f00; border-color: #ff7f00; background-color: rgba(255,127,0,0.15); }
-      28% { color: #ffff00; border-color: #ffff00; background-color: rgba(255,255,0,0.15); }
-      42% { color: #00ff00; border-color: #00ff00; background-color: rgba(0,255,0,0.15); }
-      57% { color: #00ffff; border-color: #00ffff; background-color: rgba(0,255,255,0.15); }
-      71% { color: #0000ff; border-color: #0000ff; background-color: rgba(0,0,255,0.15); }
-      85% { color: #8b00ff; border-color: #8b00ff; background-color: rgba(139,0,255,0.15); }
-      100% { color: #ff0000; border-color: #ff0000; background-color: rgba(255,0,0,0.15); }
-    }
-    body.gaming-mode #summaryBadge,
-    body.gaming-mode .month-name,
-    body.gaming-mode .radioGroup label:has(input:checked),
-    body.gaming-mode .preview span,
-    body.gaming-mode .badge,
-    body.gaming-mode .energy-table th,
-    body.gaming-mode .mode3Note {
-      animation: gamingBorderTextBg 2s linear infinite !important;
-    }
-
-    /* ⑤ 面が広い要素（グラデーション背景＋白文字） */
+    /* ① 面が広い要素（虹色グラデーション背景＋白文字） */
     body.gaming-mode header,
     body.gaming-mode button.primary,
     body.gaming-mode .capsule-btn,
@@ -939,14 +879,29 @@
     body.gaming-mode .ss-btn.active,
     body.gaming-mode .bm-icon.active,
     body.gaming-mode .dex-icon-btn.active-filter {
-      background-image: var(--gaming-gradient) !important;
-      background-size: 200% 100% !important;
-      animation: gamingFlow 2s linear infinite !important;
+      background: linear-gradient(to right,
+        hsl(var(--g-hue), 100%, 50%),
+        hsl(calc(var(--g-hue) + 90), 100%, 50%),
+        hsl(calc(var(--g-hue) + 180), 100%, 50%),
+        hsl(calc(var(--g-hue) + 270), 100%, 50%)) !important;
       color: #fff !important;
-      border-color: transparent !important;
+      border-color: hsl(var(--g-hue), 100%, 40%) !important;
     }
 
-    /* ⑥ 文字だけがグラデーションになる要素（アスタリスク、計算結果テキスト、インフォモーダル内のリンク等） */
+    /* ② バッジ系（文字色＋枠線＋薄い背景が同期して変化） */
+    body.gaming-mode #summaryBadge,
+    body.gaming-mode .month-name,
+    body.gaming-mode .radioGroup label:has(input:checked),
+    body.gaming-mode .preview span,
+    body.gaming-mode .badge,
+    body.gaming-mode .energy-table th,
+    body.gaming-mode .mode3Note {
+      color: hsl(var(--g-hue), 100%, 38%) !important;
+      border-color: hsl(var(--g-hue), 80%, 60%) !important;
+      background-color: hsl(var(--g-hue), 100%, 93%) !important;
+    }
+
+    /* ③ 文字だけ虹色になる要素 */
     body.gaming-mode .nav-item.active,
     body.gaming-mode .lvResTitle,
     body.gaming-mode .lvResSubTitle,
@@ -957,38 +912,28 @@
     body.gaming-mode [style*="color: var(--main)"],
     body.gaming-mode [style*="color:#e74c3c"],
     body.gaming-mode [style*="color: #e74c3c"] {
-      background-image: var(--gaming-gradient) !important;
-      background-size: 200% 100% !important;
-      animation: gamingFlow 2s linear infinite !important;
-      color: transparent !important;
-      -webkit-background-clip: text !important;
-      background-clip: text !important;
+      color: hsl(var(--g-hue), 100%, 45%) !important;
     }
 
-    /* ⑦ sectionTitle（文字はグラデーションに流しつつ、左側の枠線も虹色に変化させる同時掛け） */
+    /* ④ sectionTitle（文字色＋左の縦線） */
     body.gaming-mode .sectionTitle {
-      background-image: var(--gaming-gradient) !important;
-      background-size: 200% 100% !important;
-      color: transparent !important;
-      -webkit-background-clip: text !important;
-      background-clip: text !important;
-      animation: gamingFlow 2s linear infinite, gamingBorder 2s linear infinite !important;
+      color: hsl(var(--g-hue), 100%, 45%) !important;
+      border-left-color: hsl(var(--g-hue), 100%, 50%) !important;
     }
 
-    /* ⑧ 枠線をグラデーションアニメーションにする要素群（中身は通常のカード背景） */
+    /* ⑤ 枠線が虹色になる要素（中身はカード背景のまま） */
     body.gaming-mode .result-card,
     body.gaming-mode #tab3 .lvlResult,
     body.gaming-mode .energyResultBox,
     body.gaming-mode .emphSelect,
     body.gaming-mode .field-item.highlight-blue,
     body.gaming-mode .poke-item.highlight-blue img {
-      border-color: transparent !important;
-      /* 背景を2層にし、内側を無地、外側（枠線部分）をグラデーションにする */
-      background-image: linear-gradient(var(--card), var(--card)), var(--gaming-gradient) !important;
-      background-origin: padding-box, border-box !important;
-      background-clip: padding-box, border-box !important;
-      background-size: 100% 100%, 200% 100% !important;
-      animation: gamingFlow 2s linear infinite !important;
+      border-color: hsl(var(--g-hue), 100%, 50%) !important;
+    }
+
+    /* ⑥ カレンダーの当日枠線（outlineで描画） */
+    body.gaming-mode .days-grid div[style*="outline"] {
+      outline-color: hsl(var(--g-hue), 100%, 50%) !important;
     }
 
     /* タマゴが孵化するときの揺れアニメーション */
