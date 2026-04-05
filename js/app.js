@@ -318,20 +318,20 @@ function addRecipeRow(init) {
       <select class="recipeSel emphSelect"></select>
     </div>
 
-    <div style="display:flex; gap:8px; width:100%; flex-wrap:wrap; align-items:flex-end;">
-        <div style="width:60px;">
+    <div style="display:flex; gap:6px; width:100%; flex-wrap:wrap; align-items:flex-end;">
+        <div style="flex:1 0 50px; max-width:70px;">
           <label class="emphLabel">食数</label>
           <select class="mealsSel emphSelect"></select>
         </div>
         
-        <div style="width:60px;">
+        <div style="flex:1 0 50px; max-width:70px;">
           <label class="emphLabel">レシピLv</label>
           <select class="lvlInput" style="text-align:center; height:38px; border:1px solid var(--line); border-radius:10px; background:#fff; font-weight:800;">
             ${levelOptions}
           </select>
         </div>
 
-        <div style="flex:1; min-width:160px;">
+        <div style="flex:99 1 140px;">
           <label class="emphLabel">大成功</label>
           <div class="radioGroup" style="height:38px; align-items:center;">
              <label><input type="radio" name="${radioName}" value="normal" checked>なし</label>
