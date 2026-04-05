@@ -198,7 +198,7 @@
       box-sizing: border-box !important;
       appearance: none;
     }
-    .emphSelect { text-align: center; }
+    input.emphSelect { text-align: center; }
 
     .stdSelect {
       padding: 4px 8px;
@@ -724,18 +724,18 @@
         flex-shrink: 0; 
       }
       
-      #tab3 .lvlQuick { 
+      #tab3 .lvlQuick {
         display: flex !important;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         justify-content: flex-end;
-        gap: 4px !important;
+        gap: 3px !important;
       }
       #tab3 .lvlQuickBtn { 
         width: auto !important; 
-        min-width: 32px !important; 
+        min-width: 26px !important; 
         height: 24px; 
         font-size: 10px; 
-        padding: 0 4px;
+        padding: 0 3px;
       }
       
       #tab3 .lvlRadios, #tab3 .lvlBoostRadios { gap: 6px !important; flex-wrap: wrap; }
@@ -1104,7 +1104,7 @@
     <section class="card">
       <div class="replenishHeaderRow">
         <div>
-          <div class="sectionTitle" style="border:none; padding:0; border-left: 5px solid var(--main); padding-left: 10px;">1日当たりの獲得量</div>
+          <div class="sectionTitle" style="border:none; padding:0; border-left: 5px solid var(--main); padding-left: 10px;">1日当たりの<wbr>獲得量</div>
         </div>
         <div>
           <label class="chkLabel ncPikaOpt">
