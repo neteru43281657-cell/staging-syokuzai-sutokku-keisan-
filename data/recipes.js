@@ -21,6 +21,7 @@ const RECIPES = [
   { cat:"カレー・シチュー", id:"cheese_hamburg_curry", name:"満腹チーズバーグカレー", baseEnergy:1910, ingredients: { milk:8, soymeat:8 } },
 
   // サラダ
+  { cat:"サラダ", id:"nettou_salad", name:"ごろごろねっとうサラダ", baseEnergy:25356, ingredients: { pumpkin:20, potato:30, corn:18, mushroom:27 } },
   { cat:"サラダ", id:"guacamole_chips", name:"じならしワカモレチップス", baseEnergy:25162, ingredients: { avocado:28, corn:25, herb:30, soy:22 } },
   { cat:"サラダ", id:"coffee_salad", name:"まけんきコーヒーサラダ", baseEnergy:20218, ingredients: { coffee:28, soymeat:28, oil:22, potato:22 } },
   { cat:"サラダ", id:"apple_yogurt_salad", name:"りんごさんヨーグルトサラダ", baseEnergy:19293, ingredients: { egg:35, apple:28, tomato:23, milk:18 } },
